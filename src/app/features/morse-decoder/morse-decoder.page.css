@@ -81,6 +81,18 @@
   color: var(--color-text-subtle);
 }
 
+.keys {
+  display: block;
+  margin-top: var(--space-1);
+}
+
+kbd {
+  padding: 0 0.3em;
+  border: var(--border-width) solid var(--color-border-strong);
+  border-radius: 4px;
+  font-size: var(--text-xs);
+}
+
 .settings {
   display: grid;
   align-content: start;

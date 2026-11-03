@@ -72,5 +72,7 @@ needed.
 - App icons are generated from `src-tauri/icons/source/app-icon.svg` with
   `pnpm tauri icon src-tauri/icons/source/app-icon.svg` (delete the generated `android/` and
   `ios/` folders afterwards – mobile is not a target).
+- The desktop app keeps its window geometry in `<app config dir>/window-state.json`
+  (macOS: `~/Library/Application Support/io.github.krocon.audiolab/`). Delete it to reset.
 - Code signing and notarisation are not configured yet (prompts/11). Unsigned macOS builds
   must be opened via right-click → Open; Windows SmartScreen may warn.

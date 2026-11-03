@@ -43,6 +43,10 @@ All notable changes to this project are documented here. The format follows
   dark), keyboard tests, Firefox/WebKit E2E projects, CI workflow (frontend, signal suite, E2E
   matrix, Rust on Linux/macOS/Windows), docs/TESTING.md.
 
+- Desktop: explicit webview permission policy (microphone only), WebKitGTK media streams enabled
+  on Linux, window position/size restored (validated against monitors), keyboard shortcuts
+  Space (start/stop) and Ctrl/⌘+K (reset).
+
 ### Fixed
 
 - Insufficient colour contrast of secondary text and the light accent colour (WCAG AA).

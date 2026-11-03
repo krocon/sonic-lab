@@ -99,6 +99,32 @@ describe('MorseDecoderPage', () => {
     });
   });
 
+  it('starts/stops with Space and resets with Ctrl+K', async () => {
+    const fixture = TestBed.createComponent(MorseDecoderPage);
+    await fixture.whenStable();
+    document.body.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+    await fixture.whenStable();
+    expect(source.state.status).toBe('running');
+    fixture.componentInstance['morse'].text.set('ABC');
+    document.body.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }),
+    );
+    await fixture.whenStable();
+    expect(fixture.componentInstance['morse'].text()).toBe('');
+    document.body.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+    await fixture.whenStable();
+    expect(source.state.status).toBe('stopped');
+  });
+
+  it('ignores Space while a form control has focus', async () => {
+    const fixture = TestBed.createComponent(MorseDecoderPage);
+    await fixture.whenStable();
+    const select = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
+    select.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+    await fixture.whenStable();
+    expect(source.startCalls).toBe(0);
+  });
+
   it('shows the error from the audio source', async () => {
     source.failWith = { kind: 'permission-denied' };
     const fixture = TestBed.createComponent(MorseDecoderPage);

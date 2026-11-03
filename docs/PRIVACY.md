@@ -30,11 +30,18 @@ bar when it runs in an insecure context.
 
 ## Desktop permissions
 
-| Platform | Mechanism                                                                                                                    | Status                             |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
-| macOS    | System prompt using `NSMicrophoneUsageDescription`; `com.apple.security.device.audio-input` entitlement for hardened runtime | configured, to verify (prompts/09) |
-| Windows  | WebView2 permission prompt; Windows privacy setting "Microphone access" must allow desktop apps                              | to verify (prompts/09)             |
-| Linux    | WebKitGTK media permission handling; PipeWire/PulseAudio device access                                                       | to verify (prompts/09)             |
+The desktop app attaches an explicit web-permission policy to its webview
+(`src-tauri/src/permissions.rs`): **microphone allowed, everything else denied** (camera, screen
+capture, location, notifications, clipboard read, …). Without it, wry would grant every media
+capture request on macOS, WebView2 would show its own prompt and WebKitGTK would decide itself
+(verified in the wry 0.57.1 sources used by Tauri 2.12.5).
 
-Tauri capabilities follow least privilege: the main window has `core:default` only, no file
-system, shell or network plugins.
+| Platform | Operating-system layer                                                                                                                                                                       | WebView layer                                                                             | Verified                                                                                                        |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| macOS    | TCC prompt with `NSMicrophoneUsageDescription` (Info.plist, verified in the built bundle); hardened-runtime entitlement `com.apple.security.device.audio-input` (effective in signed builds) | WKWebView `requestMediaCapturePermission…` → policy → grant microphone only               | Build ✓, app start ✓; microphone capture in the desktop app **not yet verified** (needs an interactive session) |
+| Windows  | Settings → Privacy → Microphone must allow desktop apps                                                                                                                                      | WebView2 `PermissionRequested` → policy                                                   | not verified (no Windows machine); compiled in CI                                                               |
+| Linux    | PipeWire/PulseAudio device access                                                                                                                                                            | WebKitGTK: `enable-media-stream` is switched on explicitly, `permission-request` → policy | not verified; compiled in CI only                                                                               |
+
+Capture continues while the window is minimised (decoding in the background is a use case); the
+microphone is released on Stop, when leaving the view, and when the window closes (the process
+ends). Tauri capabilities stay at `core:default`: no file system, shell or network plugins.

@@ -109,12 +109,20 @@ source. The concrete source is injected via the `AUDIO_SOURCE` token.
 ## Desktop shell
 
 - Crate `audiolab` with library `audiolab_lib` (`src-tauri/src/lib.rs`).
+- The main window is declared in `tauri.conf.json` with `create: false` and built in `setup()`
+  so the permission policy (`permissions.rs`) is attached before the webview exists; it is shown
+  after the saved geometry was restored (`window_state.rs`, JSON in the app config dir,
+  validated against connected monitors).
+- Linux: WebKitGTK media streams are enabled via `PlatformWebview::inner()` (webkit2gtk 2.0.2,
+  already in the tree).
 - Commands: `platform_info` (OS, arch, app version).
 - Capability `default`: `core:default` only. No plugins.
-- CSP: `script-src 'self'` (no eval, no inline scripts), `connect-src` limited to Tauri IPC,
-  `media-src`/`worker-src` prepared for audio and worklets.
+- CSP: `script-src 'self'` (no eval, no inline scripts; the AudioWorklet is a same-origin file),
+  `connect-src` limited to Tauri IPC, `media-src`/`worker-src` for audio and worklets.
 - macOS: `Info.plist` (microphone usage description) and `Entitlements.plist`
-  (`com.apple.security.device.audio-input`) for hardened-runtime builds.
+  (`com.apple.security.device.audio-input`) for hardened-runtime builds; the default macOS app menu
+  (About, Edit with copy/paste, Quit) comes from Tauri.
+- Keyboard: Space = start/stop, Ctrl/⌘+K = reset (implemented in the page, works on the web too).
 
 ## Decision records
 
@@ -156,6 +164,13 @@ allocations and GC pauses in the audio path.
 
 ESLint `no-restricted-imports`: `audio/` and `decoders/` may not import Angular, RxJS, Tauri,
 `core/` or `platform/`; features, shell and shared UI may not import `@tauri-apps/*`.
+
+### ADR-009 – Explicit webview permission policy, no window-state plugin
+
+Platform defaults for web permissions differ and are too permissive on macOS; an explicit
+allow-list (microphone only) keeps behaviour equal and minimal. Window geometry is ~100 lines of
+Rust instead of `tauri-plugin-window-state`, which would need an extra capability and stores more
+than needed.
 
 ### ADR-006 – Tooling versions
 

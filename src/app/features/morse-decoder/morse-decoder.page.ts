@@ -27,6 +27,7 @@ import { FREQUENCY_RANGE, SENSITIVITIES, Sensitivity } from './morse-settings';
   providers: [provideAudioCapture(), MorseSession],
   templateUrl: './morse-decoder.page.html',
   styleUrl: './morse-decoder.page.css',
+  host: { '(document:keydown)': 'onKey($event)' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MorseDecoderPage {
@@ -90,6 +91,25 @@ export class MorseDecoderPage {
       });
     }
     setTimeout(() => this.copyStatus.set(null), 3000);
+  }
+
+  /** Space = start/stop, Ctrl/⌘+K = reset – unless the user is typing or on a control. */
+  protected onKey(event: KeyboardEvent): void {
+    const target = event.target as HTMLElement | null;
+    const interactive = target?.closest(
+      'input, select, textarea, button, a, summary, [contenteditable]',
+    );
+    if (event.key === ' ' && !interactive && !event.ctrlKey && !event.metaKey && !event.altKey) {
+      event.preventDefault();
+      void this.session.toggle();
+    } else if (
+      event.key.toLowerCase() === 'k' &&
+      (event.ctrlKey || event.metaKey) &&
+      !event.altKey
+    ) {
+      event.preventDefault();
+      this.reset();
+    }
   }
 
   protected reset(): void {
