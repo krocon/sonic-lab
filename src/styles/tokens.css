@@ -1,10 +1,10 @@
 /*
- * AudioLab design tokens – "SDR transceiver".
+ * AudioLab design tokens – "transceiver with an OLED".
  *
- * The window is the front panel of a piece of radio equipment: a black metal faceplate (image, see
- * the shell) with engraved section outlines, backlit blue-grey LCDs, black keycaps with indicator
- * LEDs and machined rotary knobs that cast shadows. There is one finish only – dark – independent
- * of the system theme, like real hardware.
+ * The window is the front panel of a piece of radio equipment: a dark metal faceplate with
+ * silkscreen print, black keycaps, machined knobs and a large jog dial. All controls are hardware
+ * and never change; only the OLED display adapts to the mode and grows with the window. There is
+ * one finish only – dark – independent of the system theme, like real hardware.
  */
 :root {
   color-scheme: dark;
@@ -13,19 +13,17 @@
   --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-mono:
     ui-monospace, 'SF Mono', 'Cascadia Code', 'JetBrains Mono', Menlo, Consolas, monospace;
+  --font-print: 'Arial Black', 'Helvetica Neue', Arial, sans-serif;
   --text-2xs: 0.625rem;
   --text-xs: 0.75rem;
   --text-sm: 0.8125rem;
   --text-md: 0.9375rem;
   --text-lg: 1.125rem;
-  --text-xl: 1.5rem;
-  --text-2xl: 2rem;
   --weight-regular: 400;
   --weight-medium: 600;
   --weight-bold: 700;
   --leading-tight: 1.25;
   --leading-normal: 1.5;
-  --tracking-caps: 0.14em;
 
   /* Spacing (4px grid) */
   --space-1: 0.25rem;
@@ -33,91 +31,63 @@
   --space-3: 0.75rem;
   --space-4: 1rem;
   --space-5: 1.5rem;
-  --space-6: 2rem;
-  --space-7: 3rem;
 
-  /* Radii, borders, motion */
-  --radius-sm: 3px;
-  --radius-md: 6px;
-  --radius-lg: 0;
-  --radius-pill: 999px;
-  --border-width: 1px;
+  /* Motion */
   --duration-fast: 80ms;
   --easing: cubic-bezier(0.2, 0, 0, 1);
 
-  /* Layout: sections meet in 1px seams */
-  --groove: 1px;
-  --content-max: 104rem;
+  /* Device geometry: only the display is flexible */
+  --right-panel-width: 300px;
+  --bezel: 14px;
+  --oled-status-height: 30px;
+  --oled-flabel-height: 44px;
+  --oled-softkey-width: 108px;
+  --sidekey-column: 62px;
 
-  /* Displays: backlit blue-grey LCD with dark segments */
-  --display-bg: #c4d0e0;
-  --display-text: #12205a;
-  --display-text-dim: #3d4d78;
-  --display-value: #22409e; /* readout values: strong blue */
-  --display-cyan: #0b4f74;
-  --display-trace: #1c3593;
-  --display-trace-alt: #2747b0;
-  --display-grid: rgb(25 45 110 / 14%);
-  --display-grid-strong: rgb(25 45 110 / 32%);
-  --display-label: #3d4d78;
-  --display-mark: #a01c12;
-  /* LCD segments throw a faint shadow onto the backplane */
-  --display-glow: 1px 1px 0 rgb(18 32 90 / 14%);
-  /* recessed LCD behind a black frame with a bright rim */
-  --display-inset:
-    inset 0 2px 6px rgb(10 20 50 / 50%), inset 0 0 0 1px rgb(10 20 50 / 60%), 0 0 0 3px #050506,
-    0 0 0 4px rgb(255 255 255 / 10%);
-  --display-reflection: linear-gradient(
-    172deg,
-    rgb(255 255 255 / 32%) 0%,
-    rgb(255 255 255 / 0%) 45%,
-    rgb(30 50 110 / 5%) 100%
-  );
-
-  /* LEDs: red = on / selected / live, blue = ready */
-  --led-red: #ff3b3b;
-  --led-blue: #3d9bff;
-  --led-off: #222527;
-  --led-off-shadow: inset 0 1px 2px rgb(0 0 0 / 80%), 0 1px 0 rgb(255 255 255 / 7%);
-
-  /* behind the faceplate image (shell): shows at its rounded corners */
+  /* Faceplate and silkscreen print */
   --chassis: #050506;
-  /* sections have no surface of their own, only an engraved outline */
-  --section-line: rgb(0 0 0 / 55%);
-  --section-shadow: inset 0 1px 0 rgb(255 255 255 / 3%), 0 1px 0 rgb(255 255 255 / 3%);
-  /* keycaps: black, slightly domed, white legends; they cast a shadow down and right */
-  --key-face: linear-gradient(180deg, #34363a 0%, #1e2023 40%, #151619 100%);
-  --key-face-pressed: linear-gradient(180deg, #111214 0%, #1b1c1f 100%);
-  --key-text: #eef0f2;
-  --key-edge: #000;
-  --key-skirt: #050506;
-  --key-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 14%), inset 0 -2px 0 rgb(0 0 0 / 45%), 0 3px 0 var(--key-skirt),
-    2px 6px 8px rgb(0 0 0 / 70%);
-  --key-shadow-pressed:
-    inset 0 2px 5px rgb(0 0 0 / 80%), inset 0 -1px 0 rgb(255 255 255 / 4%),
-    0 1px 0 var(--key-skirt), 1px 2px 3px rgb(0 0 0 / 60%);
+  --plate:
+    linear-gradient(180deg, rgb(255 255 255 / 10%) 0, rgb(255 255 255 / 2%) 6px, transparent 40px),
+    radial-gradient(120% 90% at 30% 0%, #34373c 0%, #26282c 45%, #1b1c1f 100%);
+  --silkscreen: #e3e5e8;
+  --silkscreen-dim: #a3a8af;
+  --silkscreen-line: #8d939b;
+  --silkscreen-shadow: 0 -1px 0 rgb(0 0 0 / 65%);
 
-  /* Text and state colours on the plate */
-  --color-bg: #0d0e10;
-  --color-surface: #1f2226;
-  --color-surface-raised: #2b2f35;
-  --color-surface-sunken: #121417;
-  --color-border: #050607;
-  --color-border-strong: #4b5158;
+  /* LEDs */
+  --led-off: #2a2c2a;
+  --led-green: #6dff7a;
+  --led-red: #ff4a3d;
+
+  /* OLED: true black, emissive colours */
+  --oled-bg: #000;
+  --oled-fg: #eef3f8;
+  --oled-dim: #8a94a0;
+  --oled-faint: #2c323a;
+  --oled-panel: #0a0c0f;
+  --oled-accent: #3cc8ff;
+  --oled-accent-2: #2f7bff;
+  --oled-hot: #ffc23a;
+  --oled-ok: #46e07c;
+  --oled-bad: #ff5a4f;
+  --oled-select-bg: #eef3f8;
+  --oled-select-fg: #000;
+
+  /* Colours the canvas visualisations read (see shared/visualization) */
+  --display-bg: var(--oled-bg);
+  --display-text: var(--oled-fg);
+  --display-text-dim: var(--oled-dim);
+  --display-value: var(--oled-fg);
+  --display-trace: var(--oled-accent);
+  --display-trace-alt: var(--oled-hot);
+  --display-hold: var(--oled-dim);
+  --display-grid: rgb(150 170 190 / 12%);
+  --display-grid-strong: rgb(150 170 190 / 28%);
+  --display-label: var(--oled-dim);
+  --display-mark: var(--oled-hot);
+
+  /* State colours and focus */
   --color-text: #eceff2;
-  --color-text-muted: #c3c9cf;
-  --color-text-subtle: #a2a9b1;
-  --color-accent: #3d9bff;
-  --color-accent-strong: #7dbdff;
-  --color-accent-contrast: #04121f;
-  --color-warning: #7dbdff;
   --color-danger: #ff6b5e;
   --color-focus: #6fe3ff;
-  --color-grid: rgb(255 255 255 / 6%);
-  --shadow-sm: 0 1px 0 rgb(255 255 255 / 5%), 0 3px 8px rgb(0 0 0 / 55%);
-  --shadow-md: 0 8px 26px rgb(0 0 0 / 50%);
-  /* silkscreen print on the plate: light ink, pressed into the surface */
-  --silkscreen: #b4bbc3;
-  --silkscreen-shadow: 0 1px 0 rgb(0 0 0 / 85%);
 }

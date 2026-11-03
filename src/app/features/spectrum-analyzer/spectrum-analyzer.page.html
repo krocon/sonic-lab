@@ -1,83 +1,44 @@
-<div class="module-page">
+<div class="screen">
   <header class="module-head">
-    <p class="eyebrow">Analyze</p>
     <h1>Spectrum Analyzer</h1>
   </header>
 
-  <section class="panel" aria-label="Capture controls"><app-capture-controls /></section>
-
-  <div class="layout">
-    <section class="panel" aria-labelledby="spectrum-title">
-      <h2 id="spectrum-title">Spectrum</h2>
-      <dl class="readouts">
-        <div class="readout">
-          <dt>Peak</dt>
-          <dd>{{ peak() ? peak()!.frequency.toFixed(1) + ' Hz' : '–' }}</dd>
-        </div>
-        <div class="readout">
-          <dt>Level</dt>
-          <dd>{{ peak() ? peak()!.db.toFixed(1) + ' dBFS' : '–' }}</dd>
-        </div>
-        <div class="readout">
-          <dt>Resolution</dt>
-          <dd class="small">{{ resolution() }}</dd>
-        </div>
-      </dl>
-      <app-spectrum-canvas
-        class="chart spectrum"
-        [analyzer]="analyzer()"
-        [log]="settings().log"
-        [peakHold]="settings().peakHold"
-        [marker]="peak()"
-      />
-      <h2>Spectrogram</h2>
-      <app-spectrogram-canvas
-        class="chart spectrogram"
-        [analyzer]="analyzer()"
-        [log]="settings().log"
-      />
-    </section>
-
-    <section class="panel" aria-labelledby="settings-title">
-      <h2 id="settings-title">Settings</h2>
-      <app-key-selector
-        label="FFT size"
-        [options]="sizes"
-        [columns]="3"
-        [value]="settings().size"
-        (valueChange)="update({ size: $event })"
-      />
-      <app-key-selector
-        label="Window"
-        [options]="windows"
-        [value]="settings().window"
-        (valueChange)="update({ window: $event })"
-      />
-      <app-key-selector
-        label="Frequency axis"
-        [options]="axes"
-        [value]="settings().log"
-        (valueChange)="update({ log: $event })"
-      />
-      <app-key-selector
-        label="Averaging"
-        [options]="averagings"
-        [value]="settings().averaging"
-        (valueChange)="update({ averaging: $event })"
-      />
-      <div class="hold">
-        <button
-          type="button"
-          class="btn"
-          [attr.aria-pressed]="settings().peakHold"
-          (click)="update({ peakHold: !settings().peakHold })"
-        >
-          Peak hold
-        </button>
-        <button type="button" class="btn" (click)="resetPeaks()" [disabled]="!settings().peakHold">
-          Reset peaks
-        </button>
+  <div class="row">
+    <dl class="readouts">
+      <div class="ro accent">
+        <dt>Peak</dt>
+        <dd class="glow">{{ peak() ? peak()!.frequency.toFixed(1) + ' Hz' : '–' }}</dd>
       </div>
-    </section>
+      <div class="ro">
+        <dt>Level</dt>
+        <dd>{{ peak() ? peak()!.db.toFixed(1) : '–' }}<span class="unit">dBFS</span></dd>
+      </div>
+      <div class="ro">
+        <dt>Resolution · {{ windowMs() }} ms</dt>
+        <dd>{{ resolution() }}<span class="unit">Hz/bin</span></dd>
+      </div>
+    </dl>
+    <div class="end">
+      <span class="chip on">FFT {{ settings().size }}</span>
+      <span class="chip">Avg {{ averagingLabel() }}</span>
+      <span class="chip" [class.ok]="settings().peakHold">Peak hold</span>
+    </div>
   </div>
+
+  <section class="box" aria-labelledby="spectrum-title">
+    <h2 id="spectrum-title" class="box-title inverse">Spectrum</h2>
+    <span class="box-meta">{{ settings().log ? 'log' : 'linear' }} axis</span>
+    <app-spectrum-canvas
+      class="viz"
+      [analyzer]="analyzer()"
+      [log]="settings().log"
+      [peakHold]="settings().peakHold"
+      [marker]="peak()"
+    />
+  </section>
+
+  <section class="box" aria-labelledby="spectrogram-title">
+    <h2 id="spectrogram-title" class="box-title">Spectrogram</h2>
+    <app-spectrogram-canvas class="viz" [analyzer]="analyzer()" [log]="settings().log" />
+  </section>
 </div>

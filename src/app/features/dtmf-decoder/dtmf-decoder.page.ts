@@ -1,13 +1,17 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { provideAudioCapture } from '../../core/capture/audio-capture.providers';
 import { CaptureSession } from '../../core/capture/capture-session';
 import { demoDtmfSignal } from '../../core/capture/demo-signal';
+import { attachPanel, panelAction } from '../../core/panel/front-panel';
 import { StatusMessage } from '../../core/status/status-message';
 import { DtmfDecoder } from '../../decoders/dtmf/dtmf-decoder';
-import { DTMF_COLUMNS, DTMF_KEYS, DTMF_ROWS, DtmfKey } from '../../decoders/dtmf/dtmf-tones';
-import { CaptureControls } from '../../shared/capture/capture-controls';
-import { Icon } from '../../shared/icon/icon';
-import { StatusBanner } from '../../shared/status/status-banner';
+import {
+  DTMF_COLUMNS,
+  DTMF_KEYS,
+  DTMF_ROWS,
+  DtmfKey,
+  dtmfFrequencies,
+} from '../../decoders/dtmf/dtmf-tones';
 
 const LEVEL_UPDATE_SECONDS = 0.05;
 const MAX_DIGITS = 5000;
@@ -15,7 +19,6 @@ const MAX_DIGITS = 5000;
 /** Telephone keypad tones → digits, with a live keypad and tone levels. */
 @Component({
   selector: 'app-dtmf-decoder-page',
-  imports: [CaptureControls, Icon, StatusBanner],
   providers: [provideAudioCapture({ demo: demoDtmfSignal })],
   templateUrl: './dtmf-decoder.page.html',
   styleUrl: './dtmf-decoder.page.css',
@@ -32,6 +35,11 @@ export class DtmfDecoderPage {
   protected readonly rowLevels = signal<readonly number[]>([-100, -100, -100, -100]);
   protected readonly colLevels = signal<readonly number[]>([-100, -100, -100, -100]);
   protected readonly status = signal<StatusMessage | null>(null);
+  /** Row + column tone of the key being held. */
+  protected readonly pair = computed(() => {
+    const key = this.pressed();
+    return key ? dtmfFrequencies(key) : null;
+  });
   private lastLevels = -Infinity;
 
   constructor() {
@@ -48,6 +56,19 @@ export class DtmfDecoderPage {
           this.colLevels.set(e.columns);
         }
       }
+    });
+    attachPanel({
+      softkeys: [
+        panelAction({
+          label: 'CLEAR',
+          name: 'Clear digits',
+          run: () => this.reset(),
+          disabled: () => !this.digits(),
+        }),
+      ],
+      capture: this.session,
+      copy: { name: 'Copy digits', run: () => this.copy(), disabled: () => !this.digits() },
+      message: this.status,
     });
   }
 

@@ -34,9 +34,12 @@ or `@tauri-apps/*`; `eslint.config.js` fails the lint otherwise. Features never 
 src/
 ├── app/
 │   ├── app.ts, app.config.ts, app.routes.ts
-│   ├── shell/               front panel: row of mode keys, speaker grille, outlet
+│   ├── shell/               front panel: OLED with soft keys and F keys, outlet; display/
+│   │                        (value pop-up, INPUT/MENU sheets); hardware/ (control panel,
+│   │                        knobs, MULTI dial)
 │   ├── core/
 │   │   ├── modules/         AnalysisModule type + module catalog (single source of truth)
+│   │   ├── panel/           FrontPanel: what keys, knobs and the dial do on the current page
 │   │   ├── capture/         CaptureSession, capture providers, demo signals
 │   │   ├── settings/        SettingsStore (versioned JSON in localStorage, never throws)
 │   │   └── status/          StatusMessage + mapping of audio states/errors to user text
@@ -55,11 +58,11 @@ src/
 │   ├── features/            one folder per page: morse-decoder, morse-encoder,
 │   │                        dtmf-decoder, frequency-analyzer, spectrum-analyzer,
 │   │                        signal-monitor, tone-generator, audio-recorder, module-placeholder
-│   └── shared/              icons, controls (knob, key selector), capture controls, status
-│                            banner, canvas visualisations
+│   └── shared/              icons, canvas visualisations
 ├── worklets/                AudioWorklet processors (TypeScript, bundled by scripts/build-worklets.mjs)
 ├── testing/                 fakes and impaired-signal generators for tests (not in the app build)
-└── styles/                  tokens.css (design tokens), base.css (elements, shared page styles)
+└── styles/                  tokens.css (design tokens), base.css (elements), hardware.css
+                             (keys, LEDs, silkscreen), oled.css (building blocks of the screens)
 e2e/                         Playwright tests (+ fixtures/fake-microphone.ts)
 scripts/                     worklet build, version sync, release notes, screenshots
 src-tauri/                   Tauri 2 crate (audiolab_lib): platform, permissions, window state, export
@@ -207,6 +210,8 @@ download link. Recording uses the app's own WAV encoder (16-bit PCM or 32-bit fl
 
 ### ADR-012 – SDR front-panel design, dark only
 
+_Superseded by ADR-013._
+
 The window imitates the front panel of an SDR transceiver instead of a web page. The shell is a
 top row with the mode keys (grouped under printed brackets) and a speaker grille, and below it
 the workspace of the selected module. There is no overview page, nameplate or status bar: `/`
@@ -243,6 +248,35 @@ Everything else is CSS custom properties, gradients and inline SVG – no other 
 UI libraries. There is a single dark finish (`color-scheme: dark`), independent of
 `prefers-color-scheme`, like real equipment; this replaced the graphite/aluminium themes and the
 theme toggle. Contrast is verified by the axe E2E checks on every module.
+
+### ADR-013 – Transceiver with an OLED: constant hardware, flexible display
+
+The front panel follows a transceiver with a large display; the look was agreed on an HTML
+mockup built from a reference photo and a template. All hardware is
+always present and never changes size or place; only the OLED adapts to the mode and grows with
+the window. Below 1180 × 720 the whole device is zoomed out instead of reflowing.
+
+- **Display** (`shell/`): a true-black OLED behind glass – status line (module, input, capture
+  or output state as a live region), the module's screen (a size container: text scales with
+  `cqh`/`cqw`), a message line for results and errors, the legends of the six soft keys on the
+  right and the eight F-key legends with DECODE / ANALYZE / GENERATE · RECORD brackets at the
+  bottom. Emissive colours: white, cyan, amber, green, red (`--oled-*`); canvases read the
+  `--display-*` tokens.
+- **Hardware**: six soft keys right of the glass, F1–F8 below it (router links named after the
+  modules), and a fixed 300 px control panel (`shell/hardware/`) with the TONE, SPEED and LEVEL
+  knobs, a keypad 0–9 with CLR/ENT (purple letter tags: multi-tap text entry in the Morse
+  encoder), INPUT, ▶ ■ ●, the MULTI jog dial and MENU, COPY, ESC. Everything is drawn in CSS – photo
+  crops of the reference were too soft (it is only 927 px wide) and come from a product photo.
+- **Binding** (`core/panel/front-panel.ts`): a page describes what the hardware does for it with
+  `attachPanel({...})` – soft keys as choices (step through options), values (selected for the
+  MULTI dial and keypad entry, ENT applies) or actions; knobs as values; ▶/■ from its
+  `CaptureSession` or its own play/stop/record keys; COPY, digits, CLR, its output state and
+  messages. Unused keys stay in place and are `aria-disabled` (focusable, ignored), so focus is
+  never lost when a key has nothing to do. Pages keep only what they show; the controls moved out
+  of them (key selectors, knobs and capture controls are gone).
+- Accessibility: soft keys are named after their setting ("Tone frequency: AUTO"), values are
+  toggle buttons while selected, knobs and the dial are ARIA sliders, INPUT and MENU open dialogs
+  that ESC closes. Verified by the axe E2E checks on every module.
 
 ### ADR-006 – Tooling versions
 

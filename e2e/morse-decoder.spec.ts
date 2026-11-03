@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import { DEMO_TEXT } from '../src/app/core/capture/demo-signal';
 import { scheduleMorse } from '../src/app/decoders/morse/morse-timing';
 import { installFakeMicrophone } from './fixtures/fake-microphone';
+import { DEMO_INPUT, frontPanel } from './fixtures/front-panel';
 
 test.describe('Morse decoder', () => {
   test('decodes Morse from the microphone and copies the text', async ({
@@ -19,30 +20,29 @@ test.describe('Morse decoder', () => {
     if (browserName === 'chromium')
       await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await page.goto('/#/morse-decoder');
-    await page.getByRole('button', { name: 'Start' }).click();
+    const panel = frontPanel(page);
+    await panel.key('Start').click();
 
     const text = page.getByLabel('Text', { exact: true });
     await expect(text).toContainText('PARIS TEST', { timeout: 15_000 });
     await expect(page.getByLabel('Morse', { exact: true })).toContainText('.--. .- .-. .. ...');
-    await expect(page.locator('.stat strong')).toHaveText(/^(19|20|21) WPM$/);
-    await expect(page.getByText(/auto · (600|650|700) Hz/)).toBeVisible();
+    await expect(page.locator('.ro.hot dd')).toHaveText(/^(19|20|21)WPM$/);
+    await expect(page.locator('.ro.accent dd')).toHaveText(/^(600|650|700)Hz$/);
 
     if (browserName === 'chromium') {
-      await page.getByRole('button', { name: 'Copy' }).click();
-      await expect(page.getByText('Text copied to the clipboard.')).toBeVisible();
+      await panel.key('Copy text').click();
+      await expect(panel.message()).toHaveText('Text copied to the clipboard.');
       expect(await page.evaluate(() => navigator.clipboard.readText())).toContain('PARIS TEST');
     }
 
-    await page.getByRole('button', { name: 'Reset' }).click();
+    await panel.softKey('Reset').click();
     await expect(text).not.toContainText('PARIS');
   });
 
   test('decodes the demo signal', async ({ page }) => {
     await page.goto('/#/morse-decoder');
-    await page
-      .getByLabel('Audio input')
-      .selectOption({ label: 'Demo signal (synthetic, no microphone)' });
-    await page.getByRole('button', { name: 'Start' }).click();
+    await frontPanel(page).chooseInput(DEMO_INPUT);
+    await frontPanel(page).key('Start').click();
     await expect(page.getByLabel('Text', { exact: true })).toContainText(DEMO_TEXT, {
       timeout: 20_000,
     });
@@ -50,13 +50,24 @@ test.describe('Morse decoder', () => {
 
   test('remembers detection settings', async ({ page }) => {
     await page.goto('/#/morse-decoder');
-    const mode = page.getByRole('radiogroup', { name: 'Tone frequency' });
-    const sensitivity = page.getByRole('radiogroup', { name: 'Sensitivity' });
-    await mode.getByRole('radio', { name: 'Fixed' }).click();
-    await sensitivity.getByRole('radio', { name: 'High' }).click();
+    const panel = frontPanel(page);
+    await panel.softKey('Tone frequency').click();
+    await panel.softKey('Sensitivity').click();
+    await expect(panel.softKey('Tone frequency')).toHaveAccessibleName('Tone frequency: FIXED');
     await page.reload();
-    await expect(mode.getByRole('radio', { name: 'Fixed' })).toBeChecked();
-    await expect(page.getByRole('slider', { name: /^Frequency/ })).toBeVisible();
-    await expect(sensitivity.getByRole('radio', { name: 'High' })).toBeChecked();
+    await expect(panel.softKey('Tone frequency')).toHaveAccessibleName('Tone frequency: FIXED');
+    await expect(panel.softKey('Sensitivity')).toHaveAccessibleName('Sensitivity: HIGH');
+    await expect(page.getByRole('slider', { name: 'Fixed tone', exact: true })).toBeVisible();
+  });
+
+  test('takes a fixed tone from the keypad', async ({ page }) => {
+    await page.goto('/#/morse-decoder');
+    const panel = frontPanel(page);
+    await panel.softKey('Fixed tone').click();
+    await expect(panel.softKey('Fixed tone')).toHaveAttribute('aria-pressed', 'true');
+    for (const d of ['9', '5', '0']) await panel.key(d).click();
+    await panel.key('Enter').click();
+    await expect(panel.softKey('Fixed tone')).toHaveAccessibleName('Fixed tone: 950 Hz');
+    await expect(panel.softKey('Tone frequency')).toHaveAccessibleName('Tone frequency: FIXED');
   });
 });

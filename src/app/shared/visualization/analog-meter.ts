@@ -17,21 +17,14 @@ export function meterAngle(db: number): number {
 }
 
 /**
- * Moving-coil style VU meter: backlit dial, red zone above −6 dBFS, a needle with ballistics
- * (≈ 300 ms rise/fall). Purely decorative next to the numeric readouts – hidden from assistive
- * technology, which reads the level meter instead.
+ * Moving-coil style meter drawn on the OLED: lit scale, red zone above −6 dBFS, a needle with
+ * ballistics (≈ 300 ms rise/fall). Purely decorative next to the numeric readouts – hidden from
+ * assistive technology, which reads the level meter instead.
  */
 @Component({
   selector: 'app-analog-meter',
   template: `
     <svg viewBox="-110 -105 220 120" aria-hidden="true">
-      <defs>
-        <radialGradient id="dial" cx="50%" cy="100%" r="100%">
-          <stop offset="0" stop-color="#fff5d6" />
-          <stop offset="1" stop-color="#e9cf8a" />
-        </radialGradient>
-      </defs>
-      <rect x="-108" y="-103" width="216" height="116" rx="6" fill="url(#dial)" />
       <path d="M -70 -60 A 92 92 0 0 1 70 -60" class="arc" />
       <path d="M 27.7 -87.7 A 92 92 0 0 1 70 -60" class="arc red" />
       @for (m of marks; track m) {
@@ -44,58 +37,54 @@ export function meterAngle(db: number): number {
       <g #needle class="needle">
         <line x1="0" y1="8" x2="0" y2="-98" />
       </g>
-      <circle cx="0" cy="8" r="9" class="hub" />
+      <circle cx="0" cy="8" r="7" class="hub" />
     </svg>
   `,
   styles: `
-    /* the backlit dial sits behind a black bezel */
     :host {
       display: block;
-      padding: 6px;
-      border-radius: var(--radius-sm);
-      background: #050506;
-      box-shadow:
-        inset 0 2px 6px rgb(0 0 0 / 90%),
-        0 0 0 1px rgb(255 255 255 / 9%);
     }
     svg {
       display: block;
       width: 100%;
-      height: auto;
+      height: 100%;
     }
     .arc {
       fill: none;
-      stroke: #2b2416;
-      stroke-width: 2;
+      stroke: var(--oled-fg);
+      stroke-width: 1.5;
     }
     .arc.red {
-      stroke: #c0281c;
-      stroke-width: 5;
+      stroke: var(--oled-bad);
+      stroke-width: 4;
     }
     line {
-      stroke: #2b2416;
-      stroke-width: 2;
+      stroke: var(--oled-fg);
+      stroke-width: 1.5;
     }
     line.red,
     text.red {
-      stroke: #c0281c;
-      fill: #c0281c;
+      stroke: var(--oled-bad);
+      fill: var(--oled-bad);
     }
     text {
-      fill: #2b2416;
-      font: 600 10px var(--font-sans);
+      fill: var(--oled-dim);
+      stroke: none;
+      font: 500 10px var(--font-sans);
       text-anchor: middle;
     }
     .unit {
-      font-size: 12px;
-      letter-spacing: 0.1em;
+      font-size: 11px;
+      letter-spacing: 0.14em;
     }
     .needle line {
-      stroke: #111;
+      stroke: var(--oled-hot);
       stroke-width: 2;
+      stroke-linecap: round;
+      filter: drop-shadow(0 0 3px var(--oled-hot));
     }
     .hub {
-      fill: #222;
+      fill: var(--oled-faint);
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

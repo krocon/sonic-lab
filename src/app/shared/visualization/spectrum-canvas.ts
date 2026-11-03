@@ -54,8 +54,8 @@ export class SpectrumCanvas {
     const a = this.analyzer();
     if (this.frame++ % 60 === 0) {
       this.colors = {
-        line: cssVar(this.host, '--display-trace-alt', '#2747b0'),
-        hold: cssVar(this.host, '--display-cyan', '#0b4f74'),
+        line: cssVar(this.host, '--display-trace', '#3cc8ff'),
+        hold: cssVar(this.host, '--display-hold', '#8a94a0'),
         grid: cssVar(this.host, '--display-grid', 'rgba(25,45,110,.14)'),
         text: cssVar(this.host, '--display-label', '#3d4d78'),
         mark: cssVar(this.host, '--display-mark', '#a01c12'),

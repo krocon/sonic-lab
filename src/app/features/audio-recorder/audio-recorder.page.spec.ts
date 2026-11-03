@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { FakeAudioSource } from '../../../testing/fake-audio-source';
+import { frontPanel } from '../../../testing/front-panel';
 import { AUDIO_SOURCE, CaptureSession } from '../../core/capture/capture-session';
 import { ExportResult, FileExportAdapter } from '../../platform/file-export';
 import { AudioRecorderPage } from './audio-recorder.page';
@@ -26,31 +27,39 @@ describe('AudioRecorderPage', () => {
     });
     const fixture = TestBed.createComponent(AudioRecorderPage);
     const el: HTMLElement = fixture.nativeElement;
-    const click = async (label: string) => {
-      (Array.from(el.querySelectorAll('button')) as HTMLButtonElement[])
-        .find((b) => b.textContent?.trim().startsWith(label))
-        ?.click();
-      await fixture.whenStable();
-    };
+    const hw = frontPanel();
     await fixture.whenStable();
-    await click('Record');
+    expect(hw.disabled('Export…')).toBe(true);
+    expect(hw.key('play')?.disabled?.()).toBe(true);
+
+    await hw.run('record');
+    expect(hw.key('record')?.active?.()).toBe(true);
     for (let i = 0; i < 47; i++) source.emit(new Float32Array(1024).fill(0.1), i * 0.021);
     await fixture.whenStable();
-    expect(el.textContent).toContain('0:01.0');
-    await click('Stop recording');
+    expect(el.querySelector('.time')?.textContent?.trim()).toBe('0:01.0');
+    await hw.run('stop');
     expect(source.state.status).toBe('stopped');
 
-    await click('Export');
+    hw.press('Format');
+    expect(hw.text('Format')).toBe('32 FLOAT');
+    hw.press('Format');
+    hw.press('Export…');
+    await fixture.whenStable();
+    await new Promise((r) => setTimeout(r));
     expect(exporter.saved[0]?.name).toMatch(/^audiolab-.*\.wav$/);
     expect(exporter.saved[0]?.size).toBe(44 + 47 * 1024 * 2);
-    expect(el.textContent).toContain('Saved to /tmp/x.wav');
+    expect(hw.message()?.text).toBe('Saved to /tmp/x.wav');
 
     exporter.result = { status: 'cancelled' };
-    await click('Export');
-    expect(el.textContent).toContain('Export cancelled.');
+    hw.press('Export…');
+    await new Promise((r) => setTimeout(r));
+    expect(hw.message()?.text).toBe('Export cancelled.');
 
-    await click('Discard');
-    expect(el.textContent).toContain('Recording discarded.');
-    expect(el.textContent).not.toContain('Export…');
+    hw.press('Discard');
+    await new Promise((r) => setTimeout(r));
+    await fixture.whenStable();
+    expect(hw.message()?.text).toBe('Recording discarded.');
+    expect(hw.disabled('Export…')).toBe(true);
+    expect(el.textContent).toContain('No recording yet');
   });
 });

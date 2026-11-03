@@ -4,9 +4,8 @@ import { WindowKind } from '../../audio/dsp/window';
 import { provideAudioCapture } from '../../core/capture/audio-capture.providers';
 import { CaptureSession } from '../../core/capture/capture-session';
 import { demoAnalysisSignal } from '../../core/capture/demo-signal';
+import { PanelOption, attachPanel, panelAction, panelChoice } from '../../core/panel/front-panel';
 import { SettingsStore, isRecord, read } from '../../core/settings/settings-store';
-import { CaptureControls } from '../../shared/capture/capture-controls';
-import { KeyOption, KeySelector } from '../../shared/controls/key-selector';
 import { SpectrogramCanvas } from '../../shared/visualization/spectrogram-canvas';
 import { SpectrumCanvas } from '../../shared/visualization/spectrum-canvas';
 
@@ -14,23 +13,27 @@ export const FFT_SIZES = [1024, 2048, 4096, 8192, 16384] as const;
 const AVERAGING = { off: 0, low: 0.5, medium: 0.75, high: 0.9 } as const;
 type Averaging = keyof typeof AVERAGING;
 
-const SIZE_KEYS: readonly KeyOption<number>[] = FFT_SIZES.map((s) => ({
+const SIZE_KEYS: readonly PanelOption<number>[] = FFT_SIZES.map((s) => ({
   value: s,
   label: String(s),
 }));
-const WINDOW_KEYS: readonly KeyOption<WindowKind>[] = [
-  { value: 'hann', label: 'Hann' },
-  { value: 'blackman-harris', label: 'Blackman-Harris' },
+const WINDOW_KEYS: readonly PanelOption<WindowKind>[] = [
+  { value: 'hann', label: 'HANN' },
+  { value: 'blackman-harris', label: 'B-HARRIS' },
 ];
-const AXIS_KEYS: readonly KeyOption<boolean>[] = [
-  { value: true, label: 'Log' },
-  { value: false, label: 'Linear' },
+const AXIS_KEYS: readonly PanelOption<boolean>[] = [
+  { value: true, label: 'LOG' },
+  { value: false, label: 'LINEAR' },
 ];
-const AVERAGING_KEYS: readonly KeyOption<Averaging>[] = [
-  { value: 'off', label: 'Off' },
-  { value: 'low', label: 'Low' },
-  { value: 'medium', label: 'Med' },
-  { value: 'high', label: 'High' },
+const AVERAGING_KEYS: readonly PanelOption<Averaging>[] = [
+  { value: 'off', label: 'OFF' },
+  { value: 'low', label: 'LOW' },
+  { value: 'medium', label: 'MED' },
+  { value: 'high', label: 'HIGH' },
+];
+const ON_OFF: readonly PanelOption<boolean>[] = [
+  { value: false, label: 'OFF' },
+  { value: true, label: 'ON' },
 ];
 
 interface SpectrumSettings {
@@ -68,37 +71,13 @@ const store = () =>
 /** FFT spectrum and spectrogram of the live input. */
 @Component({
   selector: 'app-spectrum-analyzer-page',
-  imports: [CaptureControls, KeySelector, SpectrumCanvas, SpectrogramCanvas],
+  imports: [SpectrumCanvas, SpectrogramCanvas],
   providers: [provideAudioCapture({ demo: demoAnalysisSignal })],
   templateUrl: './spectrum-analyzer.page.html',
   styles: `
-    .layout {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 16rem;
-      gap: var(--groove);
-    }
-    .hold {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-2);
-    }
-    .hold .btn {
-      flex: 1;
-      padding: 0.25rem var(--space-2) 0;
-    }
-    .spectrum {
-      height: 18rem;
-    }
-    .spectrogram {
-      height: 12rem;
-    }
-    .small {
-      font-size: var(--text-sm);
-    }
-    @media (max-width: 960px) {
-      .layout {
-        grid-template-columns: minmax(0, 1fr);
-      }
+    .screen {
+      grid-template-rows: auto minmax(0, 1fr) minmax(0, 1.1fr);
+      gap: clamp(8px, 2cqh, 18px);
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -109,10 +88,8 @@ export class SpectrumAnalyzerPage {
   protected readonly settings = signal(this.settingsStore.load());
   protected readonly analyzer = signal(this.create(this.settings()));
   protected readonly peak = signal<Peak | null>(null);
-  protected readonly sizes = SIZE_KEYS;
-  protected readonly windows = WINDOW_KEYS;
-  protected readonly axes = AXIS_KEYS;
-  protected readonly averagings = AVERAGING_KEYS;
+  protected readonly averagingLabel = () =>
+    AVERAGING_KEYS.find((a) => a.value === this.settings().averaging)?.label ?? '';
   private lastPeakVersion = 0;
 
   constructor() {
@@ -124,11 +101,63 @@ export class SpectrumAnalyzerPage {
         this.peak.set(findPeak(a, 20, 20000));
       }
     });
+    const settings = this.settings;
+    attachPanel({
+      softkeys: [
+        panelChoice({
+          label: 'FFT',
+          name: 'FFT size',
+          options: SIZE_KEYS,
+          value: () => settings().size,
+          set: (size) => this.update({ size }),
+        }),
+        panelChoice({
+          label: 'WINDOW',
+          name: 'Window',
+          options: WINDOW_KEYS,
+          value: () => settings().window,
+          set: (window) => this.update({ window }),
+        }),
+        panelChoice({
+          label: 'AXIS',
+          name: 'Frequency axis',
+          options: AXIS_KEYS,
+          value: () => settings().log,
+          set: (log) => this.update({ log }),
+        }),
+        panelChoice({
+          label: 'AVG',
+          name: 'Averaging',
+          options: AVERAGING_KEYS,
+          value: () => settings().averaging,
+          set: (averaging) => this.update({ averaging }),
+        }),
+        panelChoice({
+          label: 'PEAK HOLD',
+          name: 'Peak hold',
+          options: ON_OFF,
+          value: () => settings().peakHold,
+          set: (peakHold) => this.update({ peakHold }),
+        }),
+        panelAction({
+          label: 'CLR PEAKS',
+          name: 'Reset peaks',
+          run: () => this.resetPeaks(),
+          disabled: () => !settings().peakHold,
+        }),
+      ],
+      capture: this.session,
+    });
   }
 
   protected resolution(): string {
     const a = this.analyzer();
-    return `${(a.sampleRate / a.options.size).toFixed(1)} Hz/bin · ${((a.options.size / a.sampleRate) * 1000).toFixed(0)} ms window`;
+    return (a.sampleRate / a.options.size).toFixed(1);
+  }
+
+  protected windowMs(): string {
+    const a = this.analyzer();
+    return ((a.options.size / a.sampleRate) * 1000).toFixed(0);
   }
 
   protected update(patch: Partial<SpectrumSettings>): void {

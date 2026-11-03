@@ -14,31 +14,33 @@ import {
   MIN_LEVEL_DB,
   ToneGenerator,
 } from '../../audio/output/tone-generator';
+import { PanelOption, attachPanel, panelChoice, panelValue } from '../../core/panel/front-panel';
 import { SettingsStore, isRecord, read } from '../../core/settings/settings-store';
 import { StatusMessage } from '../../core/status/status-message';
 import { DTMF_KEYS, dtmfFrequencies, isDtmfKey } from '../../decoders/dtmf/dtmf-tones';
-import { KeyOption, KeySelector } from '../../shared/controls/key-selector';
-import { Knob } from '../../shared/controls/knob';
-import { Icon } from '../../shared/icon/icon';
-import { StatusBanner } from '../../shared/status/status-banner';
+import { PREVIEW_HEIGHT, PREVIEW_WIDTH, waveformPath } from './waveform-preview';
 
 /** Factory for the output context; tests replace it. */
 export const generatorContext = {
   create: (): AudioContext => new AudioContext({ latencyHint: 'interactive' }),
 };
 
-const WAVEFORMS: readonly KeyOption<GeneratorWaveform>[] = [
-  { value: 'sine', label: 'Sine' },
-  { value: 'square', label: 'Square' },
-  { value: 'triangle', label: 'Triangle' },
-  { value: 'sawtooth', label: 'Sawtooth' },
-  { value: 'white-noise', label: 'White noise' },
-  { value: 'pink-noise', label: 'Pink noise' },
-  { value: 'sweep-linear', label: 'Sweep lin' },
-  { value: 'sweep-log', label: 'Sweep log' },
-  { value: 'two-tone', label: 'Two tones' },
+const WAVEFORMS: readonly PanelOption<GeneratorWaveform>[] = [
+  { value: 'sine', label: 'SINE' },
+  { value: 'square', label: 'SQUARE' },
+  { value: 'triangle', label: 'TRIANGLE' },
+  { value: 'sawtooth', label: 'SAWTOOTH' },
+  { value: 'white-noise', label: 'WHITE NOISE' },
+  { value: 'pink-noise', label: 'PINK NOISE' },
+  { value: 'sweep-linear', label: 'SWEEP LIN' },
+  { value: 'sweep-log', label: 'SWEEP LOG' },
+  { value: 'two-tone', label: 'TWO TONES' },
   { value: 'dtmf', label: 'DTMF' },
 ];
+const DTMF_OPTIONS: readonly PanelOption<string>[] = DTMF_KEYS.flat().map((k) => ({
+  value: k,
+  label: k,
+}));
 
 /** Hz with thin-space thousands groups, like a frequency display. */
 function hz(f: number): string {
@@ -94,121 +96,19 @@ const store = () =>
 /** Test signals: tones, noise, sweeps, two-tone and DTMF. */
 @Component({
   selector: 'app-tone-generator-page',
-  imports: [Icon, KeySelector, Knob, StatusBanner],
   templateUrl: './tone-generator.page.html',
-  styles: `
-    .layout {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 16rem;
-      gap: var(--groove);
-    }
-    /* main display, like the frequency readout of a transceiver */
-    .vfo {
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr) auto;
-      grid-template-areas: 'mode main out' 'mode sub out';
-      align-items: center;
-      column-gap: var(--space-4);
-      padding: var(--space-2) var(--space-4);
-      border-radius: var(--radius-sm);
-      background-color: var(--display-bg);
-      background-image: var(--display-reflection);
-      box-shadow: var(--display-inset);
-      font-family: var(--font-mono);
-    }
-    .vfo-mode,
-    .vfo-out {
-      padding: 1px var(--space-2);
-      border: 1px solid currentColor;
-      border-radius: 2px;
-      font-size: var(--text-2xs);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
-    .vfo-mode {
-      grid-area: mode;
-      color: var(--display-cyan);
-    }
-    .vfo-main {
-      grid-area: main;
-      justify-self: end;
-      font-size: clamp(1.75rem, 4vw, 2.75rem);
-      line-height: 1.1;
-      color: var(--display-text);
-      text-shadow: var(--display-glow);
-      font-variant-numeric: tabular-nums;
-      white-space: nowrap;
-    }
-    .vfo-sub {
-      grid-area: sub;
-      justify-self: end;
-      min-height: 1.2em;
-      font-size: var(--text-xs);
-      color: var(--display-text-dim);
-    }
-    .vfo-out {
-      grid-area: out;
-      color: var(--display-text-dim);
-      opacity: 0.6;
-    }
-    .vfo-out.on {
-      color: var(--display-mark);
-      opacity: 1;
-    }
-    .knob-row {
-      justify-content: space-evenly;
-      padding-top: var(--space-1);
-    }
-    .keys {
-      max-width: 15rem;
-    }
-    .play {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: var(--space-3);
-    }
-    .playing-badge::before {
-      content: '';
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--led-red);
-      box-shadow: 0 0 8px var(--led-red);
-    }
-    .playing-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-2);
-      font-size: var(--text-xs);
-      color: var(--color-danger);
-      font-weight: var(--weight-bold);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-    .btn-play {
-      min-width: 7rem;
-    }
-    @media (max-width: 860px) {
-      .layout {
-        grid-template-columns: minmax(0, 1fr);
-      }
-    }
-  `,
+  styleUrl: './tone-generator.page.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ToneGeneratorPage {
   private readonly settingsStore = store();
   private readonly generator = new ToneGenerator(() => generatorContext.create());
   protected readonly waveforms = WAVEFORMS;
-  protected readonly dtmfKeys: readonly KeyOption<string>[] = DTMF_KEYS.flat().map((k) => ({
-    value: k,
-    label: k,
-  }));
+  protected readonly previewWidth = PREVIEW_WIDTH;
+  protected readonly previewHeight = PREVIEW_HEIGHT;
   protected readonly settings = signal(this.settingsStore.load());
   protected readonly playing = signal(false);
   protected readonly status = signal<StatusMessage | null>(null);
-  protected readonly minLevel = MIN_LEVEL_DB;
   protected readonly maxLevel = MAX_LEVEL_DB;
   protected readonly balanceText = (b: number) =>
     b === 0 ? 'center' : `${Math.round(Math.abs(b) * 100)} % ${b < 0 ? 'L' : 'R'}`;
@@ -234,10 +134,107 @@ export class ToneGeneratorPage {
       return { main: `${hz(s.frequency)} Hz`, sub: `+ ${hz(s.frequency2)} Hz · ${level}` };
     return { main: `${hz(s.frequency)} Hz`, sub: level };
   });
+  protected readonly preview = computed(() => {
+    const s = this.settings();
+    let ratio = Math.min(8, s.frequency2 / Math.max(1, s.frequency));
+    if (s.waveform === 'dtmf') {
+      const { row, column } = dtmfFrequencies(isDtmfKey(s.dtmfKey) ? s.dtmfKey : '5');
+      ratio = column / row;
+    }
+    return waveformPath(s.waveform, ratio);
+  });
+  /** Level bar: position of the level between the minimum and the cap. */
+  protected readonly levelPercent = computed(
+    () => ((this.settings().levelDb - MIN_LEVEL_DB) / (MAX_LEVEL_DB - MIN_LEVEL_DB)) * 100,
+  );
   /** Start/stop/restart run one after another – a Stop during a restart must win. */
   private queue: Promise<void> = Promise.resolve();
 
   constructor() {
+    const settings = this.settings;
+    const frequency = panelValue({
+      label: 'FREQ',
+      name: 'Frequency',
+      value: () => settings().frequency,
+      set: (frequency) => void this.update({ frequency }),
+      scale: () => ({ min: 20, max: 20000, step: 1, log: true }),
+      format: (v) => `${hz(v)} Hz`,
+      disabled: () => !this.has('frequency'),
+    });
+    const frequency2 = panelValue({
+      label: 'FREQ 2',
+      name: 'Second frequency',
+      value: () => settings().frequency2,
+      set: (frequency2) => void this.update({ frequency2 }),
+      scale: () => ({ min: 20, max: 20000, step: 1, log: true }),
+      format: (v) => `${hz(v)} Hz`,
+      disabled: () => !this.has('frequency2'),
+    });
+    const key = panelChoice({
+      label: 'KEY',
+      name: 'DTMF key',
+      options: DTMF_OPTIONS,
+      value: () => settings().dtmfKey,
+      set: (dtmfKey) => void this.update({ dtmfKey }),
+    });
+    const sweep = panelValue({
+      label: 'SWEEP',
+      name: 'Sweep duration',
+      value: () => settings().sweepSeconds,
+      set: (sweepSeconds) => void this.update({ sweepSeconds }),
+      scale: () => ({ min: 1, max: 60, step: 1, log: false }),
+      format: (v) => `${v} s`,
+      disabled: () => !this.has('sweep'),
+    });
+    const level = panelValue({
+      label: 'LEVEL',
+      name: 'Level',
+      value: () => settings().levelDb,
+      set: (levelDb) => void this.update({ levelDb }),
+      scale: () => ({ min: MIN_LEVEL_DB, max: MAX_LEVEL_DB, step: 1, log: false }),
+      format: (v) => `${v} dBFS`,
+    });
+    const balance = panelValue({
+      label: 'BALANCE',
+      name: 'Balance',
+      value: () => settings().balance,
+      set: (balance) => void this.update({ balance }),
+      scale: () => ({ min: -1, max: 1, step: 0.05, log: false }),
+      format: this.balanceText,
+    });
+    const waveform = panelChoice({
+      label: 'WAVE',
+      name: 'Waveform',
+      options: WAVEFORMS,
+      value: () => settings().waveform,
+      set: (waveform) => void this.update({ waveform }),
+    });
+    const panel = attachPanel({
+      softkeys: () => [
+        waveform,
+        frequency,
+        this.has('dtmf') ? key : frequency2,
+        sweep,
+        level,
+        balance,
+      ],
+      knobs: [frequency, sweep, level],
+      multi: frequency,
+      play: {
+        name: 'Play',
+        run: () => this.toggle(),
+        active: this.playing,
+        disabled: this.playing,
+      },
+      stop: { name: 'Stop', run: () => this.toggle(), disabled: () => !this.playing() },
+      // in DTMF mode the digit keys pick the key to send
+      digit: (d) => {
+        if (this.has('dtmf')) void this.update({ dtmfKey: d });
+        else panel.notify('ENTRY', 'select a value first');
+      },
+      state: () => ({ text: this.playing() ? 'Output on' : 'Output off', live: this.playing() }),
+      message: this.status,
+    });
     inject(DestroyRef).onDestroy(() => void this.generator.stop());
     inject(DOCUMENT).defaultView?.addEventListener('pagehide', () => void this.generator.stop());
   }

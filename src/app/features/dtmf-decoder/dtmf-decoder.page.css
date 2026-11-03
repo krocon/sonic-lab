@@ -1,133 +1,108 @@
-.layout {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: var(--groove);
+.screen {
+  grid-template-rows: auto auto minmax(0, 1fr);
 }
 
-.digits-panel {
-  grid-column: 1 / -1;
+.digits-box {
+  padding: 2.4cqh 1.4cqw 1.6cqh;
 }
 
-.keypad {
-  display: grid;
-  gap: var(--space-2);
+.digits-line {
+  font: 300 min(13cqh, 7cqw) / 1.1 var(--font-mono);
+  letter-spacing: 0.12em;
 }
 
-.keypad-row {
+.lower {
   display: grid;
-  grid-template-columns: repeat(4, 3.5rem);
-  gap: var(--space-2);
+  grid-template-columns: 1.1fr 1fr;
+  gap: 2cqw;
+  min-height: 0;
+}
+
+.keypad-box {
+  padding: 2.6cqh 1.2cqw 1.2cqh;
+}
+
+.matrix,
+.cells {
+  display: grid;
+  gap: 0.8cqh;
+  height: 100%;
+}
+
+.matrix {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.cells {
+  grid-auto-rows: 1fr;
+}
+
+.mrow {
+  display: grid;
+  grid-template-columns: 3.4em repeat(4, 1fr);
+  gap: 0.8cqw;
+  min-height: 0;
+}
+
+.freq {
+  display: grid;
+  place-items: center;
+  font-size: clamp(9px, 1.9cqh, 13px);
+  color: var(--oled-dim);
 }
 
 .key {
-  position: relative;
   display: grid;
   place-items: center;
-  height: 3.5rem;
-  margin-bottom: 3px;
-  border-radius: var(--radius-md);
-  border: var(--border-width) solid var(--key-edge);
-  background: var(--key-face);
-  font-family: var(--font-mono);
-  font-size: var(--text-xl);
-  font-weight: var(--weight-bold);
-  color: var(--key-text);
-  box-shadow: var(--key-shadow);
-}
-
-/* LED in each key */
-.key::after {
-  content: '';
-  position: absolute;
-  top: 5px;
-  right: 6px;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--led-off);
-  box-shadow: var(--led-off-shadow);
+  border: 1px solid var(--oled-faint);
+  border-radius: 2px;
+  font-size: clamp(12px, 4.2cqh, 30px);
+  font-weight: 300;
 }
 
 .key.active {
-  background: var(--key-face-pressed);
-  color: var(--color-accent-strong);
-  transform: translateY(2px);
-  box-shadow: var(--key-shadow-pressed);
+  border-color: var(--oled-accent);
+  background: var(--oled-accent);
+  color: #000;
+  font-weight: 500;
 }
 
-.key.active::after {
-  background: var(--led-red);
-  box-shadow: 0 0 8px var(--led-red);
+.levels-box {
+  padding: 3cqh 1.2cqw 4.4cqh;
 }
 
 .bars {
   display: grid;
   grid-template-columns: repeat(8, 1fr);
-  gap: var(--space-2);
-  height: 12rem;
-  padding: var(--space-2);
-  border-radius: var(--radius-sm);
-  background-color: var(--display-bg);
-  background-image: var(--display-reflection);
-  box-shadow: var(--display-inset);
-}
-
-.bar-col {
-  display: grid;
-  grid-template-rows: 1fr auto;
-  gap: var(--space-1);
-  font-family: var(--font-mono);
-  font-size: var(--text-2xs);
-  color: var(--display-label);
-  text-align: center;
+  gap: 0.8cqw;
+  height: 100%;
 }
 
 .bar {
   position: relative;
-  border-radius: 2px;
-  background: rgb(25 45 110 / 7%);
-  overflow: hidden;
+  display: grid;
+  align-items: end;
+  height: 100%;
 }
 
-/* LED column: segments lit from the bottom */
-.fill {
-  position: absolute;
-  inset: auto 3px 3px 3px;
-  mask: repeating-linear-gradient(0deg, #000 0 4px, transparent 4px 6px);
-}
-
-.fill.row {
-  background: var(--display-trace);
-}
-
-.fill.col {
-  background: var(--display-value);
-}
-
-.digits-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.digits {
+.bar i {
   display: block;
-  min-height: 3.5rem;
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-sm);
-  background-color: var(--display-bg);
-  background-image: var(--display-reflection);
-  box-shadow: var(--display-inset);
-  font-family: var(--font-mono);
-  font-size: var(--text-2xl);
-  letter-spacing: 0.18em;
-  color: var(--display-cyan);
-  text-shadow: var(--display-glow);
-  overflow-wrap: anywhere;
+  min-height: 2px;
+  background: var(--oled-faint);
+  transition: height 80ms linear;
 }
 
-@media (max-width: 760px) {
-  .layout {
-    grid-template-columns: minmax(0, 1fr);
-  }
+.bar.on i {
+  background: var(--oled-accent);
+  box-shadow: 0 0 8px rgb(60 200 255 / 50%);
+}
+
+.bar span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1.7em;
+  font-size: clamp(8px, 1.6cqh, 11px);
+  text-align: center;
+  color: var(--oled-dim);
 }

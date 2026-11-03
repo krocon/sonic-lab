@@ -1,136 +1,90 @@
-.grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 16rem;
-  gap: var(--groove);
+.screen {
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+}
+
+.input {
+  padding: 2cqh 1.2cqw 1.2cqh;
+}
+
+/* the text is edited right on the display */
+textarea {
+  display: block;
+  width: 100%;
+  min-height: 2.4em;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--oled-fg);
+  caret-color: var(--oled-accent);
+  font: 400 clamp(16px, 6cqh, 42px) / 1.15 var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  resize: none;
+  outline: none;
+}
+
+.input:focus-within {
+  border-color: var(--oled-dim);
 }
 
 .preview {
-  grid-column: 1 / -1;
+  padding: 2.6cqh 1.2cqw 1.2cqh;
+  overflow: hidden;
 }
 
-textarea {
-  width: 100%;
-  padding: var(--space-3);
-  font-size: var(--text-lg);
-  letter-spacing: 0.04em;
-  resize: vertical;
-  text-shadow: var(--display-glow);
-}
-
-.label {
-  margin: 0;
-  font-size: var(--text-2xs);
-  font-weight: var(--weight-bold);
-  letter-spacing: var(--tracking-caps);
-  text-transform: uppercase;
-  color: var(--silkscreen);
-}
-
-.warning {
-  color: var(--color-warning);
-  font-size: var(--text-sm);
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.duration {
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-sm);
-  background-color: var(--display-bg);
-  box-shadow: var(--display-inset);
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
-  color: var(--display-value);
-  text-shadow: var(--display-glow);
-  font-variant-numeric: tabular-nums;
-}
-
-.knobs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  justify-items: center;
-  gap: var(--space-3) var(--space-2);
-}
-
-/* the preview is one wide display */
 .tokens {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-1);
+  align-content: flex-start;
+  gap: 1cqh 0.8cqw;
+  height: 100%;
   margin: 0;
-  padding: var(--space-2);
+  padding: 0;
+  overflow-y: auto;
   list-style: none;
-  border-radius: var(--radius-sm);
-  background-color: var(--display-bg);
-  background-image: var(--display-reflection);
-  box-shadow: var(--display-inset);
 }
 
 .token {
   display: grid;
   justify-items: center;
-  min-width: 2.5rem;
-  padding: 2px var(--space-2);
+  gap: 2px;
+  min-width: 2.4em;
+  padding: 0.4cqh 0.5cqw;
+  border: 1px solid var(--oled-faint);
   border-radius: 2px;
-  border: 1px solid var(--display-grid);
-  font-family: var(--font-mono);
-}
-
-.token.active {
-  /* the sounding character is shown inverted, like a selected LCD field */
-  border-color: var(--display-text);
-  background: var(--display-text);
-}
-
-.token.active .char,
-.token.active .code {
-  color: var(--display-bg);
-  text-shadow: none;
-}
-
-.token.unsupported .char,
-.token.unsupported .code {
-  color: var(--display-mark);
-  text-shadow: none;
 }
 
 .char {
-  font-weight: var(--weight-bold);
-  color: var(--display-text);
-  text-shadow: var(--display-glow);
+  font: 400 clamp(14px, 3.6cqh, 26px) / 1.1 var(--font-mono);
 }
 
 .code {
-  color: var(--display-value);
-  text-shadow: var(--display-glow);
-  letter-spacing: 0.1em;
+  font: 500 clamp(10px, 2.2cqh, 15px) / 1.1 var(--font-mono);
+  letter-spacing: 0.08em;
+  color: var(--oled-accent);
+}
+
+.token.active {
+  border-color: var(--oled-select-bg);
+  background: var(--oled-select-bg);
+  color: var(--oled-select-fg);
+}
+
+.token.active .code {
+  color: var(--oled-select-fg);
+}
+
+.token.unsupported {
+  border-style: dashed;
+  color: var(--oled-bad);
 }
 
 .gap {
-  width: var(--space-4);
+  width: 1.2cqw;
 }
 
-.code-line {
-  display: block;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
-  background-color: var(--display-bg);
-  background-image: var(--display-reflection);
-  box-shadow: var(--display-inset);
-  font-family: var(--font-mono);
-  color: var(--display-value);
-  text-shadow: var(--display-glow);
+.code-row {
+  font: 500 clamp(11px, 2.4cqh, 16px) / 1.2 var(--font-mono);
   letter-spacing: 0.08em;
-  overflow-wrap: break-word;
-}
-
-@media (max-width: 960px) {
-  .grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
+  color: var(--oled-dim);
 }

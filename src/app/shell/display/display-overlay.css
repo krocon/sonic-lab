@@ -1,0 +1,115 @@
+:host {
+  display: contents;
+}
+
+/* value pop-up for knobs, the dial and keypad entries */
+.toast {
+  position: absolute;
+  left: 50%;
+  bottom: 7cqh;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1cqh 2cqw;
+  min-width: 34cqw;
+  padding: 1.4cqh 1.6cqw;
+  transform: translateX(-50%);
+  border: 1px solid var(--oled-accent);
+  border-radius: 3px;
+  background: rgb(0 0 0 / 92%);
+  box-shadow: 0 0 24px rgb(0 0 0 / 90%);
+  pointer-events: none;
+}
+
+.toast-label {
+  font-size: clamp(10px, 2.2cqh, 14px);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--oled-dim);
+}
+
+.toast-text {
+  font-size: clamp(16px, 5cqh, 34px);
+  font-weight: 300;
+  white-space: nowrap;
+}
+
+.track {
+  grid-column: 1 / -1;
+  height: 4px;
+  background: var(--oled-faint);
+}
+
+.track i {
+  display: block;
+  height: 100%;
+  background: var(--oled-accent);
+}
+
+/* lists and help drawn over the content (INPUT, MENU) */
+.sheet {
+  position: absolute;
+  inset: 12px 14px;
+  z-index: 4;
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding: 14px 16px;
+  overflow: auto;
+  border: 1px solid var(--oled-faint);
+  border-radius: 3px;
+  background: rgb(0 0 0 / 96%);
+  outline: none;
+}
+
+.sheet-title {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--oled-dim);
+}
+
+.options {
+  display: grid;
+  gap: 6px;
+}
+
+.option {
+  padding: 8px 12px;
+  border: 1px solid var(--oled-faint);
+  border-radius: 2px;
+  font-size: 14px;
+  text-align: left;
+  color: var(--oled-fg);
+}
+
+.option:hover:not(:disabled) {
+  border-color: var(--oled-dim);
+}
+
+.option[aria-pressed='true'] {
+  border-color: var(--oled-select-bg);
+  background: var(--oled-select-bg);
+  color: var(--oled-select-fg);
+}
+
+.help {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 8px 16px;
+  margin: 0;
+  font-size: 13px;
+}
+
+.help dt {
+  font-weight: var(--weight-bold);
+  color: var(--oled-accent);
+}
+
+.help dd {
+  margin: 0;
+  color: var(--oled-fg);
+}

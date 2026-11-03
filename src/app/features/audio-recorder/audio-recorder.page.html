@@ -1,67 +1,44 @@
-<div class="module-page">
+<div class="screen">
   <header class="module-head">
-    <p class="eyebrow">Record</p>
     <h1>Audio Recorder</h1>
   </header>
 
-  <section class="panel" aria-labelledby="record-title">
-    <h2 id="record-title">Record</h2>
-    <app-capture-controls />
-    <app-waveform-canvas class="chart scope" [buffer]="scope" [windowSize]="16384" />
-    <app-level-meter-bar [meter]="meter" [active]="session.running()" />
-    <div class="row">
-      @if (!recording()) {
-        <button type="button" class="btn btn-primary btn-rec" (click)="startRecording()">
-          <app-icon name="record" [size]="16" /> Record
-        </button>
-      } @else {
-        <button type="button" class="btn btn-danger live btn-rec" (click)="stopRecording()">
-          <app-icon name="stop" [size]="16" /> Stop recording
-        </button>
-        <span class="rec" role="status">Recording</span>
-      }
-      <span class="time" aria-label="Recorded time">{{ time() }}</span>
-    </div>
-    @if (nearlyFull() && recording()) {
-      <app-status-banner
-        [message]="{
-          tone: 'warning',
-          text: 'The ' + maxMinutes + '-minute limit is almost reached.',
-        }"
-      />
-    }
-    @if (status(); as s) {
-      <app-status-banner [message]="s" />
-    }
-    <p class="note">
-      Recordings stay in memory only (max. {{ maxMinutes }} min) and are gone when you leave this
-      page – unless you export them.
+  <div class="row top">
+    <p class="huge glow time" [class.recording]="recording()" aria-label="Recorded time">
+      {{ time() }}
     </p>
+    <div class="end states">
+      @if (recording()) {
+        <span class="chip live" role="status">● Recording</span>
+      } @else if (playing()) {
+        <span class="chip ok">▶ Playing</span>
+      } @else {
+        <span class="chip">■ Stopped</span>
+      }
+      <span class="chip">{{ formatName() }}</span>
+    </div>
+  </div>
+
+  <section class="box input" aria-labelledby="input-title">
+    <h2 id="input-title" class="box-title">Input</h2>
+    <span class="box-meta">waveform · level</span>
+    <app-waveform-canvas class="scope" [buffer]="scope" [windowSize]="16384" />
+    <app-level-meter-bar [meter]="meter" [active]="session.running()" />
   </section>
 
-  @if (hasRecording()) {
-    <section class="panel" aria-labelledby="result-title">
-      <h2 id="result-title">Recording</h2>
-      <div class="row">
-        <button
-          type="button"
-          class="btn"
-          [attr.aria-pressed]="playing()"
-          (click)="togglePlayback()"
-        >
-          <app-icon [name]="playing() ? 'stop' : 'play'" [size]="16" />
-          {{ playing() ? 'Stop playback' : 'Play' }}
-        </button>
-        <app-key-selector
-          class="format"
-          label="Format"
-          [options]="formats"
-          [value]="format()"
-          (valueChange)="format.set($event)"
-        />
-        <button type="button" class="btn btn-primary" (click)="export()">Export…</button>
-        <button type="button" class="btn" (click)="discard()">Discard</button>
-      </div>
-    </section>
-  }
+  <section class="box result" aria-labelledby="result-title">
+    <h2 id="result-title" class="box-title inverse">Recording</h2>
+    @if (hasRecording()) {
+      <strong>{{ time() }} in memory</strong>
+      <span class="note"
+        >▶ plays it · EXPORT saves it as {{ formatName() }} · DISCARD drops it</span
+      >
+    } @else {
+      <strong class="dimmed">No recording yet – press ● to record.</strong>
+      <span class="note">
+        Recordings stay in memory only (max. {{ maxMinutes }} min) and are gone when you leave this
+        mode – unless you export them.
+      </span>
+    }
+  </section>
 </div>

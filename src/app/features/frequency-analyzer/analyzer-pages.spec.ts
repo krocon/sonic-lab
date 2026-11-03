@@ -1,6 +1,7 @@
 import { Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { FakeAudioSource } from '../../../testing/fake-audio-source';
+import { frontPanel } from '../../../testing/front-panel';
 import { render, tone } from '../../audio/synthesis/signal';
 import { AUDIO_SOURCE, CaptureSession } from '../../core/capture/capture-session';
 import { SignalMonitorPage } from '../signal-monitor/signal-monitor.page';
@@ -28,26 +29,35 @@ describe('analyzer pages', () => {
 
   it('frequency analyzer shows frequency and note', async () => {
     const { el } = await runWithTone(FrequencyAnalyzerPage, 440);
-    expect(el.querySelector('.big .value')?.textContent?.trim()).toMatch(/^4(39\.\d|40\.\d)$/);
-    expect(el.textContent).toContain('A4');
+    expect(el.querySelector('.frequency .value')?.textContent?.trim()).toMatch(
+      /^4(39\.\d|40\.\d)$/,
+    );
+    expect(el.querySelector('.note')?.textContent).toBe('A4');
   });
 
   it('spectrum analyzer reports the peak and persists settings', async () => {
     const { el, fixture } = await runWithTone(SpectrumAnalyzerPage, 1000);
     expect(el.textContent).toMatch(/(999|1000)\.\d Hz/);
-    const size = Array.from(el.querySelectorAll<HTMLButtonElement>('[role="radio"]')).find(
-      (r) => r.textContent?.trim() === '8192',
-    ) as HTMLButtonElement;
-    size.click();
+    const hw = frontPanel();
+    expect(hw.text('FFT size')).toBe('4096');
+    hw.press('FFT size');
     await fixture.whenStable();
-    expect(size.getAttribute('aria-checked')).toBe('true');
+    expect(hw.text('FFT size')).toBe('8192');
+    expect(el.textContent).toContain('FFT 8192');
     expect(JSON.parse(localStorage.getItem('audiolab.spectrum') ?? '{}').data.size).toBe(8192);
+    expect(hw.disabled('Reset peaks')).toBe(true);
+    hw.press('Peak hold');
+    expect(hw.disabled('Reset peaks')).toBe(false);
   });
 
   it('signal monitor shows level, frequency and a clipping warning', async () => {
-    const { el } = await runWithTone(SignalMonitorPage, 2000, 1);
+    const { el, fixture } = await runWithTone(SignalMonitorPage, 2000, 1);
     expect(el.textContent).toMatch(/2000 Hz/);
-    expect(el.textContent).toContain('Clipping detected.');
-    expect(el.textContent).toMatch(/-3\.0 dBFS/);
+    expect(el.textContent).toMatch(/-3\.0dBFS/);
+    const hw = frontPanel();
+    expect(hw.message()?.text).toBe('Clipping detected.');
+    hw.press('Clear clipping warning');
+    await fixture.whenStable();
+    expect(hw.message()).toBeNull();
   });
 });

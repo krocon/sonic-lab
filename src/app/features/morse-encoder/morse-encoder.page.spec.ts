@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { frontPanel } from '../../../testing/front-panel';
 import { MorseEncoderPage, createAudioContext } from './morse-encoder.page';
 
 describe('MorseEncoderPage', () => {
@@ -22,21 +23,37 @@ describe('MorseEncoderPage', () => {
     await setText(fixture, 'SOS ä');
     const el: HTMLElement = fixture.nativeElement;
     expect(el.querySelector('output.code-line')?.textContent).toBe('... --- ...');
-    expect(el.textContent).toContain('Not encodable, skipped: ä');
+    expect(frontPanel().message()?.text).toBe('Not encodable, skipped: ä');
     expect(el.querySelectorAll('li.token').length).toBe(4);
     expect(JSON.parse(localStorage.getItem('audiolab.encoder') ?? '{}').data.text).toBe('SOS ä');
   });
 
-  it('copies the code', async () => {
+  it('binds speed, tone and volume to the knobs and copies the code', async () => {
     const writeText = vi.fn(() => Promise.resolve());
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
     const fixture = TestBed.createComponent(MorseEncoderPage);
     await setText(fixture, 'AB');
-    (Array.from(fixture.nativeElement.querySelectorAll('button')) as HTMLButtonElement[])
-      .find((b) => b.textContent?.includes('Copy'))
-      ?.click();
-    await fixture.whenStable();
+    const hw = frontPanel();
+    expect([hw.knob(0)?.name, hw.knob(1)?.name, hw.knob(2)?.name]).toEqual([
+      'Tone',
+      'Speed',
+      'Volume',
+    ]);
+    await hw.run('copy');
     expect(writeText).toHaveBeenCalledWith('.- -...');
+  });
+
+  it('types with the keypad (multi-tap) and deletes with CLR', async () => {
+    const fixture = TestBed.createComponent(MorseEncoderPage);
+    await setText(fixture, '');
+    const { panel } = frontPanel();
+    for (const d of ['4', '4', '0', '2', '2', '2']) panel.digit(d);
+    panel.clear();
+    panel.digit('9');
+    await fixture.whenStable();
+    expect((fixture.nativeElement.querySelector('textarea') as HTMLTextAreaElement).value).toBe(
+      'H W',
+    );
   });
 
   it('keeps Farnsworth off while it equals the speed and never above it', async () => {
@@ -48,6 +65,7 @@ describe('MorseEncoderPage', () => {
     };
     page.update({ wpm: 30 });
     expect(page.settings().farnsworthWpm).toBe(30);
+    expect(frontPanel().text('Farnsworth speed')).toBe('off');
     page.update({ farnsworthWpm: 10 });
     page.update({ wpm: 8 });
     expect(page.settings().farnsworthWpm).toBe(8);
@@ -60,11 +78,9 @@ describe('MorseEncoderPage', () => {
     };
     const fixture = TestBed.createComponent(MorseEncoderPage);
     await fixture.whenStable();
-    (Array.from(fixture.nativeElement.querySelectorAll('button')) as HTMLButtonElement[])
-      .find((b) => b.textContent?.includes('Play'))
-      ?.click();
-    await fixture.whenStable();
-    expect(fixture.nativeElement.textContent).toContain('Audio output is not available.');
+    const hw = frontPanel();
+    await hw.run('play');
+    expect(hw.message()?.text).toBe('Audio output is not available.');
     createAudioContext.create = original;
   });
 });

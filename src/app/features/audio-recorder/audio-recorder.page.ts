@@ -12,12 +12,9 @@ import { RingBuffer } from '../../audio/ring-buffer';
 import { WavFormat } from '../../audio/wav';
 import { provideAudioCapture } from '../../core/capture/audio-capture.providers';
 import { CaptureSession } from '../../core/capture/capture-session';
+import { PanelOption, attachPanel, panelAction, panelChoice } from '../../core/panel/front-panel';
 import { StatusMessage } from '../../core/status/status-message';
 import { FileExportAdapter } from '../../platform/file-export';
-import { CaptureControls } from '../../shared/capture/capture-controls';
-import { KeyOption, KeySelector } from '../../shared/controls/key-selector';
-import { Icon } from '../../shared/icon/icon';
-import { StatusBanner } from '../../shared/status/status-banner';
 import { LevelMeterBar } from '../../shared/visualization/level-meter-bar';
 import { WaveformCanvas } from '../../shared/visualization/waveform-canvas';
 
@@ -26,61 +23,55 @@ export const playbackContext = { create: (): AudioContext => new AudioContext() 
 
 const MAX_MINUTES = 10;
 
-const FORMATS: readonly KeyOption<WavFormat>[] = [
-  { value: 'pcm16', label: 'WAV 16-bit PCM' },
-  { value: 'float32', label: 'WAV 32-bit float' },
+const FORMATS: readonly PanelOption<WavFormat>[] = [
+  { value: 'pcm16', label: '16-BIT' },
+  { value: 'float32', label: '32 FLOAT' },
 ];
+const FORMAT_NAMES: Record<WavFormat, string> = {
+  pcm16: 'WAV 16-bit PCM',
+  float32: 'WAV 32-bit float',
+};
 
 /** Records the input into memory; exports WAV only when asked to. */
 @Component({
   selector: 'app-audio-recorder-page',
-  imports: [CaptureControls, Icon, KeySelector, StatusBanner, LevelMeterBar, WaveformCanvas],
+  imports: [LevelMeterBar, WaveformCanvas],
   providers: [provideAudioCapture()],
   templateUrl: './audio-recorder.page.html',
   styles: `
-    .scope {
-      height: 8rem;
+    .screen {
+      grid-template-rows: auto minmax(0, 1fr) auto;
     }
-    .row {
+    .top {
+      align-items: center;
+      gap: 4cqw;
+    }
+    .time.recording {
+      color: var(--oled-bad);
+    }
+    .states {
+      flex-direction: column;
+      align-items: flex-end;
+    }
+    .input {
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto;
+      gap: 6px;
+      padding: 12px 8px 8px;
+    }
+    .scope {
+      min-height: 0;
+    }
+    .result {
       display: flex;
       flex-wrap: wrap;
-      align-items: center;
-      gap: var(--space-3);
+      align-items: baseline;
+      gap: 0.6cqh 2.4cqw;
+      padding: 2.4cqh 1.4cqw 1.4cqh;
     }
-    .time {
-      padding: var(--space-1) var(--space-3);
-      border-radius: var(--radius-sm);
-      background-color: var(--display-bg);
-      box-shadow: var(--display-inset);
-      font-family: var(--font-mono);
-      font-size: var(--text-xl);
-      color: var(--display-text);
-      text-shadow: var(--display-glow);
-      font-variant-numeric: tabular-nums;
-    }
-    .rec {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-2);
-      font-size: var(--text-xs);
-      color: var(--color-danger);
-      font-weight: var(--weight-bold);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
-    .rec::before {
-      content: '';
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--led-red);
-      box-shadow: 0 0 8px var(--led-red);
-    }
-    .btn-rec {
-      min-width: 9rem;
-    }
-    .format {
-      min-width: 16rem;
+    .result strong {
+      font-size: clamp(13px, 3cqh, 20px);
+      font-weight: 400;
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -97,7 +88,7 @@ export class AudioRecorderPage {
   protected readonly nearlyFull = signal(false);
   protected readonly playing = signal(false);
   protected readonly format = signal<WavFormat>('pcm16');
-  protected readonly formats = FORMATS;
+  protected readonly formatName = computed(() => FORMAT_NAMES[this.format()]);
   protected readonly status = signal<StatusMessage | null>(null);
   protected readonly maxMinutes = MAX_MINUTES;
   protected readonly time = computed(() => {
@@ -118,6 +109,49 @@ export class AudioRecorderPage {
       if (this.recorder.full) void this.stopRecording();
     });
     inject(DestroyRef).onDestroy(() => void this.stopPlayback());
+
+    const idle = () => !this.hasRecording() || this.recording();
+    attachPanel({
+      softkeys: [
+        panelChoice({
+          label: 'FORMAT',
+          name: 'Format',
+          options: FORMATS,
+          value: this.format,
+          set: (format) => this.format.set(format),
+        }),
+        panelAction({ label: 'EXPORT', name: 'Export…', run: () => this.export(), disabled: idle }),
+        panelAction({
+          label: 'DISCARD',
+          name: 'Discard',
+          run: () => this.discard(),
+          disabled: idle,
+        }),
+      ],
+      capture: this.session,
+      record: {
+        name: 'Record',
+        run: () => this.startRecording(),
+        active: this.recording,
+        disabled: this.recording,
+      },
+      stop: {
+        name: 'Stop',
+        run: () => (this.recording() ? this.stopRecording() : this.stopPlayback()),
+        disabled: () => !this.recording() && !this.playing(),
+      },
+      play: {
+        name: 'Play recording',
+        run: () => this.togglePlayback(),
+        active: this.playing,
+        disabled: () => idle() || this.playing(),
+      },
+      message: () =>
+        this.status() ??
+        (this.nearlyFull() && this.recording()
+          ? { tone: 'warning', text: `The ${MAX_MINUTES}-minute limit is almost reached.` }
+          : null),
+    });
   }
 
   protected async startRecording(): Promise<void> {
