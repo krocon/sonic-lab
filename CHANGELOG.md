@@ -65,6 +65,11 @@ All notable changes to this project are documented here. The format follows
   playback, WAV export 16-bit/32-bit float, discard). Export through a platform adapter: file
   picker/download on the web, native save dialog via the `export_file` command on the desktop.
 
+- Release automation: version sync script (package.json ↔ Cargo.toml/Cargo.lock), CHANGELOG cut
+  and release notes, tag-triggered draft releases with macOS universal, Windows and Linux bundles,
+  web zip, optional GitHub Pages and optional macOS signing, SHA-256 checksums; actions pinned to
+  commit SHAs.
+
 ### Fixed
 
 - Insufficient colour contrast of secondary text and the light accent colour (WCAG AA).

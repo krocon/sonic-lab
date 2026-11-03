@@ -30,12 +30,17 @@
     "rust:fmt": "cargo fmt --manifest-path src-tauri/Cargo.toml --check",
     "rust:lint": "cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings",
     "rust:test": "cargo test --manifest-path src-tauri/Cargo.toml",
-    "check": "pnpm format:check && pnpm lint && pnpm test && pnpm build && pnpm rust:fmt && pnpm rust:lint && pnpm rust:test",
+    "check": "pnpm version:check && pnpm scripts:test && pnpm format:check && pnpm lint && pnpm test && pnpm build && pnpm rust:fmt && pnpm rust:lint && pnpm rust:test",
     "worklets": "node scripts/build-worklets.mjs",
     "typecheck:worklets": "tsc -p src/worklets/tsconfig.json",
     "test:coverage": "node scripts/build-worklets.mjs && ng test --watch=false --configuration coverage",
     "e2e:all": "playwright test --workers=2",
-    "test:signals": "node scripts/build-worklets.mjs && ng test --watch=false --include=src/app/decoders/morse/robustness.spec.ts"
+    "test:signals": "node scripts/build-worklets.mjs && ng test --watch=false --include=src/app/decoders/morse/robustness.spec.ts",
+    "version:check": "node scripts/version.mjs check",
+    "version:set": "node scripts/version.mjs set",
+    "release:prepare": "node scripts/version.mjs prepare",
+    "release:notes": "node scripts/release-notes.mjs",
+    "scripts:test": "node --test \"scripts/*.test.mjs\""
   },
   "dependencies": {
     "@angular/common": "^22.2.0",

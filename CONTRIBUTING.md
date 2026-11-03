@@ -46,3 +46,12 @@ All checks must pass. Do not disable or skip tests to make them green – fix th
 Please include OS, browser or desktop build, audio input device and – for decoder issues – a
 description of the signal (speed, tone frequency, noise). Never attach recordings that contain
 private conversations.
+
+## Releases (maintainers)
+
+See [docs/BUILDING.md](docs/BUILDING.md#releases). Checklist:
+
+- [ ] `pnpm release:prepare x.y.z` and review the CHANGELOG section
+- [ ] `pnpm check` and `pnpm e2e` green
+- [ ] commit, tag `vx.y.z`, push the tag
+- [ ] review the draft release (all platforms, web zip, `SHA256SUMS.txt`), then publish

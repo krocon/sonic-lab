@@ -74,5 +74,37 @@ needed.
   `ios/` folders afterwards – mobile is not a target).
 - The desktop app keeps its window geometry in `<app config dir>/window-state.json`
   (macOS: `~/Library/Application Support/io.github.krocon.audiolab/`). Delete it to reset.
-- Code signing and notarisation are not configured yet (prompts/11). Unsigned macOS builds
-  must be opened via right-click → Open; Windows SmartScreen may warn.
+
+## Releases
+
+Versions follow [SemVer](https://semver.org/). `package.json` is the single source of truth;
+`src-tauri/Cargo.toml` and `Cargo.lock` are kept in sync by `scripts/version.mjs`
+(`tauri.conf.json` reads `../package.json`). CI fails when they differ (`pnpm version:check`).
+
+1. `pnpm release:prepare 0.2.0` – sets the version everywhere and turns the CHANGELOG
+   "Unreleased" content into a `## [0.2.0] - <date>` section.
+2. Review, `pnpm check`, commit ("Release 0.2.0").
+3. `git tag v0.2.0 && git push origin main v0.2.0`.
+4. `.github/workflows/release.yml` creates a **draft** release with the CHANGELOG section as notes
+   and attaches: macOS universal `.dmg`/`.app.tar.gz`, Windows `.msi` + NSIS `.exe`, Linux
+   `.AppImage`/`.deb`/`.rpm` (built on Ubuntu 22.04 for an older glibc baseline), the static web
+   build `audiolab-web-<version>.zip` and `SHA256SUMS.txt`.
+5. Check the artefacts, then publish the draft.
+
+Optional:
+
+- **GitHub Pages:** set the repository variable `DEPLOY_PAGES=true`; the web build is deployed
+  from the same tag. It uses a relative `<base href="./">` (verified to work from a sub-path) and
+  hash routing, so no rewrites are needed. Pages serves HTTPS, which browsers require for the
+  microphone.
+- **macOS signing + notarisation:** add the secrets `APPLE_CERTIFICATE` (base64 .p12),
+  `APPLE_CERTIFICATE_PASSWORD`, `APPLE_SIGNING_IDENTITY`, `APPLE_ID`, `APPLE_PASSWORD`
+  (app-specific password) and `APPLE_TEAM_ID`. They are only passed to the build when present.
+  Without them the app is unsigned: users must open it via right-click → Open, and the
+  `audio-input` entitlement is not applied.
+- **Windows signing:** not configured. Unsigned installers trigger SmartScreen warnings; add a
+  certificate (`bundle.windows.certificateThumbprint` or a sign command) before a public release.
+
+All third-party actions are pinned to commit SHAs (tag in a comment); update them deliberately.
+`scripts/*.test.mjs` cover version sync, changelog cutting and release-note extraction
+(`pnpm scripts:test`).

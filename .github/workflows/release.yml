@@ -1,0 +1,189 @@
+# Builds a draft GitHub release for a version tag (v1.2.3):
+#   desktop bundles (macOS universal .dmg/.app, Windows .msi/.exe, Linux .AppImage/.deb/.rpm),
+#   a static web build (.zip), optional GitHub Pages deployment and SHA256SUMS.txt.
+# Release notes come from the matching CHANGELOG.md section. Unsigned unless signing secrets exist
+# (see docs/BUILDING.md "Releases").
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to build, e.g. v0.2.0
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  TAG: ${{ github.event.inputs.tag || github.ref_name }}
+  CARGO_TERM_COLOR: always
+
+jobs:
+  prepare:
+    name: Draft release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      release_id: ${{ steps.release.outputs.id }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - id: version
+        name: Check that the tag matches the app version
+        run: |
+          node scripts/version.mjs check
+          version=$(node -p "require('./package.json').version")
+          if [ "v$version" != "$TAG" ]; then echo "::error::tag $TAG does not match package.json $version"; exit 1; fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Release notes from CHANGELOG.md
+        run: node scripts/release-notes.mjs "$TAG" > notes.md || echo "See CHANGELOG.md." > notes.md
+      - id: release
+        name: Create draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --draft --verify-tag \
+            --title "AudioLab ${{ steps.version.outputs.version }}" --notes-file notes.md
+          echo "id=$(gh release view "$TAG" --json databaseId -q .databaseId)" >> "$GITHUB_OUTPUT"
+
+  desktop:
+    name: Desktop (${{ matrix.name }})
+    needs: prepare
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS universal
+            os: macos-latest
+            args: --target universal-apple-darwin
+            rust-targets: aarch64-apple-darwin,x86_64-apple-darwin
+          - name: Windows
+            os: windows-latest
+            args: ''
+            rust-targets: ''
+          # older Ubuntu = older glibc → the AppImage runs on more distributions
+          - name: Linux
+            os: ubuntu-22.04
+            args: ''
+            rust-targets: ''
+    runs-on: ${{ matrix.os }}
+    env:
+      HAS_APPLE_SIGNING: ${{ secrets.APPLE_CERTIFICATE != '' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.TAG }}
+      - name: Linux system dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev libssl-dev patchelf
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: stable
+          targets: ${{ matrix.rust-targets }}
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          workspaces: src-tauri
+      - run: pnpm install --frozen-lockfile
+      - name: macOS signing and notarisation (only when the secrets exist)
+        if: runner.os == 'macOS' && env.HAS_APPLE_SIGNING == 'true'
+        run: |
+          {
+            echo "APPLE_CERTIFICATE=${{ secrets.APPLE_CERTIFICATE }}"
+            echo "APPLE_CERTIFICATE_PASSWORD=${{ secrets.APPLE_CERTIFICATE_PASSWORD }}"
+            echo "APPLE_SIGNING_IDENTITY=${{ secrets.APPLE_SIGNING_IDENTITY }}"
+            echo "APPLE_ID=${{ secrets.APPLE_ID }}"
+            echo "APPLE_PASSWORD=${{ secrets.APPLE_PASSWORD }}"
+            echo "APPLE_TEAM_ID=${{ secrets.APPLE_TEAM_ID }}"
+          } >> "$GITHUB_ENV"
+      - uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1.0.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          releaseId: ${{ needs.prepare.outputs.release_id }}
+          tauriScript: pnpm tauri
+          args: ${{ matrix.args }}
+
+  web:
+    name: Web build
+    needs: prepare
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.TAG }}
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # relative base href: the build works from any (sub)path; hash routing needs no rewrites
+      - run: pnpm build --base-href ./
+      - name: Attach the web build to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          name="audiolab-web-${{ needs.prepare.outputs.version }}.zip"
+          (cd dist/audiolab/browser && zip -qr "$GITHUB_WORKSPACE/$name" .)
+          gh release upload "$TAG" "$name" --clobber
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        if: vars.DEPLOY_PAGES == 'true'
+        with:
+          path: dist/audiolab/browser
+
+  pages:
+    name: GitHub Pages (optional)
+    needs: web
+    if: vars.DEPLOY_PAGES == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+
+  checksums:
+    name: SHA-256 checksums
+    needs: [prepare, desktop, web]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Hash every release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir assets && cd assets
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --skip-existing
+          rm -f SHA256SUMS.txt
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+          gh release upload "$TAG" SHA256SUMS.txt --repo "$GITHUB_REPOSITORY" --clobber
