@@ -34,8 +34,6 @@ Work orders live in [`prompts/`](../prompts/README.md); all of 00–12 have been
 
 ## Open decisions
 
-- **Repository name.** The working directory is `sonic-lab`; product, package and crate are
-  named `audiolab`, bundle identifier `io.github.krocon.audiolab`, homepage
-  `https://github.com/krocon/audiolab`. Adjust before the first public release if the repository
-  gets a different name.
+- **Naming.** The repository is `github.com/krocon/sonic-lab`; product, package and crate are
+  named `audiolab`, bundle identifier `io.github.krocon.audiolab`.
 - **Code signing** for macOS and Windows (certificates and secrets).

@@ -45,7 +45,7 @@
     "category": "Utility",
     "shortDescription": "Local audio signal analyzer",
     "longDescription": "AudioLab records, visualises and analyses audio in real time – fully on your device. Its first module decodes acoustic Morse code.",
-    "homepage": "https://github.com/krocon/audiolab",
+    "homepage": "https://github.com/krocon/sonic-lab",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

@@ -45,7 +45,8 @@ Details: [docs/PRIVACY.md](docs/PRIVACY.md).
 allow microphone access in a secure context. Release builds are attached to GitHub releases as
 `audiolab-web-<version>.zip` and can be deployed to GitHub Pages.
 
-**Desktop:** download the installer for your OS from the releases page. Builds are currently
+**Desktop:** download the installer for your OS from the
+[releases page](https://github.com/krocon/sonic-lab/releases). Builds are currently
 unsigned; see [docs/BUILDING.md](docs/BUILDING.md#releases) for what that means.
 
 **From source** (Node.js 22.22+/24.15+, pnpm 10; for the desktop app also Rust and the
