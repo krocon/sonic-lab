@@ -7,28 +7,28 @@ starting with acoustic Morse code. Everything runs on your device: no server, no
 telemetry. The same Angular application ships as a web app and as a [Tauri 2](https://tauri.app)
 desktop app for macOS, Windows and Linux.
 
-> **Status: early development.** The application shell, navigation, design system and the
-> desktop wrapper are in place. Audio capture and the Morse decoder are the next milestones –
-> see [docs/ROADMAP.md](docs/ROADMAP.md).
+> **Status: early development.** The Morse decoder works end to end in the browser; more modules
+> follow – see [docs/ROADMAP.md](docs/ROADMAP.md).
 
 <!-- Screenshots: replace with real captures once audio is connected (prompts/12). -->
 <!-- ![Morse decoder](docs/images/morse-decoder.png) -->
 
 ## Features
 
-| Module             | Status         |
-| ------------------ | -------------- |
-| Morse Decoder      | In development |
-| DTMF Decoder       | Planned        |
-| Frequency Analyzer | Planned        |
-| Spectrum Analyzer  | Planned        |
-| Signal Monitor     | Planned        |
-| Morse Encoder      | Planned        |
-| Tone Generator     | Planned        |
-| Audio Recorder     | Planned        |
+| Module             | Status    |
+| ------------------ | --------- |
+| Morse Decoder      | Available |
+| DTMF Decoder       | Planned   |
+| Frequency Analyzer | Planned   |
+| Spectrum Analyzer  | Planned   |
+| Signal Monitor     | Planned   |
+| Morse Encoder      | Planned   |
+| Tone Generator     | Planned   |
+| Audio Recorder     | Planned   |
 
-Foundation available today: responsive app shell, light/dark theme, module navigation,
-runtime/microphone-API status, web and desktop builds from one codebase.
+**Morse decoder:** microphone or demo input, live waveform, level meter and key-down timeline,
+automatic or fixed tone frequency, adaptive threshold and speed (WPM) detection, decoded Morse and
+plain text, copy and reset. Unknown sequences are marked instead of guessed.
 
 ## Privacy
 

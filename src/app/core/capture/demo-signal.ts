@@ -1,27 +1,18 @@
-import { KeyedSpan, SignalGenerator, mix, tone, whiteNoise } from '../../audio/synthesis/signal';
+import { SignalGenerator, mix, tone, whiteNoise } from '../../audio/synthesis/signal';
+import { scheduleMorse } from '../../decoders/morse/morse-timing';
 
-/** Keying pattern "CQ" at 18 WPM (unit = 1.2 / wpm s), repeated with a pause. */
-function cqSpans(wpm: number): { spans: KeyedSpan[]; length: number } {
-  const unit = 1.2 / wpm;
-  const pattern = ['-.-.', '--.-'];
-  const spans: KeyedSpan[] = [];
-  let t = 0.3;
-  for (const ch of pattern) {
-    for (const el of ch) {
-      const len = el === '-' ? 3 * unit : unit;
-      spans.push({ start: t, end: t + len });
-      t += len + unit;
-    }
-    t += 2 * unit;
-  }
-  return { spans, length: t + 7 * unit };
-}
+export const DEMO_TEXT = 'CQ CQ DE AUDIOLAB K';
 
-/** Demo input: a keyed 700 Hz tone with light noise – lets people try AudioLab without a microphone. */
+/** Demo input: a looping Morse message on 700 Hz with light noise – try AudioLab without a microphone. */
 export function demoSignal(): SignalGenerator {
-  const { spans, length } = cqSpans(18);
+  const schedule = scheduleMorse(DEMO_TEXT, { wpm: 18, leadIn: 0.4 });
   return mix(
-    tone({ frequency: 700, amplitude: 0.4, spans, loopSeconds: length }),
+    tone({
+      frequency: 700,
+      amplitude: 0.4,
+      spans: schedule.elements,
+      loopSeconds: schedule.duration + 0.6,
+    }),
     whiteNoise(0.01, 7),
   );
 }

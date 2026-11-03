@@ -30,3 +30,7 @@ All notable changes to this project are documented here. The format follows
 - Synthetic audio source and deterministic signal generators; "Demo signal" input.
 - Live waveform (min/max per pixel) and RMS/peak level meter outside change detection; status bar
   shows whether a microphone is open.
+- Morse decoder: Goertzel tone detection (auto/fixed frequency), adaptive noise/signal tracking
+  with hysteresis and glitch filter, adaptive time unit with deferred decisions, ITU alphabet with
+  prosigns, unknown-code marking, WPM; UI with key-down timeline, settings (persisted), copy and
+  reset; the demo input now sends a Morse message.

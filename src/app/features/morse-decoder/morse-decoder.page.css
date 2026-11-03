@@ -6,20 +6,8 @@
   padding: var(--space-5);
 }
 
-.page-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--space-3);
-}
-
 .page-head h1 {
   font-size: var(--text-xl);
-}
-
-.controls {
-  padding: var(--space-4);
 }
 
 .grid {
@@ -58,35 +46,39 @@
 
 .meta,
 .label {
+  margin: 0;
   font-size: var(--text-xs);
   color: var(--color-text-subtle);
 }
 
+.scope,
+.timeline {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: var(--color-surface-sunken);
+}
+
 .scope {
   height: 11rem;
-  overflow: hidden;
-  border-radius: var(--radius-md);
-  background-color: var(--color-surface-sunken);
   background-image:
     linear-gradient(var(--color-grid) 1px, transparent 1px),
     linear-gradient(90deg, var(--color-grid) 1px, transparent 1px);
   background-size: 2rem 2rem;
 }
 
+.timeline {
+  height: 2.5rem;
+}
+
 .meter {
   margin-top: var(--space-3);
 }
 
-.empty {
+.empty,
+.hint {
   margin-top: var(--space-2);
   font-size: var(--text-sm);
   color: var(--color-text-subtle);
-}
-
-.timeline {
-  height: 2.5rem;
-  border-radius: var(--radius-md);
-  background: var(--color-surface-sunken);
 }
 
 .settings {
@@ -99,6 +91,8 @@
   display: grid;
   grid-template-columns: 1fr auto;
   gap: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-text-subtle);
 }
 
 .field select,
@@ -112,6 +106,8 @@
   border-radius: var(--radius-md);
   border: var(--border-width) solid var(--color-border-strong);
   background: var(--color-surface-raised);
+  font-size: var(--text-sm);
+  color: var(--color-text);
 }
 
 .field input[type='range'] {
@@ -120,7 +116,6 @@
 
 .value {
   font-family: var(--font-mono);
-  font-size: var(--text-xs);
   color: var(--color-text-muted);
 }
 
@@ -142,18 +137,35 @@
 
 output {
   display: block;
+  min-height: 3rem;
+  max-height: 12rem;
+  overflow-y: auto;
   margin: var(--space-1) 0 var(--space-3);
   padding: var(--space-3);
   border-radius: var(--radius-md);
   background: var(--color-surface-sunken);
   font-family: var(--font-mono);
-  color: var(--color-text-subtle);
   white-space: pre-wrap;
+  overflow-wrap: break-word;
 }
 
 .morse {
   color: var(--color-mark);
-  opacity: 0.5;
+}
+
+.pending {
+  opacity: 0.55;
+}
+
+.text {
+  white-space: normal;
+  font-size: var(--text-lg);
+  color: var(--color-text);
+}
+
+.placeholder {
+  font-size: var(--text-md);
+  color: var(--color-text-subtle);
 }
 
 @media (max-width: 960px) {

@@ -12,7 +12,7 @@ export const ANALYSIS_MODULES: readonly AnalysisModule[] = [
     summary: 'Detects acoustic Morse code and translates it into plain text.',
     group: 'decode',
     icon: 'morse',
-    status: 'in-development',
+    status: 'available',
     prompt: '03-morse-decoder.md',
   },
   {

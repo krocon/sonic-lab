@@ -1,7 +1,6 @@
 # Audio pipeline
 
-> **Status:** capture (prompt 02) is implemented; the Morse decoder sections describe the design
-> for prompts 03–04 and are updated as they land.
+> **Status:** capture (prompt 02) and the Morse decoder (prompt 03) are implemented.
 
 ## Capture (implemented)
 
@@ -37,19 +36,41 @@ getUserMedia ──▶ MediaStreamAudioSourceNode ──▶ AudioWorkletNode "au
 `requestAnimationFrame`. They never write signals, so 47 frames/s of audio cause no change
 detection. The waveform draws min/max per pixel column (16384-sample window ≈ 0.34 s at 48 kHz).
 
-## Morse decoding (prompts/03, hardened in 04)
+## Morse decoding (implemented)
 
-1. Optional band-pass / Goertzel at the tone frequency (default 700 Hz, auto search 300–1500 Hz).
-2. Envelope: energy per hop (5–10 ms).
-3. Adaptive noise floor and signal level, threshold in between with hysteresis.
-4. Mark/space detection, glitch suppression (pulses far shorter than one unit).
-5. Duration measurement from sample counts (not wall clock).
-6. Adaptive time unit (dit length), WPM by the PARIS standard (50 units per word).
-7. Classification: dit/dah boundary ≈ 2 units, character gap ≈ 3, word gap ≈ 7 (configurable).
-8. Translation with the ITU alphabet; unknown sequences are marked, never guessed.
+`src/app/decoders/morse/`, wired to the UI by `features/morse-decoder/morse-session.ts`.
 
-Signal detection (1–7) and translation (8) are separate modules so that each can be tested in
-isolation with synthetic signals.
+```text
+frames ─▶ ToneDetector ─▶ KeyingDetector ─▶ TimingDecoder ─▶ alphabet ─▶ events (character, word-gap, wpm)
+          Goertzel bank    noise/signal      adaptive unit,
+          2-hop Hann       tracking,         deferred decisions
+          windows          hysteresis,
+                           glitch filter
+```
+
+| Stage            | What it does                                                                                                                                                                                                                                                                                                   | Defaults                                                                                       |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `ToneDetector`   | Goertzel filters every 50 Hz in 300–1500 Hz (auto) or at f ± 50 Hz (manual). Windows are two hops long, Hann-weighted, 50 % overlap → one amplitude per hop. Auto mode tracks the bin that is most often the strongest (switches only at 1.5× score).                                                          | hop 6 ms, window 12 ms (≈ 125 Hz bandwidth), sidelobes −31 dB                                  |
+| `KeyingDetector` | Noise = mean envelope of clear key-up hops; signal = peak follower (attack 10 ms, release 2 s). A tone counts only if signal ≥ `minSnr` × noise. Key-down above `noise + onRatio·(signal−noise)`, key-up below `offRatio`. Changes must persist `minElementMs`; the boundary is placed where the change began. | onRatio 0.5, offRatio 0.3, minSnr 4 (12 dB), minElementMs 10                                   |
+| `TimingDecoder`  | Clusters recent mark and space durations (2-means on log scale) to estimate the unit (dit length). Until the estimate is confident, segments are buffered and re-classified; afterwards a character is committed as soon as its following gap exceeds the character threshold.                                 | history 24, dah ≥ 2 units, char gap ≥ 2, word gap ≥ 5, flush after 1.5 s silence, prior 20 WPM |
+| Alphabet         | ITU letters, digits, punctuation, prosigns (`<SK>`, `<KN>`, …). Unknown sequences → `�` + raw code.                                                                                                                                                                                                            | –                                                                                              |
+
+WPM = 1.2 s / unit (PARIS standard). The UI shows it only once the estimate is confident.
+
+Sensitivity presets (`morse-settings.ts`): low = onRatio 0.55 / minSnr 6 / glitch 14 ms,
+medium = 0.5 / 4 / 10 ms, high = 0.45 / 3 / 8 ms.
+
+### Verified with synthetic signals (`morse-decoder.spec.ts`)
+
+- Exact decoding of SOS, PARIS, all letters and digits, punctuation and prosigns at 5, 15, 25
+  and 40 WPM; 500/700/850/1000 Hz; 44.1 and 48 kHz; amplitudes 0.02–0.95.
+- No characters from pure white noise (rms 0.001–0.1, 8 s), no invented elements in a 1.5 s noisy
+  lead-in.
+- Two simultaneous stations 600 Hz apart are separated by a fixed frequency.
+- Unknown codes (e.g. seven dits) are reported, not guessed.
+
+Robustness against low SNR, fading, glitches, drift and sloppy timing is the subject of
+prompt 04.
 
 ## Testing approach
 

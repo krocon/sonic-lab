@@ -3,12 +3,13 @@
     <p class="eyebrow">Decode</p>
     <h1>Morse Decoder</h1>
   </div>
-  <span class="badge" data-tone="warning">Decoder in development</span>
 </header>
 
 <section class="controls panel" aria-label="Capture controls">
   <app-capture-controls>
-    <button type="button" class="btn" disabled><app-icon name="reset" [size]="16" /> Reset</button>
+    <button type="button" class="btn" (click)="reset()" [disabled]="!morse.hasOutput()">
+      <app-icon name="reset" [size]="16" /> Reset
+    </button>
   </app-capture-controls>
 </section>
 
@@ -22,15 +23,15 @@
     <app-level-meter-bar class="meter" [meter]="meter" [active]="session.running()" />
     @if (!session.running()) {
       <p class="empty">
-        Press Start to see the live signal. Choose “Demo signal” to try it without a microphone.
+        Press Start to listen. Choose “Demo signal” to try it without a microphone.
       </p>
     }
 
     <header class="panel-head sub">
-      <h3>Tone / gap timeline</h3>
-      <span class="meta">key-down · key-up</span>
+      <h3>Key-down timeline</h3>
+      <span class="meta">last 6 s</span>
     </header>
-    <div class="timeline" aria-hidden="true"></div>
+    <app-keying-timeline-canvas class="timeline" [timeline]="morse.timeline" />
   </section>
 
   <section class="panel settings" aria-labelledby="settings-title">
@@ -39,18 +40,41 @@
     </header>
     <label class="field">
       <span class="label">Tone frequency</span>
-      <span class="value">auto · 400–1200 Hz</span>
-      <input type="range" min="200" max="2000" value="700" disabled />
+      <span class="value" aria-live="polite">{{ frequencyLabel() }}</span>
+      <select
+        [value]="morse.settings().frequencyMode"
+        (change)="setMode($any($event.target).value)"
+      >
+        <option value="auto">Automatic ({{ range.min }}–{{ range.max }} Hz)</option>
+        <option value="manual">Fixed frequency</option>
+      </select>
     </label>
-    <label class="field">
-      <span class="label">Threshold</span>
-      <span class="value">adaptive</span>
-      <input type="range" min="0" max="100" value="50" disabled />
-    </label>
+    @if (morse.settings().frequencyMode === 'manual') {
+      <label class="field">
+        <span class="label">Frequency</span>
+        <span class="value">{{ morse.settings().frequency }} Hz</span>
+        <input
+          type="range"
+          [min]="range.min"
+          [max]="range.max"
+          [step]="range.step"
+          [value]="morse.settings().frequency"
+          (input)="setFrequency($any($event.target).value)"
+        />
+      </label>
+    }
     <label class="field">
       <span class="label">Sensitivity</span>
-      <span class="value">medium</span>
-      <input type="range" min="0" max="100" value="50" disabled />
+      <span class="value">adaptive threshold</span>
+      <select (change)="setSensitivity($any($event.target).value)">
+        @for (s of sensitivities; track s) {
+          <option [value]="s" [selected]="s === morse.settings().sensitivity">
+            {{
+              s === 'low' ? 'Low – strong signals' : s === 'high' ? 'High – weak signals' : 'Medium'
+            }}
+          </option>
+        }
+      </select>
     </label>
   </section>
 
@@ -58,15 +82,36 @@
     <header class="panel-head">
       <h2 id="results-title">Decoded</h2>
       <div class="stats">
-        <span class="stat"><span class="label">Speed</span><strong>– WPM</strong></span>
-        <button type="button" class="btn" disabled>
+        <span class="stat"
+          ><span class="label">Speed</span><strong>{{ wpmLabel() }} WPM</strong></span
+        >
+        <button type="button" class="btn" (click)="copy()" [disabled]="!morse.text()">
           <app-icon name="copy" [size]="16" /> Copy
         </button>
       </div>
     </header>
-    <p class="label">Morse</p>
-    <output class="morse">· · · – – – · · ·</output>
-    <p class="label">Text</p>
-    <output class="text">Decoded text will appear here.</output>
+    <p class="label" id="morse-label">Morse</p>
+    <output class="morse" aria-labelledby="morse-label"
+      >{{ morse.morse()
+      }}<span class="pending">{{
+        morse.pendingCode() ? ' ' + morse.pendingCode() : ''
+      }}</span></output
+    >
+    <p class="label" id="text-label">Text</p>
+    <output class="text" aria-labelledby="text-label" aria-live="polite">
+      @if (morse.text()) {
+        {{ morse.text() }}
+      } @else {
+        <span class="placeholder">Decoded text will appear here.</span>
+      }
+    </output>
+    @if (morse.unknownCount() > 0) {
+      <p class="hint">
+        � marks {{ morse.unknownCount() }} sequence(s) that are not valid Morse characters.
+      </p>
+    }
+    @if (copyStatus(); as status) {
+      <app-status-banner [message]="status" />
+    }
   </section>
 </div>
