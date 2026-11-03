@@ -136,7 +136,9 @@ export class BrowserMicrophoneSource implements AudioSource {
         outputChannelCount: [1],
         processorOptions: {
           blockSize: MICROPHONE_BLOCK_SIZE,
-          poolSize: 16,
+          // ≈ 1.4 s of reserve at 48 kHz: a busy main thread (slow machine, heavy rendering)
+          // must not cost audio – blocks are only dropped after that
+          poolSize: 64,
         } satisfies CaptureProcessorOptions,
       });
       // The processor writes silence; connecting to the destination keeps the graph pulled in all engines.

@@ -2,7 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
-  inject,
+  signal,
   input,
   viewChild,
 } from '@angular/core';
@@ -48,7 +48,6 @@ function toPercent(db: number): number {
         var(--led-red) 90%
       );
       mask: repeating-linear-gradient(90deg, #000 0 5px, transparent 5px 7px);
-      filter: drop-shadow(0 0 3px rgb(109 255 160 / 35%));
     }
     .cover {
       position: absolute;
@@ -81,6 +80,8 @@ function toPercent(db: number): number {
     'aria-label': 'Input level',
     'aria-valuemin': '-60',
     'aria-valuemax': '0',
+    '[attr.aria-valuenow]': 'valueNow()',
+    '[attr.aria-valuetext]': 'valueText()',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -89,7 +90,10 @@ export class LevelMeterBar {
   /** False while capture is stopped: shows an empty meter. */
   readonly active = input(true);
 
-  private readonly host = inject(ElementRef).nativeElement as HTMLElement;
+  /** Accessible value, updated at most ~4× per second (not per animation frame). */
+  protected readonly valueNow = signal(-60);
+  protected readonly valueText = signal('no signal');
+  private lastAria = 0;
   private readonly rms = viewChild.required<ElementRef<HTMLElement>>('rms');
   private readonly hold = viewChild.required<ElementRef<HTMLElement>>('hold');
   private readonly value = viewChild.required<ElementRef<HTMLElement>>('value');
@@ -109,7 +113,15 @@ export class LevelMeterBar {
         el.textContent = text;
         el.classList.toggle('clip', r.clipped && active);
         this.lastText = text;
-        this.host.setAttribute('aria-valuenow', Math.max(-60, rmsDb).toFixed(0));
+      }
+      const now = performance.now();
+      if (now - this.lastAria > 250) {
+        this.lastAria = now;
+        const v = Math.round(Math.max(-60, rmsDb));
+        if (v !== this.valueNow()) {
+          this.valueNow.set(v);
+          this.valueText.set(active && rmsDb > MIN_DBFS ? `${v} dBFS` : 'no signal');
+        }
       }
     });
   }

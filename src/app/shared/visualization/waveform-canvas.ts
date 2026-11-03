@@ -96,8 +96,6 @@ export class WaveformCanvas {
     ctx.fillRect(0, Math.floor(mid), width, 1);
 
     ctx.fillStyle = this.colors.line;
-    ctx.shadowColor = this.colors.line;
-    ctx.shadowBlur = 6;
     const perColumn = n / width;
     for (let x = 0; x < width; x++) {
       const from = Math.floor(x * perColumn);
@@ -113,6 +111,5 @@ export class WaveformCanvas {
       const y2 = mid - min * mid * 0.95;
       ctx.fillRect(x, y1, 1, Math.max(1, y2 - y1));
     }
-    ctx.shadowBlur = 0;
   }
 }

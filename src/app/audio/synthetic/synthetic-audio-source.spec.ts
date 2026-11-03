@@ -68,6 +68,6 @@ describe('SyntheticAudioSource', () => {
     src.subscribe(() => frames++);
     await src.start();
     clock.advance(60_000);
-    expect(frames).toBeLessThanOrEqual(50);
+    expect(frames).toBeLessThanOrEqual(250);
   });
 });

@@ -16,7 +16,8 @@ for (const scheme of ['light', 'dark'] as const) {
         .analyze();
       expect(
         results.violations.map(
-          (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`,
+          (v) =>
+            `${v.id}: ${v.nodes.map((n) => `${n.target.join(' ')} – ${n.failureSummary} – ${n.html.slice(0, 200)}`).join(' | ')}`,
         ),
       ).toEqual([]);
     });

@@ -92,7 +92,10 @@ All notable changes to this project are documented here. The format follows
   the production build under the desktop CSP.
 - Firefox kept audio processing suspended without error and the app waited forever; capture now
   reports "audio blocked" after 2 s instead.
-- The level meter (`role="meter"`) lacked `aria-valuenow` until the first level change.
+- The level meter (`role="meter"`) could lack `aria-valuenow`; it is now a bound, throttled
+  attribute with a value text, covered by a unit test.
+- Audio blocks were dropped when the main thread was busy for more than ~0.3 s (slow machines,
+  heavy rendering); the capture buffer now holds ~1.4 s and the demo input catches up for ~5 s.
 - Export file names: directory parts with `\` were only stripped on Windows.
 - Tone generator: a restart reported "stopped" while the new signal was playing, and Stop during
   a restart was ignored.

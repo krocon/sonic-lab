@@ -15,6 +15,9 @@ export interface SyntheticClock {
   clearInterval(handle: unknown): void;
 }
 
+/** Blocks generated at most per timer tick (≈ 5 s at 48 kHz / 1024). */
+const MAX_CATCH_UP = 250;
+
 export const realClock: SyntheticClock = {
   now: () => performance.now(),
   setInterval: (cb, ms) => setInterval(cb, ms),
@@ -116,10 +119,11 @@ export class SyntheticAudioSource implements AudioSource {
       (((this.clock.now() - this.startedAt) / 1000) * this.sampleRate) / this.blockSize,
     );
     const emitted = this.sampleIndex / this.blockSize;
-    // after a throttled background tab, skip ahead instead of flooding consumers
+    // catch up after short stalls (busy main thread); after a long one (throttled background
+    // tab, > ~5 s) skip ahead instead of flooding consumers
     const missing = due - emitted;
-    if (missing > 50) this.sampleIndex = (due - 1) * this.blockSize;
-    this.pump(Math.min(missing, 50));
+    if (missing > MAX_CATCH_UP) this.sampleIndex = (due - 1) * this.blockSize;
+    this.pump(Math.min(missing, MAX_CATCH_UP));
   }
 
   private setState(state: AudioSourceState): void {
