@@ -80,5 +80,9 @@ All notable changes to this project are documented here. The format follows
 - The selected input device was not restored in WebKit when the device list loaded late.
 - Safari/WebKit refused to start capture ("access denied") because the AudioContext was created
   after awaiting `getUserMedia`, outside the user gesture; it is now created first.
+- Firefox kept audio processing suspended without error and the app waited forever; capture now
+  reports "audio blocked" after 2 s instead.
+- The level meter (`role="meter"`) lacked `aria-valuenow` until the first level change.
+- Export file names: directory parts with `\` were only stripped on Windows.
 - Tone generator: a restart reported "stopped" while the new signal was playing, and Stop during
   a restart was ignored.

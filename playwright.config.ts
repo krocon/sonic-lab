@@ -18,7 +18,14 @@ export default defineConfig({
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    {
+      name: 'firefox',
+      use: {
+        ...devices['Desktop Firefox'],
+        // headless Firefox has no real user activation for Web Audio; allow it like a click would
+        launchOptions: { firefoxUserPrefs: { 'media.autoplay.default': 0, 'media.autoplay.block-webaudio': false } },
+      },
+    },
     { name: 'webkit', use: { ...devices['Desktop Safari'] } },
   ],
   webServer: {

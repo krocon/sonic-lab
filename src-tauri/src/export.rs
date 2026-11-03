@@ -16,10 +16,8 @@ pub const MAX_BYTES: usize = 512 * 1024 * 1024;
 
 /// Keeps a safe file name: no directories, no control or reserved characters, sensible length.
 pub fn sanitize_file_name(name: &str) -> String {
-    let base = Path::new(name)
-        .file_name()
-        .and_then(|n| n.to_str())
-        .unwrap_or("");
+    // last path component for both separators, independent of the platform the app runs on
+    let base = name.rsplit(['/', '\\']).next().unwrap_or("");
     let cleaned: String = base
         .chars()
         .map(|c| {
@@ -85,7 +83,8 @@ mod tests {
     #[test]
     fn strips_directories_and_reserved_characters() {
         assert_eq!(sanitize_file_name("../../etc/passwd"), "passwd");
-        assert_eq!(sanitize_file_name("C:\\temp\\a.wav"), "C__temp_a.wav");
+        assert_eq!(sanitize_file_name("C:\\temp\\a.wav"), "a.wav");
+        assert_eq!(sanitize_file_name("dir/sub\\b.wav"), "b.wav");
         assert_eq!(sanitize_file_name("rec:1?.wav"), "rec_1_.wav");
         assert_eq!(sanitize_file_name("  ...  "), "export");
         assert_eq!(sanitize_file_name(""), "export");

@@ -36,6 +36,11 @@ export function browserMicrophoneEnvironment(win: Window): MicrophoneEnvironment
 }
 
 export const MICROPHONE_BLOCK_SIZE = 1024;
+const RESUME_TIMEOUT_MS = 2000;
+
+function withTimeout(promise: Promise<unknown>, ms: number): Promise<unknown> {
+  return Promise.race([promise, new Promise((resolve) => setTimeout(resolve, ms))]);
+}
 
 /**
  * Microphone capture: getUserMedia → MediaStreamSource → AudioWorklet → frames.
@@ -149,9 +154,18 @@ export class BrowserMicrophoneSource implements AudioSource {
           }
         });
       }
-      await resumed;
-      if (context.state === 'suspended') await context.resume(); // second chance (permission prompt was a gesture)
+      // Firefox keeps resume() pending (no rejection) while autoplay is blocked – never hang
+      await withTimeout(resumed, RESUME_TIMEOUT_MS);
+      if (context.state === 'suspended')
+        await withTimeout(
+          context.resume().catch(() => undefined),
+          RESUME_TIMEOUT_MS,
+        );
       if (generation !== this.generation) return;
+      if (context.state !== 'running') {
+        this.release();
+        return this.fail({ kind: 'audio-blocked' });
+      }
       this.frame.sampleRate = context.sampleRate;
       const settings = stream.getAudioTracks()[0]?.getSettings?.();
       this.setState({

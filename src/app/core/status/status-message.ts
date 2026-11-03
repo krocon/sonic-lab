@@ -31,6 +31,11 @@ const ERROR_TEXT: Record<AudioSourceError['kind'], StatusMessage> = {
     text: 'The microphone was disconnected.',
     hint: 'Reconnect it or choose another input, then press Start.',
   },
+  'audio-blocked': {
+    tone: 'warning',
+    text: 'The browser did not allow audio processing to start.',
+    hint: 'Click Start again; check that autoplay is not blocked for this site.',
+  },
   'insecure-context': {
     tone: 'danger',
     text: 'Microphone access needs a secure connection.',

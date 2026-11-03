@@ -12,6 +12,8 @@ export type AudioSourceErrorKind =
   | 'no-device'
   | 'device-busy'
   | 'device-lost'
+  /** The browser kept the AudioContext suspended (autoplay policy). */
+  | 'audio-blocked'
   | 'insecure-context'
   | 'unsupported'
   | 'unknown';

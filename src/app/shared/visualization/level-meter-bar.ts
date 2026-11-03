@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, ElementRef, input, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  inject,
+  input,
+  viewChild,
+} from '@angular/core';
 import { LevelMeter, MIN_DBFS } from '../../audio/level';
 import { animationLoop } from './animation-loop';
 
@@ -77,6 +84,7 @@ export class LevelMeterBar {
   /** False while capture is stopped: shows an empty meter. */
   readonly active = input(true);
 
+  private readonly host = inject(ElementRef).nativeElement as HTMLElement;
   private readonly rms = viewChild.required<ElementRef<HTMLElement>>('rms');
   private readonly hold = viewChild.required<ElementRef<HTMLElement>>('hold');
   private readonly value = viewChild.required<ElementRef<HTMLElement>>('value');
@@ -96,7 +104,7 @@ export class LevelMeterBar {
         el.textContent = text;
         el.classList.toggle('clip', r.clipped && active);
         this.lastText = text;
-        el.parentElement?.setAttribute('aria-valuenow', rmsDb.toFixed(0));
+        this.host.setAttribute('aria-valuenow', Math.max(-60, rmsDb).toFixed(0));
       }
     });
   }

@@ -148,6 +148,30 @@ describe('BrowserMicrophoneSource', () => {
     expect(order).toEqual(['context', 'getUserMedia']);
   });
 
+  it('reports blocked audio instead of hanging when resume() never settles', async () => {
+    vi.useFakeTimers();
+    const t = setup();
+    const env = {
+      ...t.env,
+      createContext: () => {
+        const ctx = t.env.createContext() as unknown as {
+          state: string;
+          resume: () => Promise<void>;
+        };
+        ctx.state = 'suspended';
+        ctx.resume = () => new Promise<void>(() => undefined);
+        return ctx as unknown as AudioContext;
+      },
+    };
+    const src = new BrowserMicrophoneSource(env);
+    const started = src.start();
+    const result = expect(started).rejects.toEqual({ kind: 'audio-blocked' });
+    await vi.advanceTimersByTimeAsync(5000);
+    await result;
+    expect(t.track.stopped).toBe(true);
+    vi.useRealTimers();
+  });
+
   it('closes the context when the permission is denied', async () => {
     const denied = Object.assign(new Error('denied'), { name: 'NotAllowedError' });
     const t = setup();
