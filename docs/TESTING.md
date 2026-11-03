@@ -26,6 +26,19 @@ New scenario: add a row to `SCENARIOS` in `robustness.spec.ts` with a CER limit 
 measured; never loosen an existing limit to make a change pass – improve the decoder or document
 the trade-off in `docs/AUDIO-PIPELINE.md`.
 
+## Unit tests share modules – no module mocks
+
+The Angular `unit-test` builder runs Vitest without isolation (`isolate: false`): spec files in a
+worker share one module registry, and which files share a worker depends on their number and
+duration. A `vi.mock()` of a module is therefore not seen by code that another spec loaded first –
+it passes locally and fails in CI. Replace behaviour through objects instead:
+
+- Tauri: `platform/tauri-bridge.ts` holds `invoke`/`isTauri`; specs use
+  `vi.spyOn(tauri, 'invoke')` and `vi.restoreAllMocks()`.
+- Audio output: the `createAudioContext` / `generatorContext` / `playbackContext` factories.
+- Pages are driven through the front panel (`src/testing/front-panel.ts`): soft keys by name,
+  transport keys, knobs, the message line.
+
 ## Microphone in E2E tests
 
 `e2e/fixtures/fake-microphone.ts` replaces `getUserMedia` with a Web Audio generated

@@ -1,5 +1,5 @@
 import { DOCUMENT, Injectable, Provider, inject } from '@angular/core';
-import { invoke, isTauri } from '@tauri-apps/api/core';
+import { tauri } from './tauri-bridge';
 
 export type ExportResult =
   { readonly status: 'saved'; readonly location?: string } | { readonly status: 'cancelled' };
@@ -72,7 +72,7 @@ export class TauriFileExport extends FileExportAdapter {
     _mimeType?: string,
   ): Promise<ExportResult> {
     const bytes = new Uint8Array(await data.arrayBuffer());
-    const path = await invoke<string | null>('export_file', bytes, {
+    const path = await tauri.invoke<string | null>('export_file', bytes, {
       headers: { 'x-file-name': suggestedName },
     });
     return path ? { status: 'saved', location: path } : { status: 'cancelled' };
@@ -80,5 +80,8 @@ export class TauriFileExport extends FileExportAdapter {
 }
 
 export function provideFileExport(): Provider {
-  return { provide: FileExportAdapter, useClass: isTauri() ? TauriFileExport : BrowserFileExport };
+  return {
+    provide: FileExportAdapter,
+    useClass: tauri.isTauri() ? TauriFileExport : BrowserFileExport,
+  };
 }
