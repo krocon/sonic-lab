@@ -80,6 +80,10 @@ All notable changes to this project are documented here. The format follows
 - The selected input device was not restored in WebKit when the device list loaded late.
 - Safari/WebKit refused to start capture ("access denied") because the AudioContext was created
   after awaiting `getUserMedia`, outside the user gesture; it is now created first.
+- Desktop app rendered without component styles: Tauri added hashes for the inlined critical CSS
+  to `style-src`, which disables `'unsafe-inline'` and blocked Angular's component `<style>`
+  elements. Style-src is no longer modified, critical CSS is no longer inlined; an E2E test loads
+  the production build under the desktop CSP.
 - Firefox kept audio processing suspended without error and the app waited forever; capture now
   reports "audio blocked" after 2 s instead.
 - The level meter (`role="meter"`) lacked `aria-valuenow` until the first level change.

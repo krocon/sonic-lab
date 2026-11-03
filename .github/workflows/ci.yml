@@ -59,6 +59,7 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm build # desktop-csp.spec.ts loads the production build
       - run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
       # runners have no sound card; Firefox needs a sound server for Web Audio to run
       - name: Virtual audio device (PulseAudio null sink)

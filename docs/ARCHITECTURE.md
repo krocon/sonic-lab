@@ -134,6 +134,11 @@ source. The concrete source is injected via the `AUDIO_SOURCE` token.
   no plugin permission is granted to the webview.
 - CSP: `script-src 'self'` (no eval, no inline scripts; the AudioWorklet is a same-origin file),
   `connect-src` limited to Tauri IPC, `media-src`/`worker-src` for audio and worklets.
+  `style-src 'self' 'unsafe-inline'` is needed for the `<style>` elements Angular inserts for
+  component styles, so Tauri must not add hashes to it (`dangerousDisableAssetCspModification:
+["style-src"]` – a hash makes browsers ignore `'unsafe-inline'`), and the production build does
+  not inline critical CSS (no inline `<style>`/`<script>` in `index.html`). Guarded by
+  `e2e/desktop-csp.spec.ts`, which loads the production build under this CSP.
 - macOS: `Info.plist` (microphone usage description) and `Entitlements.plist`
   (`com.apple.security.device.audio-input`) for hardened-runtime builds; the default macOS app menu
   (About, Edit with copy/paste, Quit) comes from Tauri.
