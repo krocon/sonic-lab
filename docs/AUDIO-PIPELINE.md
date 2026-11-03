@@ -1,21 +1,41 @@
 # Audio pipeline
 
-> **Status:** design document. Nothing below is implemented yet; prompts 02–04 build it and
-> must update this file with the actual parameters and measured results.
+> **Status:** capture (prompt 02) is implemented; the Morse decoder sections describe the design
+> for prompts 03–04 and are updated as they land.
 
-## Capture (prompts/02)
+## Capture (implemented)
 
-1. `getUserMedia` with `echoCancellation`, `noiseSuppression` and `autoGainControl` **disabled**
-   – browser voice processing distorts tones and keying envelopes.
-2. `AudioContext` (sample rate of the device, never assumed) → `MediaStreamAudioSourceNode` →
-   `AudioWorkletNode`.
-3. The worklet collects 128-sample render quanta into blocks (e.g. 1024 samples) and posts them
-   as transferable buffers to the main thread (buffer pool, no per-block allocation).
-4. A ring buffer feeds decoders and visualisations; visualisations draw on
-   `requestAnimationFrame`, decoders run per block.
+```text
+getUserMedia ──▶ MediaStreamAudioSourceNode ──▶ AudioWorkletNode "audiolab-capture" ──▶ destination (silent)
+  (no AEC/NS/AGC)        (AudioContext, device rate)        │ 128-sample quanta → 1024-sample mono blocks
+                                                             ▼ postMessage(buffer, [buffer])  (transfer, zero-copy)
+                                       BrowserMicrophoneSource → AudioFrame → CaptureSession → consumers
+                                                             ▲ recycle message returns the buffer to the pool
+```
 
-No `ScriptProcessorNode` (deprecated). The worklet is built from TypeScript by a small script,
-not via a Blob URL (CSP).
+| Parameter                    | Value                                                                        | Where                               |
+| ---------------------------- | ---------------------------------------------------------------------------- | ----------------------------------- |
+| Voice processing             | `echoCancellation`, `noiseSuppression`, `autoGainControl` = false            | `browser-microphone-source.ts`      |
+| Channels                     | mixed to mono in the worklet                                                 | `src/worklets/capture-processor.ts` |
+| Block size                   | 1024 samples (≈ 21 ms at 48 kHz)                                             | `MICROPHONE_BLOCK_SIZE`             |
+| Buffer pool                  | 16 blocks; on exhaustion blocks are dropped and an `overrun` message is sent | worklet                             |
+| Sample rate                  | whatever the `AudioContext` reports                                          | never assumed                       |
+| Latency (capture → consumer) | one block + message hop, typically 25–40 ms                                  | –                                   |
+
+- `AudioFrame.samples` is a view on the transferred buffer and valid only during the listener
+  call (ADR-007). The buffer is returned to the worklet right after all consumers ran.
+- The worklet is TypeScript in `src/worklets/`, bundled by `scripts/build-worklets.mjs` (esbuild)
+  to `public/worklets/capture-processor.js` and loaded from the same origin – no Blob URL, so the
+  CSP keeps `script-src 'self'`. `ScriptProcessorNode` is not used (deprecated).
+- Device loss (`track.onended`) switches the source to `error/device-lost` and releases everything.
+- `SyntheticAudioSource` produces the same frames from deterministic generators
+  (`src/app/audio/synthesis/`) for tests and the "Demo signal" input.
+
+### Visualisation
+
+`WaveformCanvas` and `LevelMeterBar` read from a `RingBuffer` / `LevelMeter` on
+`requestAnimationFrame`. They never write signals, so 47 frames/s of audio cause no change
+detection. The waveform draws min/max per pixel column (16384-sample window ≈ 0.34 s at 48 kHz).
 
 ## Morse decoding (prompts/03, hardened in 04)
 

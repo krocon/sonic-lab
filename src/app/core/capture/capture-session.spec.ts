@@ -1,28 +1,64 @@
-import { Injector } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { FakeAudioSource } from '../../../testing/fake-audio-source';
-import { AUDIO_SOURCE, CaptureSession } from './capture-session';
+import { SettingsStore } from '../settings/settings-store';
+import { CaptureActivity } from './capture-activity';
+import {
+  AUDIO_SOURCE,
+  CAPTURE_SETTINGS,
+  CaptureSession,
+  VIRTUAL_DEVICE_IDS,
+} from './capture-session';
+import { CaptureSettings } from './capture-settings';
+
+function memorySettings(deviceId = ''): SettingsStore<CaptureSettings> {
+  const data = new Map<string, string>();
+  const store = new SettingsStore<CaptureSettings>({
+    key: 'test',
+    version: 1,
+    defaults: { deviceId: '' },
+    validate: (raw) => raw as CaptureSettings,
+    storage: {
+      getItem: (k) => data.get(k) ?? null,
+      setItem: (k, v) => void data.set(k, v),
+      removeItem: (k) => void data.delete(k),
+    },
+  });
+  if (deviceId) store.save({ deviceId });
+  return store;
+}
 
 describe('CaptureSession', () => {
   let source: FakeAudioSource;
   let session: CaptureSession;
-  let injector: Injector;
+  let settings: SettingsStore<CaptureSettings>;
 
-  beforeEach(() => {
+  function setup(remembered = '') {
     source = new FakeAudioSource();
+    source.devices = [
+      { id: 'default', label: 'Default', isDefault: true },
+      { id: 'usb', label: 'USB mic' },
+      { id: 'demo', label: 'Demo' },
+    ];
+    settings = memorySettings(remembered);
     TestBed.configureTestingModule({
-      providers: [CaptureSession, { provide: AUDIO_SOURCE, useValue: source }],
+      providers: [
+        CaptureSession,
+        { provide: AUDIO_SOURCE, useValue: source },
+        { provide: CAPTURE_SETTINGS, useValue: settings },
+        { provide: VIRTUAL_DEVICE_IDS, useValue: ['demo'] },
+      ],
     });
-    injector = TestBed.inject(Injector);
-    session = injector.get(CaptureSession);
-  });
+    session = TestBed.inject(CaptureSession);
+  }
+
+  beforeEach(() => setup());
 
   it('starts, forwards frames to consumers and stops', async () => {
     const received: number[] = [];
     session.addConsumer((f) => received.push(f.samples.length));
-    await session.start('default');
+    await session.start();
     expect(session.running()).toBe(true);
-    expect(session.devices().length).toBe(1);
+    expect(session.devices().length).toBe(3);
 
     source.emit(new Float32Array(128));
     expect(received).toEqual([128]);
@@ -44,12 +80,12 @@ describe('CaptureSession', () => {
     expect(count).toBe(1);
   });
 
-  it('exposes source errors as state and detaches', async () => {
+  it('exposes source errors as state and status message, and detaches', async () => {
     source.failWith = { kind: 'permission-denied' };
     await session.start();
     const state = session.state();
-    expect(state.status).toBe('error');
     expect(state.status === 'error' && state.error.kind).toBe('permission-denied');
+    expect(session.status().tone).toBe('danger');
     expect(source.frameListenerCount).toBe(0);
   });
 
@@ -63,11 +99,45 @@ describe('CaptureSession', () => {
     await session.start();
     source.setState({ status: 'error', error: { kind: 'device-lost' } });
     expect(session.running()).toBe(false);
+    expect(source.frameListenerCount).toBe(0);
   });
 
-  it('stops the source when destroyed', async () => {
+  it('remembers the selected device and restarts with it while running', async () => {
     await session.start();
+    session.selectDevice('usb');
+    expect(settings.load().deviceId).toBe('usb');
+    await vi.waitFor(() => expect(source.startCalls).toBe(2));
+    expect(source.state.status === 'running' && source.state.deviceId).toBe('usb');
+  });
+
+  it('falls back to the default input when the remembered device is gone', async () => {
     TestBed.resetTestingModule();
-    expect(source.stopCalls).toBeGreaterThan(0);
+    setup('vanished');
+    expect(session.selectedDeviceId()).toBe('vanished');
+    await session.refreshDevices();
+    expect(session.selectedDeviceId()).toBe('');
+    expect(session.notice()?.tone).toBe('warning');
+  });
+
+  it('reports an open microphone only for real devices', async () => {
+    const activity = TestBed.inject(CaptureActivity);
+    await session.start();
+    expect(activity.microphoneOpen()).toBe(true);
+    await session.stop();
+    expect(activity.microphoneOpen()).toBe(false);
+
+    session.selectDevice('demo');
+    await session.start();
+    expect(activity.microphoneOpen()).toBe(false);
+  });
+
+  it('stops the source when destroyed and on pagehide', async () => {
+    await session.start();
+    window.dispatchEvent(new Event('pagehide'));
+    await vi.waitFor(() => expect(source.stopCalls).toBeGreaterThan(0));
+    await session.start();
+    const before = source.stopCalls;
+    TestBed.resetTestingModule();
+    expect(source.stopCalls).toBeGreaterThan(before);
   });
 });

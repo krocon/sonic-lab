@@ -79,5 +79,8 @@
   } @else {
     <span class="status-item muted">Detecting platform…</span>
   }
-  <span class="status-item status-end"> <app-icon name="mic" [size]="14" /> Microphone off </span>
+  <span class="status-item status-end" [class.live]="capture.microphoneOpen()">
+    <app-icon name="mic" [size]="14" />
+    {{ capture.microphoneOpen() ? 'Microphone on' : 'Microphone off' }}
+  </span>
 </footer>

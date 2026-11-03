@@ -3,25 +3,13 @@
     <p class="eyebrow">Decode</p>
     <h1>Morse Decoder</h1>
   </div>
-  <span class="badge" data-tone="warning">Layout preview – audio not connected yet</span>
+  <span class="badge" data-tone="warning">Decoder in development</span>
 </header>
 
 <section class="controls panel" aria-label="Capture controls">
-  <label class="field device">
-    <span class="label">Audio input</span>
-    <select disabled>
-      <option>Microphone access not requested</option>
-    </select>
-  </label>
-  <div class="control-buttons">
-    <button type="button" class="btn btn-primary" disabled>
-      <app-icon name="play" [size]="16" /> Start
-    </button>
+  <app-capture-controls>
     <button type="button" class="btn" disabled><app-icon name="reset" [size]="16" /> Reset</button>
-  </div>
-  <p class="capture-state" role="status">
-    <span class="dot" aria-hidden="true"></span> Idle – microphone is off
-  </p>
+  </app-capture-controls>
 </section>
 
 <div class="grid">
@@ -30,12 +18,13 @@
       <h2 id="signal-title">Signal</h2>
       <span class="meta">Waveform · level</span>
     </header>
-    <div class="scope" aria-hidden="true">
-      <svg viewBox="0 0 400 120" preserveAspectRatio="none">
-        <line x1="0" y1="60" x2="400" y2="60" />
-      </svg>
-    </div>
-    <p class="empty">The live waveform appears here once capture is running.</p>
+    <app-waveform-canvas class="scope" [buffer]="scope" [windowSize]="16384" />
+    <app-level-meter-bar class="meter" [meter]="meter" [active]="session.running()" />
+    @if (!session.running()) {
+      <p class="empty">
+        Press Start to see the live signal. Choose “Demo signal” to try it without a microphone.
+      </p>
+    }
 
     <header class="panel-head sub">
       <h3>Tone / gap timeline</h3>

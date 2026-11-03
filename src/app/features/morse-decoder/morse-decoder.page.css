@@ -19,36 +19,7 @@
 }
 
 .controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: var(--space-4);
   padding: var(--space-4);
-}
-
-.device {
-  flex: 1 1 16rem;
-}
-
-.control-buttons {
-  display: flex;
-  gap: var(--space-2);
-}
-
-.capture-state {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  margin-left: auto;
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-}
-
-.dot {
-  width: 0.625rem;
-  height: 0.625rem;
-  border-radius: 50%;
-  background: var(--color-text-subtle);
 }
 
 .grid {
@@ -93,6 +64,7 @@
 
 .scope {
   height: 11rem;
+  overflow: hidden;
   border-radius: var(--radius-md);
   background-color: var(--color-surface-sunken);
   background-image:
@@ -101,16 +73,8 @@
   background-size: 2rem 2rem;
 }
 
-.scope svg {
-  width: 100%;
-  height: 100%;
-}
-
-.scope line {
-  stroke: var(--color-signal);
-  stroke-width: 1.5;
-  vector-effect: non-scaling-stroke;
-  opacity: 0.6;
+.meter {
+  margin-top: var(--space-3);
 }
 
 .empty {

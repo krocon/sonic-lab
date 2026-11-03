@@ -173,6 +173,11 @@
   background: var(--color-success);
 }
 
+.live {
+  color: var(--color-danger);
+  font-weight: var(--weight-medium);
+}
+
 .warn {
   color: var(--color-warning);
 }

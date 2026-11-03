@@ -47,6 +47,8 @@ export interface AudioSource {
   /** Frames are delivered synchronously; keep listeners cheap. Returns an unsubscribe function. */
   subscribe(listener: AudioFrameListener): () => void;
   onStateChange(listener: AudioStateListener): () => void;
+  /** Optional: notifies when input devices are plugged in or removed. */
+  onDevicesChanged?(listener: () => void): () => void;
 }
 
 export function isAudioSourceError(value: unknown): value is AudioSourceError {

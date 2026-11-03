@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 /**
  * End-to-end tests against the web build served by the Angular dev server.
- * Microphone scenarios use Chromium's fake media devices (see prompts/10-testing-and-quality.md).
+ * Microphone scenarios use e2e/fixtures/fake-microphone.ts (a Web Audio generated MediaStream).
  */
 export default defineConfig({
   testDir: './e2e',

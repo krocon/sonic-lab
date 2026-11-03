@@ -9,13 +9,18 @@ AudioLab is designed so that audio never leaves your device.
 - **No telemetry.** AudioLab sends no analytics, crash reports or usage data. The Angular CLI
   analytics are disabled in the project configuration.
 - **Microphone on user action only.** Access is requested only after you press **Start**. The
-  stream is stopped when you press **Stop**, leave the view, close the window or quit the app.
+  stream is stopped when you press **Stop**, leave the view, close or hide the page
+  (`pagehide`), close the window or quit the app. If the device disappears, capture stops and a
+  message explains what happened. The status bar shows "Microphone on" whenever a real
+  microphone is open (the synthetic demo input never opens the microphone).
+- **No browser voice processing.** Echo cancellation, noise suppression and automatic gain are
+  switched off – not for privacy, but so that the signal is analysed as it arrives.
 - **No background recording.** Nothing is captured while capture is not visibly running.
 - **No audio in logs.** Sample data is never written to the console or log files.
 - **Export only on request.** Recordings or results are saved only when you explicitly export
   them; nothing is stored automatically.
-- **Local preferences.** The only persisted data are UI preferences (e.g. theme) in the
-  browser's `localStorage`.
+- **Local preferences.** The only persisted data are UI preferences in the browser's
+  `localStorage`: theme (`audiolab.theme`) and the chosen input device id (`audiolab.capture`).
 
 ## Web: secure context
 

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, resource } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MODULE_GROUPS, modulesInGroup } from '../core/modules/module-catalog';
+import { CaptureActivity } from '../core/capture/capture-activity';
 import { ThemeService } from '../core/theme/theme.service';
 import { PlatformAdapter } from '../platform/platform-adapter';
 import { Icon } from '../shared/icon/icon';
@@ -18,6 +19,7 @@ const THEME_ICONS: Record<string, IconName> = { system: 'system', light: 'sun', 
 })
 export class AppShell {
   protected readonly theme = inject(ThemeService);
+  protected readonly capture = inject(CaptureActivity);
   private readonly platform = inject(PlatformAdapter);
 
   protected readonly groups = MODULE_GROUPS.map((g) => ({ ...g, modules: modulesInGroup(g.id) }));

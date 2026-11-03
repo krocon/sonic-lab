@@ -56,6 +56,15 @@ needed.
 
 ## Notes
 
+- **AudioWorklet build:** `src/worklets/*-processor.ts` are bundled with esbuild by
+  `scripts/build-worklets.mjs` into `public/worklets/` (generated, git-ignored). `pnpm start`,
+  `pnpm build` and `pnpm test` run it automatically; run `pnpm worklets` after editing a worklet
+  while the dev server is running. `pnpm lint` also type-checks the worklets
+  (`src/worklets/tsconfig.json`).
+- **E2E microphone:** headless browsers cannot be granted OS microphone access on macOS, so the
+  tests replace `getUserMedia` with a Web Audio generated `MediaStream`
+  (`e2e/fixtures/fake-microphone.ts`). The app's real capture pipeline still runs end to end.
+
 - The web build is static and needs no server-side rewrites (hash routing). Serve it over
   HTTPS so that browsers allow microphone access.
 - `pnpm-workspace.yaml` allows install scripts only for the Angular build toolchain
