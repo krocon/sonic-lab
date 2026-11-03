@@ -62,7 +62,7 @@ export const ANALYSIS_MODULES: readonly AnalysisModule[] = [
     summary: 'Turns text into Morse code and audible tones.',
     group: 'generate',
     icon: 'encode',
-    status: 'planned',
+    status: 'available',
     prompt: '05-morse-encoder.md',
   },
   {

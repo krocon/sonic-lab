@@ -22,7 +22,7 @@ desktop app for macOS, Windows and Linux.
 | Frequency Analyzer | Planned   |
 | Spectrum Analyzer  | Planned   |
 | Signal Monitor     | Planned   |
-| Morse Encoder      | Planned   |
+| Morse Encoder      | Available |
 | Tone Generator     | Planned   |
 | Audio Recorder     | Planned   |
 

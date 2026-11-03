@@ -47,6 +47,10 @@ All notable changes to this project are documented here. The format follows
   on Linux, window position/size restored (validated against monitors), keyboard shortcuts
   Space (start/stop) and Ctrl/⌘+K (reset).
 
+- Morse encoder: text → Morse with live preview, unsupported characters flagged, audible playback
+  scheduled on the audio clock (ramped, click-free), Farnsworth spacing, tone and volume, current
+  character highlighted, copy code; shared synthesis for encoder, demo and tests; round-trip tests.
+
 ### Fixed
 
 - Insufficient colour contrast of secondary text and the light accent colour (WCAG AA).

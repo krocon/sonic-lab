@@ -105,6 +105,19 @@ few milliseconds (test limit 25 ms for slow CI machines).
 What did not help (kept out): a per-bin whitening of the auto-frequency search, a median
 noise floor, a longer smoothing window (0.5 unit) and a faster signal release while key-up.
 
+## Synthesis and playback (Morse encoder)
+
+- `scheduleMorse()` (`decoders/morse/morse-timing.ts`) turns text into key-down intervals: PARIS
+  timing, optional Farnsworth spacing (ARRL formula: extra time spread over the 19 gap units of
+  PARIS), weighting; unsupported characters are reported and skipped.
+- `morseTone()` (`morse-synthesis.ts`) renders that schedule as a phase-continuous sine with
+  raised-cosine edges – used by the demo input, the tests and the encoder's offline path, so test
+  signals equal what AudioLab sends.
+- `KeyedTonePlayer` (`audio/output/`) plays it live: one `OscillatorNode` + `GainNode`, every edge
+  scheduled on the `AudioContext` clock with 5 ms linear ramps (no key clicks, no `setTimeout`
+  jitter), volume capped at 0.8, stop fades out within ~10 ms and closes the context.
+- Round trip (encoder → audio → decoder) is tested for every character at 10/20/30 WPM.
+
 ## Testing approach
 
 Deterministic synthetic signals (text, WPM, frequency, amplitude, sample rate, seeded noise,

@@ -26,6 +26,12 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/morse-decoder/morse-decoder.page').then((c) => c.MorseDecoderPage),
   },
+  {
+    path: 'morse-encoder',
+    title: 'Morse Encoder · AudioLab',
+    loadComponent: () =>
+      import('./features/morse-encoder/morse-encoder.page').then((c) => c.MorseEncoderPage),
+  },
   ...placeholderRoutes,
   { path: '**', redirectTo: '' },
 ];
