@@ -48,13 +48,15 @@ test.describe('audio capture', () => {
     await expect.poll(async () => (await fakeMicStats(page)).stopped).toBe(1);
   });
 
-  test('lists devices and remembers the choice', async ({ page }) => {
+  test('lists devices and remembers the choice', async ({ page, context }) => {
     await installFakeMicrophone(page);
     await page.goto('/#/morse-decoder');
-    const select = page.getByLabel('Audio input');
-    await select.selectOption({ label: 'Fake USB Mic' });
-    await page.reload();
-    await expect(page.getByLabel('Audio input')).toHaveValue('fake-usb');
+    await page.getByLabel('Audio input').selectOption({ label: 'Fake USB Mic' });
+    // a fresh page in the same browser profile (WebKit does not re-apply init scripts on reload)
+    const second = await context.newPage();
+    await installFakeMicrophone(second);
+    await second.goto('/#/morse-decoder');
+    await expect(second.getByLabel('Audio input')).toHaveValue('fake-usb');
   });
 
   test('uses the demo input without opening the microphone', async ({ page }) => {

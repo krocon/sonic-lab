@@ -45,13 +45,16 @@ export class KeyingTimelineCanvas {
   constructor() {
     const destroyRef = inject(DestroyRef);
     afterNextRender(() => {
-      const observer = new ResizeObserver(() => {
+      const resize = () => {
         const c = this.canvas().nativeElement;
         const dpr = window.devicePixelRatio || 1;
         c.width = Math.max(1, Math.round(this.host.clientWidth * dpr));
         c.height = Math.max(1, Math.round(this.host.clientHeight * dpr));
         this.lastVersion = -1;
-      });
+      };
+      resize();
+      if (typeof ResizeObserver === 'undefined') return;
+      const observer = new ResizeObserver(resize);
       observer.observe(this.host);
       destroyRef.onDestroy(() => observer.disconnect());
     });

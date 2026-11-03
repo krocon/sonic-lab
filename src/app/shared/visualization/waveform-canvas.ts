@@ -52,9 +52,10 @@ export class WaveformCanvas {
 
   constructor() {
     afterNextRender(() => {
+      this.resize();
+      if (typeof ResizeObserver === 'undefined') return;
       const observer = new ResizeObserver(() => this.resize());
       observer.observe(this.host);
-      this.resize();
       this.destroyRef.onDestroy(() => observer.disconnect());
     });
     animationLoop(() => this.draw());

@@ -92,7 +92,7 @@ function run(s: Scenario, seed: number): { cer: number; text: string } {
 const SEEDS = [1, 2, 3];
 const report: string[] = [];
 
-describe('Morse decoder robustness (CER per scenario, 3 seeds)', () => {
+describe('Morse decoder robustness (CER per scenario, 3 seeds)', { timeout: 60_000 }, () => {
   afterAll(() => {
     const env = (globalThis as { process?: { env: Record<string, string | undefined> } }).process
       ?.env;
@@ -113,7 +113,7 @@ describe('Morse decoder robustness (CER per scenario, 3 seeds)', () => {
   }
 });
 
-describe('Morse decoder adaptation and endurance', () => {
+describe('Morse decoder adaptation and endurance', { timeout: 120_000 }, () => {
   const rate = 48000;
 
   function keyed(

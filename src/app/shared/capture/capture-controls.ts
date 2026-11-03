@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  OnInit,
+  afterRenderEffect,
+  computed,
+  inject,
+  viewChild,
+} from '@angular/core';
 import { CaptureSession } from '../../core/capture/capture-session';
 import { Icon } from '../icon/icon';
 import { StatusBanner } from '../status/status-banner';
@@ -13,6 +22,7 @@ let nextId = 0;
     <label class="field device">
       <span class="label">Audio input</span>
       <select
+        #select
         [id]="selectId"
         [disabled]="session.busy()"
         (change)="session.selectDevice($any($event.target).value)"
@@ -30,7 +40,7 @@ let nextId = 0;
         type="button"
         class="btn"
         [class.btn-primary]="!session.running()"
-        [disabled]="session.busy()"
+        [attr.aria-disabled]="session.busy()"
         (click)="session.toggle()"
         [attr.aria-pressed]="session.running()"
       >
@@ -91,6 +101,16 @@ export class CaptureControls implements OnInit {
   protected readonly devices = computed(() =>
     this.session.devices().filter((d) => d.id !== 'default'),
   );
+  private readonly select = viewChild.required<ElementRef<HTMLSelectElement>>('select');
+
+  constructor() {
+    // Options arrive asynchronously; some engines (WebKit) ignore `selected` on options that are
+    // inserted later, so the value is written explicitly after every render.
+    afterRenderEffect(() => {
+      this.devices();
+      this.select().nativeElement.value = this.session.selectedDeviceId();
+    });
+  }
 
   ngOnInit(): void {
     void this.session.refreshDevices();

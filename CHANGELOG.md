@@ -39,3 +39,12 @@ All notable changes to this project are documented here. The format follows
   bias-free speed estimate, learned word gaps (Farnsworth), tempo changes; realistic impaired test
   signals with CER metrics; signal-above-noise readout and "Advanced" setting for the expected
   speed.
+- Quality: coverage thresholds, component tests for all pages, axe accessibility checks (light and
+  dark), keyboard tests, Firefox/WebKit E2E projects, CI workflow (frontend, signal suite, E2E
+  matrix, Rust on Linux/macOS/Windows), docs/TESTING.md.
+
+### Fixed
+
+- Insufficient colour contrast of secondary text and the light accent colour (WCAG AA).
+- Keyboard focus was lost while the microphone permission was requested (button got disabled).
+- The selected input device was not restored in WebKit when the device list loaded late.

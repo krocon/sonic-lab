@@ -9,12 +9,18 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env['CI'],
   retries: process.env['CI'] ? 1 : 0,
+  // WebKit becomes flaky with many concurrent AudioContexts; two workers are stable.
+  workers: process.env['CI'] ? 2 : undefined,
   reporter: process.env['CI'] ? 'github' : 'list',
   use: {
     baseURL: 'http://localhost:1420',
     trace: 'on-first-retry',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+  ],
   webServer: {
     command: 'pnpm start',
     url: 'http://localhost:1420',

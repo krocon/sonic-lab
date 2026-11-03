@@ -126,6 +126,10 @@
   background: var(--color-accent-soft);
 }
 
+.nav-link.active .nav-hint {
+  color: inherit;
+}
+
 .nav-hint {
   margin-left: auto;
   font-size: var(--text-xs);

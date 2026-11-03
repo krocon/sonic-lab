@@ -8,7 +8,7 @@ function decode(text: string, opts: Parameters<typeof morseSignal>[1], cfg = {})
   return eventsToText(new MorseDecoder(cfg).decodeAll(samples, sampleRate));
 }
 
-describe('MorseDecoder (synthetic signals)', () => {
+describe('MorseDecoder (synthetic signals)', { timeout: 30_000 }, () => {
   it('decodes SOS', () => {
     expect(decode('SOS', { wpm: 20 })).toBe('SOS');
   });

@@ -13,11 +13,12 @@ export function animationLoop(draw: (time: number) => void): void {
     handle = requestAnimationFrame(tick);
   };
   afterNextRender(() => {
-    if (!stopped) handle = requestAnimationFrame(tick);
+    if (!stopped && typeof requestAnimationFrame === 'function')
+      handle = requestAnimationFrame(tick);
   });
   inject(DestroyRef).onDestroy(() => {
     stopped = true;
-    cancelAnimationFrame(handle);
+    if (handle) cancelAnimationFrame(handle);
   });
 }
 
