@@ -1,0 +1,1243 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sonic Lab – Look &amp; Feel</title>
+<style>
+/* ════════════════════════════════════════════════════════════════════════════
+   Look & feel mockup – not app code. Layout rules:
+   · the right panel has a fixed width, all hardware keys/knobs have fixed sizes
+   · only the OLED grows with the window
+   · below the minimum size the whole device is scaled down (never re-flowed)
+   ════════════════════════════════════════════════════════════════════════════ */
+:root {
+  --min-w: 1180;
+  --min-h: 720;
+  --right-w: 300px;
+  --bezel: 14px;
+  --status-h: 30px;
+  --flabel-h: 44px;
+  --softkey-w: 108px;
+  --sidekey-col: 62px;
+
+  --silk: #e3e5e8;
+  --silk-dim: #9a9fa6;
+  --silk-shadow: 0 -1px 0 rgba(0, 0, 0, 0.65);
+  --ui: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+  --print: 'Arial Black', 'Helvetica Neue', Arial, sans-serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: #0a0a0b; overflow: hidden; font-family: var(--ui); }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+
+/* ── mockup toolbar (not part of the design) ─────────────────────────────── */
+.mock-bar {
+  position: fixed; inset: 0 0 auto 0; height: 36px; z-index: 10;
+  display: flex; align-items: center; gap: 18px; padding: 0 14px;
+  background: #f1f1ef; color: #333; font: 12px/1 var(--ui);
+  border-bottom: 1px solid #cfcfcb;
+}
+.mock-bar b { font-weight: 600; margin-right: 6px; }
+.seg { display: inline-flex; border: 1px solid #bdbdb8; border-radius: 6px; overflow: hidden; }
+.seg button { padding: 5px 10px; font-size: 12px; color: #333; }
+.seg button + button { border-left: 1px solid #bdbdb8; }
+.seg button[aria-pressed='true'] { background: #2d2f33; color: #fff; }
+.mock-bar .hint { margin-left: auto; color: #777; }
+
+.stage { position: fixed; inset: 36px 0 0 0; }
+
+/* ── device ──────────────────────────────────────────────────────────────── */
+.device {
+  zoom: var(--z, 1);
+  width: calc(100vw / var(--z, 1));
+  height: calc((100vh - 36px) / var(--z, 1));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--right-w);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.10) 0, rgba(255,255,255,0.02) 6px, transparent 40px),
+    radial-gradient(120% 90% at 30% 0%, #34373c 0%, #26282c 45%, #1b1c1f 100%);
+  color: var(--silk);
+  user-select: none;
+}
+.v-photo .device {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.08) 0, transparent 6px),
+    url('assets/faceplate.png') 0 0 / 100% 100%;
+}
+
+/* ── left: bezel + OLED + soft keys + F keys ─────────────────────────────── */
+.front {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--sidekey-col);
+  grid-template-rows: minmax(0, 1fr) auto;
+  padding: 16px 6px 0 20px;
+  min-width: 0; min-height: 0;
+}
+
+.bezel {
+  grid-area: 1 / 1;
+  position: relative;
+  padding: var(--bezel);
+  border-radius: 10px 10px 3px 3px;
+  background: linear-gradient(180deg, #44474d 0%, #2b2d31 2.5%, #1f2023 40%, #18191b 100%);
+  box-shadow:
+    0 0 0 1px #070708,
+    inset 0 1px 0 rgba(255,255,255,0.20),
+    inset 1px 0 0 rgba(255,255,255,0.05),
+    0 14px 28px -10px rgba(0,0,0,0.8);
+  min-height: 0;
+}
+.glass {
+  position: relative;
+  height: 100%;
+  padding: 3px;
+  border-radius: 4px;
+  background: linear-gradient(160deg, #3a3d42, #0d0d0e 30%, #0d0d0e 70%, #2a2c30);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.9);
+}
+
+/* F-key tray: recessed, angled ends like the template */
+.ftray {
+  grid-area: 2 / 1;
+  position: relative;
+  padding: 6px var(--bezel) 10px;
+  margin: 0 -8px;
+}
+.ftray::before {
+  content: ''; position: absolute; inset: 0 0 4px 0;
+  background: linear-gradient(180deg, #111214, #1d1e21 30%, #222327);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 100%, 14px 100%);
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.8);
+}
+.ftray .row { position: relative; display: grid; grid-template-columns: repeat(8, 1fr); }
+.fcell { display: grid; justify-items: center; gap: 4px; }
+.tri { width: 0; height: 0; border: 4px solid transparent; border-bottom: 5px solid #8d939b; border-top: 0; opacity: .8; }
+
+.sidekeys {
+  grid-area: 1 / 2;
+  display: grid;
+  grid-template-rows: repeat(6, 1fr);
+  padding-top: calc(var(--bezel) + 3px + var(--status-h));
+  padding-bottom: calc(var(--bezel) + 3px + var(--flabel-h));
+}
+.skcell { display: flex; align-items: center; gap: 6px; padding-left: 4px; }
+.skcell .tri { transform: rotate(-90deg); }
+
+/* ── right panel ─────────────────────────────────────────────────────────── */
+.right {
+  position: relative;
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: 16px 16px 16px 14px;
+  border-left: 1px solid rgba(0,0,0,0.55);
+  box-shadow: inset 1px 0 0 rgba(255,255,255,0.05);
+  min-height: 0;
+}
+.brand { display: flex; align-items: center; justify-content: space-between; }
+.logo { font: 900 15px/1 var(--print); letter-spacing: 0.18em; color: var(--silk); text-shadow: var(--silk-shadow); }
+.logo small { display: block; margin-top: 4px; font: 700 7.5px/1 var(--ui); letter-spacing: 0.22em; color: var(--silk-dim); }
+.power { display: grid; justify-items: center; gap: 4px; }
+
+.silk { font: 700 9px/1 var(--ui); letter-spacing: 0.04em; color: var(--silk); text-shadow: var(--silk-shadow); white-space: nowrap; text-transform: uppercase; }
+.silk.dim { color: var(--silk-dim); }
+.silk .c { display: inline-block; width: 7px; height: 7px; margin: 0 3px -1px; border: 1.5px solid currentColor; border-radius: 50%; position: relative; }
+.silk .c::after { content: ''; position: absolute; inset: 1px; border-radius: 50%; background: currentColor; }
+
+.knobs { display: grid; grid-template-columns: repeat(3, 1fr); justify-items: center; gap: 4px; }
+.kcell { display: grid; justify-items: center; gap: 5px; }
+
+.mid { display: grid; grid-template-columns: auto 1fr; gap: 0 14px; align-items: start; }
+.keypad { display: grid; grid-template-columns: repeat(3, 58px); gap: 8px 8px; }
+.tcol { display: grid; gap: 8px; justify-items: center; align-content: start; }
+.tcell { display: grid; justify-items: center; gap: 3px; }
+.bracket { display: flex; align-items: center; gap: 4px; width: 100%; }
+.bracket::before, .bracket::after { content: ''; flex: 1; height: 4px; margin-top: 4px; border-top: 1px solid #8d939b; }
+.bracket::before { border-left: 1px solid #8d939b; }
+.bracket::after { border-right: 1px solid #8d939b; }
+
+.bottom { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 10px; }
+.bkeys { display: grid; gap: 12px; justify-items: center; }
+
+.compact-only { display: none; }
+.r-compact .keypad-only { display: none; }
+.r-compact .compact-only { display: grid; }
+
+/* ── keys ─────────────────────────────────────────────────────────────────── */
+.k { position: relative; display: block; flex: none; }
+.k .cap {
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  font: 800 10.5px/1 var(--ui); letter-spacing: 0.03em; color: #eceef0;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.8);
+  border-radius: 4px;
+  background: linear-gradient(180deg, #4a4d53 0%, #34363b 12%, #2a2c30 55%, #222327 100%);
+  box-shadow:
+    0 0 0 1px #050506,
+    inset 0 1px 0 rgba(255,255,255,0.22),
+    inset 0 -2px 0 rgba(0,0,0,0.35),
+    0 2px 0 #0c0c0d,
+    0 4px 6px rgba(0,0,0,0.55);
+  transition: transform 60ms, box-shadow 60ms, filter 60ms;
+}
+.k:active .cap, .k.down .cap { transform: translateY(1.5px); box-shadow: 0 0 0 1px #050506, inset 0 1px 0 rgba(255,255,255,0.12), 0 0.5px 0 #0c0c0d, 0 1px 2px rgba(0,0,0,0.6); filter: brightness(0.9); }
+.k:focus-visible { outline: 2px solid #5fb7ff; outline-offset: 3px; border-radius: 5px; }
+
+.k.plain { width: 50px; height: 32px; }
+.k.menu { width: 54px; height: 30px; }
+.k.menu .cap { color: #ff9f2e; }
+.k.esc { width: 40px; height: 36px; }
+.k.esc .cap { background: linear-gradient(180deg, #2a2b2e, #111214 60%, #0b0b0c); }
+.k.tr { width: 42px; height: 31px; }
+.k.tr .sym-rec { width: 9px; height: 9px; border-radius: 50%; background: #ff3b30; box-shadow: 0 0 4px rgba(255,59,48,0.6); }
+.k.tr .sym-stop { width: 8px; height: 8px; background: #e9ebee; }
+.k.tr .sym-play { width: 0; height: 0; border-left: 9px solid #e9ebee; border-top: 5.5px solid transparent; border-bottom: 5.5px solid transparent; margin-left: 2px; }
+
+.k.num { width: 58px; height: 43px; }
+.k.num .tag {
+  position: absolute; left: 3px; right: 3px; top: 1px; height: 10px;
+  display: grid; place-items: center;
+  font: 800 7px/1 var(--ui); letter-spacing: 0.08em; color: #1d1840;
+  background: linear-gradient(180deg, #8f84e8, #6c62c8);
+  border-radius: 1px;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.6);
+}
+.k.num .cap { top: 14px; font-size: 15px; font-weight: 700; }
+.k.num .cap.small { font-size: 10px; font-weight: 800; }
+
+/* side soft key + F key: blank key with a white bar */
+.k.sk { width: 44px; height: 36px; }
+.k.sk .cap { background: linear-gradient(180deg, #2e3034 0%, #1d1e21 50%, #141517 100%); }
+.bar { position: absolute; left: 30%; right: 30%; top: 62%; height: 2px; border-radius: 1px; background: linear-gradient(#f4f1e8, #9c978b); box-shadow: 0 1px 0 rgba(0,0,0,0.7); }
+
+.k.fk { width: 56px; height: 76px; }
+.k.fk .cap {
+  border-radius: 3px;
+  background:
+    linear-gradient(180deg, #5a5d63 0%, #46494e 22%, #2a2c30 23%, #1d1e21 60%, #161719 100%);
+}
+.k.fk .lbl { position: absolute; top: 44%; left: 0; right: 0; text-align: center; font: 900 11px/1 var(--print); letter-spacing: 0.12em; color: #eef0f2; }
+.k.fk .bar { top: 66%; left: 20%; right: 20%; }
+.k.fk.on .bar, .k.sk.on .bar { background: #fff; box-shadow: 0 0 6px 1px rgba(150,210,255,0.85), 0 0 2px #fff; }
+
+.led { width: 14px; height: 3px; border-radius: 1px; background: #2a2c2a; box-shadow: inset 0 1px 1px rgba(0,0,0,0.8), 0 1px 0 rgba(255,255,255,0.06); }
+.led.on.g { background: #6dff7a; box-shadow: 0 0 6px #4dff60, 0 0 1px #fff; }
+.led.on.r { background: #ff4a3d; box-shadow: 0 0 6px #ff2a1d, 0 0 1px #fff; }
+
+/* photo variant: the cap becomes the cropped key image */
+.v-photo .k .cap { background: none; box-shadow: none; border-radius: 0; filter: none; }
+.v-photo .k:active .cap, .v-photo .k.down .cap { transform: translateY(1px); filter: brightness(0.85); }
+.v-photo .k.plain .cap { background: url('assets/key.png') 0 0 / 100% 100%; }
+.v-photo .k.menu .cap { background: url('assets/key-menu.png') 0 0 / 100% 100%; }
+.v-photo .k.esc .cap { background: url('assets/key-esc.png') 0 0 / 100% 100%; }
+.v-photo .k.tr.rec .cap { background: url('assets/key-rec.png') 0 0 / 100% 100%; }
+.v-photo .k.tr.stop .cap { background: url('assets/key-stop.png') 0 0 / 100% 100%; }
+.v-photo .k.tr.play .cap { background: url('assets/key-play.png') 0 0 / 100% 100%; }
+.v-photo .k.sk .cap { background: url('assets/key-side.png') 0 0 / 100% 100%; }
+.v-photo .k.fk .cap { background: url('assets/key-f.png') 0 0 / 100% 100%; }
+.v-photo .k.num { background: url('assets/key-num.png') 0 0 / 100% 100%; }
+.v-photo .k.num .tag { background: none; box-shadow: none; color: #241d55; }
+.v-photo .k.num .cap { top: 16px; left: 4px; right: 4px; bottom: 3px; background: none; }
+.v-photo .k .baked { visibility: hidden; }
+.v-photo .k.sk .bar, .v-photo .k.fk .bar { background: none; box-shadow: none; }
+.v-photo .k.sk .bar { top: 62%; left: 26%; right: 26%; }
+.v-photo .k.fk .bar { top: 63%; left: 24%; right: 22%; }
+.v-photo .k.fk.on .bar, .v-photo .k.sk.on .bar { background: rgba(255,255,255,0.9); box-shadow: 0 0 6px 1px rgba(150,210,255,0.85); }
+.v-photo .k.fk .lbl { top: 42%; }
+
+/* ── knobs ───────────────────────────────────────────────────────────────── */
+.knob { position: relative; width: var(--w); aspect-ratio: var(--ar); touch-action: none; cursor: ns-resize; }
+.knob.arc   { --w: 84px;  --ar: 66 / 60;  --cx: 50.8%; --cy: 45%;   --d: 74%; --cap: 50%; }
+.knob.multi { --w: 86px;  --ar: 78 / 66;  --cx: 49.4%; --cy: 45.5%; --d: 76%; --cap: 62%; }
+.knob.scale { --w: 86px;  --ar: 78 / 65;  --cx: 47.4%; --cy: 47%;   --d: 58%; --cap: 64%; }
+.dial       { --w: 184px; --ar: 166 / 158; --cx: 49.4%; --cy: 50.6%; --d: 92%; --cap: 64%; cursor: grab; }
+
+.kface {
+  position: absolute; left: var(--cx); top: var(--cy); width: var(--d); aspect-ratio: 1;
+  transform: translate(-50%, -50%); border-radius: 50%;
+  background:
+    radial-gradient(circle, transparent 60%, rgba(0,0,0,0.6) 61%, transparent 64%),
+    repeating-conic-gradient(#0a0a0b 0 5deg, #26282c 5deg 7deg, #0a0a0b 7deg 10deg);
+  box-shadow: 0 0 0 1px #000, 0 6px 10px rgba(0,0,0,0.7), inset 0 1px 1px rgba(255,255,255,0.15);
+}
+.krot {
+  position: absolute; left: 50%; top: 50%; width: var(--cap); aspect-ratio: 1; border-radius: 50%;
+  transform: translate(-50%, -50%) rotate(var(--a, 0deg));
+  background: radial-gradient(circle at 50% 50%, #2c2f34, #1a1b1e 70%, #0f1012);
+  box-shadow: 0 0 0 1px #000, 0 3px 5px rgba(0,0,0,0.8);
+}
+.kface::after { /* fixed lighting on the cap – does not rotate */
+  content: ''; position: absolute; left: 50%; top: 50%; width: var(--cap); aspect-ratio: 1; border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle at 42% 28%, rgba(255,255,255,0.22), rgba(255,255,255,0.05) 35%, transparent 60%);
+  pointer-events: none;
+}
+.kmark { position: absolute; left: 50%; top: 7%; width: 3px; height: 18%; margin-left: -1.5px; border-radius: 2px; background: #f2f2f2; box-shadow: 0 0 2px rgba(0,0,0,0.9); }
+.knob.scale .kmark { background: #ff4b3a; }
+.knob.arc::before, .knob.multi::before { /* silver travel arc */
+  content: ''; position: absolute; left: var(--cx); top: var(--cy); width: calc(var(--d) + 14%); aspect-ratio: 1;
+  transform: translate(-50%, -50%); border-radius: 50%;
+  background: conic-gradient(from -112deg, #d9dce0 0 224deg, transparent 0);
+  -webkit-mask: radial-gradient(circle, transparent 67%, #000 68%, #000 71%, transparent 72%);
+          mask: radial-gradient(circle, transparent 67%, #000 68%, #000 71%, transparent 72%);
+}
+.knob .scale-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+
+/* jog dial: recessed well · rubber grip (turns) · chrome ring · spun-metal face whose light
+   stays fixed · finger dimple (turns along, its shading stays fixed) */
+.dial { --w: 188px; --ar: 1; --cx: 50%; --cy: 50%; --d: 100%; --cap: 80%; cursor: grab; }
+.dial:active { cursor: grabbing; }
+.dial .kface {
+  background: radial-gradient(circle closest-side, #000 0 88%, #060607 97%, #16171a 100%);
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.6),
+    0 1px 0 1px rgba(255,255,255,0.06),
+    inset 0 4px 8px rgba(0,0,0,0.95);
+}
+.dial .kface::after { display: none; }
+.dl { position: absolute; left: 50%; top: 50%; aspect-ratio: 1; border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; }
+
+.d-grip { /* 72 coarse rubber ribs on the outer band – they move when the dial turns */
+  width: 94%;
+  transform: translate(-50%, -50%) rotate(var(--a, 0deg));
+  transition: transform 90ms ease-out;
+  background: repeating-conic-gradient(#0b0c0e 0deg, #1d1f23 1.2deg, #34373d 2.3deg, #3b3e44 2.7deg, #24272b 3.8deg, #0b0c0e 5deg);
+  -webkit-mask: radial-gradient(circle closest-side, transparent 0 90.5%, #000 91%);
+          mask: radial-gradient(circle closest-side, transparent 0 90.5%, #000 91%);
+}
+.d-bevel { /* smooth inner step between grip and chrome ring */
+  width: 94%;
+  background: linear-gradient(180deg, #44474d 0%, #1f2124 38%, #101113 62%, #1a1b1e 100%);
+  -webkit-mask: radial-gradient(circle closest-side, transparent 0 86.5%, #000 87%, #000 90%, transparent 90.5%);
+          mask: radial-gradient(circle closest-side, transparent 0 86.5%, #000 87%, #000 90%, transparent 90.5%);
+}
+.d-shade { /* fixed light on the grip: lit from above, rounded outer edge */
+  width: 94%;
+  background:
+    radial-gradient(circle closest-side, transparent 0 90%, rgba(0,0,0,0.75) 90.8%, transparent 93%, transparent 96.5%, rgba(0,0,0,0.75) 100%),
+    linear-gradient(180deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.04) 30%, transparent 52%, rgba(0,0,0,0.55) 100%);
+  -webkit-mask: radial-gradient(circle closest-side, transparent 0 86.5%, #000 87%);
+          mask: radial-gradient(circle closest-side, transparent 0 86.5%, #000 87%);
+  box-shadow: 0 10px 18px rgba(0,0,0,0.75);
+}
+.d-chrome {
+  width: 82%;
+  background: conic-gradient(from 15deg, #f6f8fa, #8d939a 40deg, #2b2e33 95deg, #b9bec4 140deg, #f3f5f7 168deg, #757a81 215deg, #26292d 270deg, #a3a8ae 320deg, #f6f8fa);
+  -webkit-mask: radial-gradient(circle closest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px), #000 calc(100% - 0.8px), transparent 100%);
+          mask: radial-gradient(circle closest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px), #000 calc(100% - 0.8px), transparent 100%);
+}
+.d-face {
+  width: 80%;
+  background:
+    radial-gradient(circle closest-side, rgba(255,255,255,0.95) 0 1.1%, rgba(255,255,255,0.25) 2%, rgba(255,255,255,0) 3.2%),
+    repeating-radial-gradient(circle closest-side, rgba(255,255,255,0.025) 0 1px, rgba(0,0,0,0) 1px 2.5px),
+    radial-gradient(circle closest-side, #1f2124 0%, #121315 55%, #08090a 100%);
+  box-shadow: inset 0 0 0 1px #000, inset 0 -10px 18px rgba(0,0,0,0.5), inset 0 3px 2px -1px rgba(255,255,255,0.06);
+}
+.d-face::before { /* spun-metal light: a narrow beam up to the dimple, a wide cone down to the rim */
+  content: ''; position: absolute; inset: 0; border-radius: 50%;
+  background: conic-gradient(
+    rgba(208,214,221,0.7) 0deg, rgba(208,214,221,0.18) 4deg, rgba(208,214,221,0) 12deg,
+    rgba(0,0,0,0) 158deg, rgba(220,225,231,0.22) 170deg, rgba(238,241,245,0.95) 180deg, rgba(220,225,231,0.22) 190deg, rgba(0,0,0,0) 202deg,
+    rgba(0,0,0,0) 348deg, rgba(208,214,221,0.18) 356deg, rgba(208,214,221,0.7) 360deg);
+  -webkit-mask: radial-gradient(circle closest-side, #000 0%, rgba(0,0,0,0.72) 28%, rgba(0,0,0,0.3) 100%);
+          mask: radial-gradient(circle closest-side, #000 0%, rgba(0,0,0,0.72) 28%, rgba(0,0,0,0.3) 100%);
+}
+.d-face::after { /* soft gloss across the top */
+  content: ''; position: absolute; inset: 0; border-radius: 50%;
+  background: radial-gradient(ellipse 85% 48% at 50% 10%, rgba(255,255,255,0.075), transparent 72%);
+}
+.dial .krot { width: var(--cap); background: transparent; box-shadow: none; transition: transform 90ms ease-out; }
+.dimple { /* concave and spun like the face: shadowed upper wall, lit spike at the bottom */
+  position: absolute; left: 50%; top: 9%; width: 30%; aspect-ratio: 1; margin-left: -15%; border-radius: 50%;
+  transform: rotate(calc(var(--a, 0deg) * -1));
+  transition: transform 90ms ease-out;
+  background: radial-gradient(circle at 50% 42%, #070708 0 45%, #121316 75%, #24262a 100%);
+  box-shadow:
+    inset 0 6px 7px rgba(0,0,0,0.95),
+    inset 0 -2px 2px rgba(255,255,255,0.10),
+    0 -1px 0 rgba(0,0,0,0.85),
+    0 1px 0 rgba(255,255,255,0.10);
+}
+.dimple::before { /* spun inside too: a soft cone of light rising from the lower wall */
+  content: ''; position: absolute; inset: 0; border-radius: 50%;
+  background:
+    radial-gradient(ellipse 10% 17% at 50% 64%, rgba(245,248,250,0.9), rgba(245,248,250,0) 100%),
+    conic-gradient(from 0deg at 50% 64%, rgba(225,230,236,0.6) 0deg, rgba(225,230,236,0.1) 7deg, transparent 18deg 342deg, rgba(225,230,236,0.1) 353deg, rgba(225,230,236,0.6) 360deg),
+    conic-gradient(from 180deg at 50% 64%, rgba(225,230,236,0.35) 0deg, transparent 14deg 346deg, rgba(225,230,236,0.35) 360deg);
+  -webkit-mask: radial-gradient(circle at 50% 60%, #000 0%, rgba(0,0,0,0.6) 30%, transparent 50%);
+          mask: radial-gradient(circle at 50% 60%, #000 0%, rgba(0,0,0,0.6) 30%, transparent 50%);
+}
+
+/* photo variant knobs */
+.v-photo .knob.arc   { background: url('assets/knob-arc.png') 0 0 / 100% 100%; }
+.v-photo .knob.multi { background: url('assets/knob-multi.png') 0 0 / 100% 100%; }
+.v-photo .knob.scale { background: url('assets/knob-scale.png') 0 0 / 100% 100%; }
+.v-photo .dial       { background: url('assets/dial.png') 0 0 / 100% 100%; }
+.v-photo .knob { -webkit-mask: radial-gradient(closest-side at var(--cx) var(--cy), #000 84%, transparent 100%);
+                      mask: radial-gradient(closest-side at var(--cx) var(--cy), #000 84%, transparent 100%); }
+.v-photo .knob::before, .v-photo .knob .scale-svg { display: none; }
+.v-photo .kface, .v-photo .krot { background: none; box-shadow: none; }
+.v-photo .kface::after, .v-photo .dial .kface::before { display: none; }
+.v-photo .kmark { width: 2px; margin-left: -1px; top: 10%; height: 14%; background: rgba(255,255,255,0.85); }
+.v-photo .knob.scale .kmark, .v-photo .dial .dimple, .v-photo .dial .dl { display: none; }
+.v-photo .dial { --ar: 166 / 158; --cx: 49.4%; --cy: 50.6%; --d: 92%; }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   OLED
+   ════════════════════════════════════════════════════════════════════════════ */
+.oled {
+  --fg: #eef3f8; --dim: #7c8794; --faint: #2c323a; --acc: #3cc8ff; --acc2: #2f7bff;
+  --hot: #ffc23a; --ok: #46e07c; --bad: #ff4b4b; --grid: rgba(150,170,190,0.12);
+  --sel-bg: #eef3f8; --sel-fg: #000;
+  position: relative; height: 100%;
+  display: grid; grid-template-rows: var(--status-h) minmax(0, 1fr) var(--flabel-h);
+  background: #000; color: var(--fg);
+  border-radius: 2px; overflow: hidden;
+  font: 500 12px/1.2 var(--ui);
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: tabular-nums;
+}
+.pal-amber .oled { --fg: #ffc773; --dim: #a8732a; --faint: #3d2a0e; --acc: #ffb13b; --acc2: #ff9420; --hot: #ffe2a8; --ok: #ffd27a; --bad: #ff6a3d; --grid: rgba(255,170,60,0.12); --sel-bg: #ffb13b; }
+.pal-cyan  .oled { --fg: #c6f7ff; --dim: #4d9db0; --faint: #0f3640; --acc: #3de8ff; --acc2: #15b6d6; --hot: #ffffff; --ok: #7dffd8; --bad: #ff5e7a; --grid: rgba(60,220,255,0.11); --sel-bg: #3de8ff; }
+.glow { text-shadow: 0 0 8px color-mix(in srgb, currentColor 35%, transparent); }
+
+/* glass: faint diagonal reflection like the template, plus edge shading */
+.glass::after {
+  content: ''; position: absolute; inset: 3px; border-radius: 2px; pointer-events: none;
+  background:
+    linear-gradient(118deg, rgba(255,255,255,0.065) 0%, rgba(255,255,255,0.025) 41%, transparent 41.2%),
+    radial-gradient(140% 120% at 50% 50%, transparent 70%, rgba(0,0,0,0.35) 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+.status {
+  display: grid; grid-template-columns: auto 1fr auto auto auto; align-items: center; gap: 14px;
+  padding: 0 12px; border-bottom: 1px solid var(--faint);
+  font-size: 11px; letter-spacing: 0.04em; color: var(--dim);
+}
+.status .mode { color: var(--fg); font-weight: 700; letter-spacing: 0.08em; }
+.status .mode em { font-style: normal; color: var(--acc); margin-left: 6px; }
+.status .run { font-weight: 700; }
+.status .run.on { color: var(--ok); }
+.status .rec { color: var(--bad); font-weight: 700; visibility: hidden; }
+.status .rec.on { visibility: visible; animation: blink 1s steps(2, start) infinite; }
+@keyframes blink { to { opacity: 0.25; } }
+
+.main { display: grid; grid-template-columns: minmax(0, 1fr) var(--softkey-w); min-height: 0; }
+.content { position: relative; container-type: size; min-width: 0; min-height: 0; padding: 12px 14px; overflow: hidden; }
+
+.softkeys { display: grid; grid-template-rows: repeat(6, 1fr); border-left: 1px solid var(--faint); }
+.sk-lbl {
+  position: relative; display: grid; align-content: center; justify-items: end; gap: 3px;
+  padding: 0 10px 0 6px; margin: 4px 0;
+  border-top: 1px solid var(--faint); border-bottom: 1px solid transparent;
+  text-align: right; letter-spacing: 0.04em;
+}
+.sk-lbl::after { /* pointer to the key outside the glass */
+  content: ''; position: absolute; right: 0; top: 50%; width: 4px; height: 12px; margin-top: -6px; background: var(--faint);
+}
+.sk-lbl .n { font-size: 10px; color: var(--dim); font-weight: 600; text-transform: uppercase; }
+.sk-lbl .v { font-size: 13px; color: var(--fg); font-weight: 700; }
+.sk-lbl .v.hot { color: var(--hot); }
+.sk-lbl.flash { background: var(--sel-bg); }
+.sk-lbl.flash .n, .sk-lbl.flash .v { color: var(--sel-fg); }
+.sk-lbl.empty .n, .sk-lbl.empty .v { visibility: hidden; }
+
+.flabels { display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: 14px 1fr; border-top: 1px solid var(--faint); padding: 2px 4px 5px; }
+.grp {
+  grid-row: 1; display: flex; align-items: center; gap: 6px; padding: 0 6px;
+  font-size: 8.5px; font-weight: 700; letter-spacing: 0.16em; color: var(--dim); text-transform: uppercase;
+}
+.grp::before, .grp::after { content: ''; flex: 1; height: 4px; margin-top: 4px; border-top: 1px solid var(--faint); }
+.grp::before { border-left: 1px solid var(--faint); }
+.grp::after { border-right: 1px solid var(--faint); }
+.fl {
+  grid-row: 2; margin: 2px 4px 0; display: grid; place-items: center;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: var(--fg);
+  border: 1px solid var(--faint); border-radius: 2px; background: #0a0c0f;
+}
+.fl.on { background: var(--sel-bg); color: var(--sel-fg); border-color: var(--sel-bg); }
+
+/* screen building blocks – sizes follow the display (container units) */
+.scr { height: 100%; display: grid; gap: 1.8cqh; min-height: 0; }
+.row { display: flex; gap: 2.4cqw; align-items: end; min-width: 0; }
+.ro { display: grid; gap: 0.6cqh; min-width: 0; }
+.ro .l { font-size: clamp(9px, 1.9cqh, 13px); color: var(--dim); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; white-space: nowrap; }
+.ro .v { font-size: clamp(16px, 5.4cqh, 40px); font-weight: 300; letter-spacing: 0.01em; white-space: nowrap; }
+.ro .v .u { font-size: 0.5em; color: var(--dim); font-weight: 500; margin-left: 0.25em; }
+.ro.acc .v { color: var(--acc); }
+.ro.hot .v { color: var(--hot); }
+.box { position: relative; border: 1px solid var(--faint); border-radius: 2px; min-height: 0; }
+.box > .t {
+  position: absolute; top: -1px; left: 10px; transform: translateY(-50%);
+  padding: 1px 6px; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  background: #000; color: var(--dim);
+}
+.box > .t.inv { background: var(--sel-bg); color: var(--sel-fg); }
+.box > .meta { position: absolute; top: -1px; right: 10px; transform: translateY(-50%); padding: 1px 6px; font-size: 10px; letter-spacing: 0.06em; background: #000; color: var(--dim); }
+canvas.fill { position: absolute; inset: 8px; width: calc(100% - 16px); height: calc(100% - 16px); display: block; }
+.huge { font-size: min(21cqh, 13cqw); font-weight: 200; letter-spacing: -0.01em; line-height: 0.95; white-space: nowrap; }
+.huge .u { font-size: 0.32em; font-weight: 400; color: var(--dim); margin-left: 0.3em; letter-spacing: 0.04em; }
+.huge .dimd { color: var(--dim); }
+.chip { display: inline-block; padding: 2px 6px; border: 1px solid var(--faint); border-radius: 2px; font-size: clamp(9px, 1.8cqh, 12px); font-weight: 700; letter-spacing: 0.08em; color: var(--dim); text-transform: uppercase; }
+.chip.on { background: var(--sel-bg); color: var(--sel-fg); border-color: var(--sel-bg); }
+.chip.ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, transparent); }
+
+/* morse decoder */
+.decoded { padding: 1.6cqh 1.4cqw 1.4cqh; display: grid; gap: 1cqh; align-content: start; }
+.tail { white-space: nowrap; overflow: hidden; direction: rtl; text-align: left; }
+.tail > span { display: inline-block; direction: ltr; unicode-bidi: isolate; }
+.decoded .code { font: 500 clamp(11px, 2.6cqh, 18px)/1.2 var(--mono); color: var(--dim); }
+.decoded .text { font: 400 clamp(18px, 7.5cqh, 52px)/1.1 var(--mono); letter-spacing: 0.04em; color: var(--fg); }
+.cursor { display: inline-block; width: 0.55em; height: 0.9em; margin-left: 0.1em; vertical-align: -0.08em; background: var(--acc); animation: blink 0.9s steps(2, start) infinite; }
+
+/* dtmf */
+.dtmf-seq { font: 300 min(13cqh, 7cqw)/1 var(--mono); letter-spacing: 0.12em; }
+.dtmf-seq b { font-weight: 500; color: var(--acc); }
+.matrix { display: grid; grid-template-columns: auto repeat(4, 1fr); grid-auto-rows: 1fr; gap: 0.6cqh 0.6cqw; height: 100%; }
+.matrix .h { display: grid; place-items: center; font-size: clamp(9px, 1.9cqh, 13px); color: var(--dim); }
+.matrix .c { display: grid; place-items: center; border: 1px solid var(--faint); border-radius: 2px; font-size: clamp(12px, 4.2cqh, 30px); font-weight: 300; }
+.matrix .c.on { background: var(--acc); color: #000; border-color: var(--acc); font-weight: 500; }
+.gbars { display: grid; grid-template-columns: repeat(8, 1fr); gap: 0.8cqw; align-items: end; height: 100%; padding: 0 0.6cqw; }
+.gbar { position: relative; height: 100%; display: grid; align-items: end; }
+.gbar i { display: block; background: var(--faint); height: 10%; transition: height 80ms; }
+.gbar.on i { background: var(--acc); }
+.gbar span { position: absolute; bottom: -1.6em; left: 0; right: 0; text-align: center; font-size: clamp(8px, 1.6cqh, 11px); color: var(--dim); }
+
+/* tuner (freq) */
+.tuner { position: relative; height: 5cqh; min-height: 18px; }
+.tuner .scale { position: absolute; inset: 0; background: repeating-linear-gradient(90deg, var(--faint) 0 1px, transparent 1px 10%); border-bottom: 1px solid var(--faint); }
+.tuner .zero { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 2px; margin-left: -1px; background: var(--ok); }
+.tuner .needle { position: absolute; top: 0; bottom: 0; width: 6px; margin-left: -3px; background: var(--hot); box-shadow: 0 0 8px var(--hot); transition: left 120ms; }
+.tuner .ticks { position: absolute; top: 100%; left: 0; right: 0; display: flex; justify-content: space-between; font-size: clamp(8px, 1.6cqh, 11px); color: var(--dim); padding-top: 3px; }
+
+/* tone */
+.tabs { display: flex; gap: 0.8cqw; }
+.tabs .chip { padding: 0.6cqh 1.2cqw; font-size: clamp(10px, 2.2cqh, 15px); }
+
+/* rec */
+.files { width: 100%; border-collapse: collapse; font-size: clamp(10px, 2.2cqh, 14px); }
+.files td { padding: 0.9cqh 0.8cqw; border-top: 1px solid var(--faint); white-space: nowrap; }
+.files tr:first-child td { border-top: 0; }
+.files td:nth-child(n+2) { text-align: right; color: var(--dim); }
+.files tr.sel td { background: var(--sel-bg); color: var(--sel-fg); }
+
+/* knob/entry toast */
+.toast {
+  position: absolute; left: 50%; bottom: 7cqh; transform: translateX(-50%);
+  min-width: 34cqw; padding: 1.4cqh 1.6cqw; display: grid; gap: 1cqh;
+  background: rgba(0,0,0,0.92); border: 1px solid var(--acc); border-radius: 3px;
+  box-shadow: 0 0 24px rgba(0,0,0,0.9);
+  opacity: 0; transition: opacity 150ms; pointer-events: none;
+}
+.toast.show { opacity: 1; }
+.toast .top { display: flex; justify-content: space-between; align-items: baseline; gap: 2cqw; }
+.toast .n { font-size: clamp(10px, 2.2cqh, 14px); font-weight: 700; letter-spacing: 0.1em; color: var(--dim); text-transform: uppercase; }
+.toast .v { font-size: clamp(16px, 5cqh, 34px); font-weight: 300; color: var(--fg); }
+.toast .track { height: 4px; background: var(--faint); }
+.toast .track i { display: block; height: 100%; background: var(--acc); }
+</style>
+</head>
+<body>
+
+<div class="mock-bar" role="toolbar" aria-label="Mockup-Optionen">
+  <span><b>Bauteile</b><span class="seg" data-opt="parts"><button data-v="photo">Foto-Ausschnitte</button><button data-v="css">CSS-Nachbau</button></span></span>
+  <span><b>OLED</b><span class="seg" data-opt="pal"><button data-v="multi">Mehrfarbig</button><button data-v="amber">Amber</button><button data-v="cyan">Cyan</button></span></span>
+  <span><b>Rechts</b><span class="seg" data-opt="right"><button data-v="keypad">Tastatur + Regler</button><button data-v="compact">Nur Regler</button></span></span>
+  <span class="hint">Fenster ziehen → nur das Display wächst · Mausrad auf Reglern · F-Tasten wechseln den Modus</span>
+</div>
+
+<div class="stage">
+  <div class="device" id="device">
+
+    <!-- ── left: display ───────────────────────────────────────────────── -->
+    <section class="front">
+      <div class="bezel">
+        <div class="glass">
+          <div class="oled" id="oled">
+            <header class="status">
+              <span class="mode" id="st-mode">MORSE</span>
+              <span id="st-input">INPUT · MIC · 48.0 kHz</span>
+              <span class="rec" id="st-rec">● REC</span>
+              <span class="run" id="st-run">■ STOP</span>
+              <span id="st-clock">16:04</span>
+            </header>
+            <div class="main">
+              <div class="content" id="content"></div>
+              <div class="softkeys" id="softkeys"></div>
+            </div>
+            <footer class="flabels" id="flabels"></footer>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidekeys" id="sidekeys"></div>
+
+      <div class="ftray"><div class="row" id="fkeys"></div></div>
+    </section>
+
+    <!-- ── right: fixed hardware ───────────────────────────────────────── -->
+    <section class="right" id="right">
+      <div class="brand">
+        <div class="logo">SONIC·LAB<small>AUDIO SIGNAL ANALYZER</small></div>
+        <div class="power"><span class="led on g"></span><button class="k plain" style="width:40px;height:24px" aria-label="Power"><span class="cap" style="font-size:9px">PWR</span></button></div>
+      </div>
+
+      <div class="knobs">
+        <div class="kcell"><span class="silk">GAIN<i class="c"></i>SQL</span><div class="knob arc" data-name="Input gain" data-min="-24" data-max="24" data-val="0" data-unit="dB"></div></div>
+        <div class="kcell"><span class="silk">PITCH<i class="c"></i>WPM</span><div class="knob arc" data-name="Pitch" data-min="300" data-max="1500" data-val="700" data-unit="Hz" data-step="5"></div></div>
+        <div class="kcell"><span class="silk">AF<i class="c"></i>LEVEL</span><div class="knob arc" data-name="Monitor" data-min="0" data-max="100" data-val="60" data-unit="%"></div></div>
+      </div>
+
+      <div class="knobs compact-only">
+        <div class="kcell"><span class="silk">SPAN</span><div class="knob scale" data-name="Span" data-min="1" data-max="24" data-val="4" data-unit="kHz"></div></div>
+        <div class="kcell"><span class="silk">REF LEVEL</span><div class="knob scale" data-name="Ref level" data-min="-60" data-max="0" data-val="0" data-unit="dB"></div></div>
+        <div class="kcell"><span class="silk">AVERAGE</span><div class="knob scale" data-name="Average" data-min="1" data-max="16" data-val="4" data-unit="×"></div></div>
+      </div>
+
+      <div class="mid">
+        <div class="keypad keypad-only" id="keypad"></div>
+        <div class="tcol keypad-only">
+          <div class="tcell"><span class="silk">INPUT</span><button class="k plain" data-act="input"><span class="cap">SRC</span></button></div>
+          <div class="tcell" style="margin-top:6px"><span class="silk">RUN</span>
+            <span class="led" id="led-run"></span>
+            <button class="k tr play" data-act="run"><span class="cap"><i class="sym-play baked"></i></span></button></div>
+          <div class="tcell"><button class="k tr stop" data-act="stop"><span class="cap"><i class="sym-stop baked"></i></span></button></div>
+          <div class="tcell"><span class="led" id="led-rec"></span><button class="k tr rec" data-act="rec"><span class="cap"><i class="sym-rec baked"></i></span></button><span class="silk dim">REC</span></div>
+        </div>
+        <div class="compact-only" style="grid-column:1 / -1; grid-template-columns: repeat(5, auto); justify-content: space-between; align-items: end;">
+          <div class="tcell"><span class="silk">INPUT</span><button class="k plain" data-act="input"><span class="cap">SRC</span></button></div>
+          <div class="tcell"><span class="silk">CLR</span><button class="k plain" data-act="clr"><span class="cap">CLR</span></button></div>
+          <div class="tcell"><span class="led" id="led-run2"></span><button class="k tr play" data-act="run"><span class="cap"><i class="sym-play baked"></i></span></button></div>
+          <div class="tcell"><span class="led" style="visibility:hidden"></span><button class="k tr stop" data-act="stop"><span class="cap"><i class="sym-stop baked"></i></span></button></div>
+          <div class="tcell"><span class="led" id="led-rec2"></span><button class="k tr rec" data-act="rec"><span class="cap"><i class="sym-rec baked"></i></span></button></div>
+        </div>
+      </div>
+
+      <div class="bottom">
+        <div class="kcell"><span class="silk">MULTI</span><div class="knob dial" data-name="Multi" data-min="0" data-max="1000" data-val="500" data-unit="" data-dial></div></div>
+        <div class="bkeys">
+          <div class="kcell"><button class="k menu" data-act="menu"><span class="cap"><span class="baked">MENU</span></span></button></div>
+          <div class="kcell"><button class="k plain" data-act="copy"><span class="cap">COPY</span></button></div>
+          <div class="kcell"><button class="k esc" data-act="esc"><span class="cap"><span class="baked">ESC</span></span></button></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+'use strict';
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const device = $('#device');
+
+/* ── options (mockup toolbar), kept in the URL hash ─────────────────────── */
+const opts = Object.assign({ parts: 'css', pal: 'multi', right: 'keypad', mode: 'morse' },
+  Object.fromEntries(new URLSearchParams(location.hash.slice(1))));
+function applyOpts() {
+  const b = document.body;
+  b.classList.toggle('v-photo', opts.parts === 'photo');
+  b.classList.toggle('pal-amber', opts.pal === 'amber');
+  b.classList.toggle('pal-cyan', opts.pal === 'cyan');
+  b.classList.toggle('r-compact', opts.right === 'compact');
+  $$('.seg').forEach((seg) => $$('button', seg).forEach((btn) => btn.setAttribute('aria-pressed', String(opts[seg.dataset.opt] === btn.dataset.v))));
+  history.replaceState(null, '', '#' + new URLSearchParams(opts));
+  readPalette();
+}
+$$('.seg button').forEach((btn) => btn.addEventListener('click', () => { opts[btn.parentElement.dataset.opt] = btn.dataset.v; applyOpts(); }));
+
+/* below the minimum size the whole device scales; above, only the OLED grows */
+function fitDevice() {
+  const z = Math.min(1, innerWidth / 1180, (innerHeight - 36) / 720);
+  device.style.setProperty('--z', z.toFixed(4));
+}
+addEventListener('resize', fitDevice);
+
+/* ── modes ──────────────────────────────────────────────────────────────── */
+const GROUPS = [['DECODE', 2], ['ANALYZE', 3], ['GENERATE · RECORD', 3]];
+const MODES = [
+  { id: 'morse', key: 'MORSE', title: 'MORSE', sub: 'DECODE',
+    soft: [['TONE', ['AUTO', 'FIXED']], ['SENS', ['MED', 'HIGH', 'LOW']], ['START', ['20 WPM', '25 WPM', '30 WPM', '15 WPM']], ['FILTER', ['WIDE', 'NARROW']], ['RESET'], ['COPY']] },
+  { id: 'dtmf', key: 'DTMF', title: 'DTMF', sub: 'DECODE',
+    soft: [['SENS', ['MED', 'HIGH', 'LOW']], ['MIN DUR', ['40 ms', '25 ms', '60 ms']], ['TWIST', ['STD', 'LOOSE']], null, ['CLEAR'], ['COPY']] },
+  { id: 'freq', key: 'FREQ', title: 'FREQUENCY', sub: 'ANALYZE',
+    soft: [['REF', ['A4 440', 'A4 442', 'A4 432']], ['SMOOTH', ['MED', 'HIGH', 'OFF']], ['RANGE', ['AUTO', 'VOICE', 'FULL']], ['HOLD', ['OFF', 'ON']], null, ['COPY']] },
+  { id: 'spectrum', key: 'SPECTRUM', title: 'SPECTRUM', sub: 'ANALYZE',
+    soft: [['FFT', ['4096', '8192', '2048']], ['SPAN', ['4 kHz', '8 kHz', '24 kHz']], ['REF LEV', ['0 dB', '-10 dB', '-20 dB']], ['AVG', ['4', '8', 'OFF']], ['PEAK', ['HOLD', 'OFF']], ['PAUSE', ['OFF', 'ON']]] },
+  { id: 'monitor', key: 'MONITOR', title: 'SIGNAL MONITOR', sub: 'ANALYZE',
+    soft: [['METER', ['PEAK', 'RMS']], ['WINDOW', ['10 s', '30 s', '60 s']], ['CLIP', ['-1 dB', '-3 dB']], null, ['RESET'], null] },
+  { id: 'encoder', key: 'MORSE', title: 'MORSE', sub: 'ENCODE',
+    soft: [['SPEED', ['20 WPM', '25 WPM', '15 WPM']], ['PITCH', ['700 Hz', '600 Hz', '800 Hz']], ['FARNS', ['OFF', '15 WPM']], ['REPEAT', ['OFF', 'ON']], ['CLEAR'], ['EXPORT']] },
+  { id: 'tone', key: 'TONE', title: 'TONE GENERATOR', sub: 'GENERATE',
+    soft: [['WAVE', ['SINE', 'SQUARE', 'SAW', 'NOISE']], ['FREQ', ['1000 Hz']], ['LEVEL', ['-12 dB', '-6 dB', '-20 dB']], ['SWEEP', ['OFF', 'ON']], null, ['OUTPUT', ['OFF', 'ON']]] },
+  { id: 'rec', key: 'REC', title: 'RECORDER', sub: 'RECORD',
+    soft: [['FORMAT', ['WAV', 'FLAC']], ['RATE', ['48 kHz', '44.1 kHz']], ['MONITOR', ['ON', 'OFF']], null, ['DELETE'], ['EXPORT']] },
+];
+const softState = {};
+let mode = MODES.find((m) => m.id === opts.mode) || MODES[0];
+
+/* ── hardware: build F keys, side keys, keypad, knobs ───────────────────── */
+$('#fkeys').innerHTML = MODES.map((m, i) => `<div class="fcell"><span class="tri"></span>
+  <button class="k fk" data-f="${i}" aria-label="F${i + 1} ${m.key} ${m.sub}"><span class="cap"><span class="lbl">F${i + 1}</span><i class="bar"></i></span></button></div>`).join('');
+$('#sidekeys').innerHTML = Array.from({ length: 6 }, (_, i) => `<div class="skcell"><span class="tri"></span>
+  <button class="k sk" data-s="${i}" aria-label="Soft key ${i + 1}"><span class="cap"><i class="bar"></i></span></button></div>`).join('');
+const TAGS = ['. , ?', 'ABC', 'DEF', 'GHI', 'JKL', 'MNO', 'PQRS', 'TUV', 'WXYZ'];
+$('#keypad').innerHTML = TAGS.map((t, i) => `<button class="k num" data-d="${i + 1}"><span class="tag">${t}</span><span class="cap">${i + 1}</span></button>`).join('')
+  + `<button class="k num" data-act="clr"><span class="tag">ALL</span><span class="cap small">CLR</span></button>`
+  + `<button class="k num" data-d="0"><span class="tag">SPACE</span><span class="cap">0</span></button>`
+  + `<button class="k num" data-act="ent"><span class="tag">STORE</span><span class="cap small">ENT</span></button>`;
+
+$$('.knob').forEach((k) => {
+  const scale = k.classList.contains('scale'), dial = k.hasAttribute('data-dial');
+  k.innerHTML = dial
+    ? '<span class="kface"><span class="dl d-grip"></span><span class="dl d-bevel"></span><span class="dl d-shade"></span><span class="dl d-chrome"></span><span class="dl d-face"></span><span class="krot"><i class="dimple"></i></span></span>'
+    : (scale ? scaleSvg() : '') + '<span class="kface"><span class="krot"><i class="kmark"></i></span></span>';
+  setKnob(k, +k.dataset.val, false);
+  k.addEventListener('wheel', (e) => { e.preventDefault(); turn(k, e.deltaY < 0 ? 1 : -1); }, { passive: false });
+  if (dial) {
+    // the jog dial follows the pointer around its centre: one step per 6°
+    let last = null, acc = 0;
+    const angleOf = (e) => { const r = k.getBoundingClientRect(); return Math.atan2(e.clientY - (r.top + r.height / 2), e.clientX - (r.left + r.width / 2)); };
+    k.addEventListener('pointerdown', (e) => { last = angleOf(e); acc = 0; k.setPointerCapture(e.pointerId); });
+    k.addEventListener('pointermove', (e) => {
+      if (last === null) return;
+      const a = angleOf(e); let d = a - last;
+      if (d > Math.PI) d -= 2 * Math.PI; else if (d < -Math.PI) d += 2 * Math.PI;
+      acc += (d * 180) / Math.PI; last = a;
+      const steps = Math.trunc(acc / 6);
+      if (steps) { turn(k, steps); acc -= steps * 6; }
+    });
+    k.addEventListener('pointerup', () => { last = null; });
+    return;
+  }
+  let lastY = null;
+  k.addEventListener('pointerdown', (e) => { lastY = e.clientY; k.setPointerCapture(e.pointerId); });
+  k.addEventListener('pointermove', (e) => { if (lastY === null) return; const d = Math.trunc((lastY - e.clientY) / 4); if (d) { turn(k, d); lastY = e.clientY; } });
+  k.addEventListener('pointerup', () => { lastY = null; });
+});
+function scaleSvg() {
+  let s = '<svg class="scale-svg" viewBox="0 0 78 65" aria-hidden="true">';
+  for (let i = 0; i <= 10; i++) {
+    const a = (-135 + i * 27) * Math.PI / 180, cx = 37, cy = 30.5, r1 = 22, r2 = i % 2 ? 23.5 : 25;
+    s += `<line x1="${cx + Math.sin(a) * r1}" y1="${cy - Math.cos(a) * r1}" x2="${cx + Math.sin(a) * r2}" y2="${cy - Math.cos(a) * r2}" stroke="#d8dbdf" stroke-width="${i % 2 ? 0.8 : 1.2}"/>`;
+    if (i % 2 === 0) s += `<text x="${cx + Math.sin(a) * 30}" y="${cy - Math.cos(a) * 30 + 2.5}" font-size="6.5" font-weight="700" fill="#d8dbdf" text-anchor="middle" font-family="Arial">${i}</text>`;
+  }
+  return s + '</svg>';
+}
+function setKnob(k, v, show = true) {
+  const min = +k.dataset.min, max = +k.dataset.max;
+  v = k.hasAttribute('data-dial') ? v : Math.max(min, Math.min(max, v));
+  k.dataset.val = v;
+  const ang = k.hasAttribute('data-dial') ? (v - 500) * 6 : -135 + ((v - min) / (max - min)) * 270;
+  k.style.setProperty('--a', ang + 'deg');
+  if (!show) return;
+  if (k.hasAttribute('data-dial')) {
+    toast('MULTI', `${v > 500 ? '+' : ''}${v - 500} steps`, 0.5 + (v - 500) / 200);
+  } else {
+    toast(k.dataset.name, `${v > 0 && min < 0 ? '+' : ''}${v} ${k.dataset.unit}`, (v - min) / (max - min));
+  }
+}
+function turn(k, d) { setKnob(k, +k.dataset.val + d * (+k.dataset.step || 1)); }
+
+/* ── display: soft key labels, F labels, toast ──────────────────────────── */
+function renderLabels() {
+  $('#flabels').innerHTML = GROUPS.map(([g, n], i) => `<span class="grp" style="grid-column: span ${n}">${g}</span>`).join('')
+    + MODES.map((m) => `<span class="fl ${m === mode ? 'on' : ''}">${m.key}</span>`).join('');
+  const st = softState[mode.id] || (softState[mode.id] = mode.soft.map(() => 0));
+  $('#softkeys').innerHTML = mode.soft.map((s, i) => {
+    if (!s) return '<div class="sk-lbl empty"><span class="n">–</span><span class="v">–</span></div>';
+    const [name, vals] = s;
+    return vals
+      ? `<div class="sk-lbl" data-i="${i}"><span class="n">${name}</span><span class="v ${st[i] ? 'hot' : ''}">${vals[st[i]]}</span></div>`
+      : `<div class="sk-lbl" data-i="${i}"><span class="n">&nbsp;</span><span class="v">${name}</span></div>`;
+  }).join('');
+  $('#st-mode').innerHTML = `${mode.title}<em>${mode.sub}</em>`;
+  $$('.k.fk').forEach((b, i) => b.classList.toggle('on', MODES[i] === mode));
+}
+let toastTimer;
+function toast(name, value, frac) {
+  let t = $('.toast', $('#content'));
+  if (!t) { t = document.createElement('div'); t.className = 'toast'; $('#content').append(t); }
+  t.innerHTML = `<div class="top"><span class="n">${name}</span><span class="v">${value}</span></div>`
+    + (frac === undefined ? '' : `<div class="track"><i style="width:${Math.max(0, Math.min(1, frac)) * 100}%"></i></div>`);
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1300);
+}
+
+/* ── key handling ───────────────────────────────────────────────────────── */
+let running = true, recording = false, entry = '';
+const INPUTS = ['MIC · 48.0 kHz', 'LINE IN · 48.0 kHz', 'DEMO · 48.0 kHz'];
+let inputIdx = 0;
+function updateRun() {
+  const r = $('#st-run');
+  r.textContent = running ? '● LISTEN' : '■ STOP';
+  r.classList.toggle('on', running);
+  $('#st-rec').classList.toggle('on', recording);
+  ['#led-run', '#led-run2'].forEach((s) => $(s).classList.toggle('on', running));
+  ['#led-rec', '#led-rec2'].forEach((s) => $(s).classList.toggle('on', recording));
+  $('#st-input').textContent = 'INPUT · ' + INPUTS[inputIdx];
+}
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('button.k');
+  if (!b) return;
+  if (b.dataset.f !== undefined) { setMode(MODES[+b.dataset.f]); return; }
+  if (b.dataset.s !== undefined) { pressSoft(+b.dataset.s); return; }
+  if (b.dataset.d !== undefined) { entry = (entry + b.dataset.d).slice(-7); toast('ENTRY', entry + '<span class="cursor"></span>'); return; }
+  switch (b.dataset.act) {
+    case 'run': running = true; break;
+    case 'stop': running = false; recording = false; break;
+    case 'rec': recording = !recording; running = running || recording; break;
+    case 'input': inputIdx = (inputIdx + 1) % INPUTS.length; toast('INPUT', INPUTS[inputIdx]); break;
+    case 'clr': entry = ''; toast('ENTRY', 'cleared'); break;
+    case 'ent': if (entry) { if (mode.id === 'tone') { toneFreq = +entry; } toast('ENTER', entry + (mode.id === 'tone' ? ' Hz' : '')); entry = ''; } break;
+    case 'copy': toast('COPY', 'to clipboard'); break;
+    case 'menu': toast('MENU', 'settings …'); break;
+    case 'esc': entry = ''; $('.toast')?.classList.remove('show'); break;
+  }
+  updateRun();
+});
+function pressSoft(i) {
+  const s = mode.soft[i];
+  if (!s) return;
+  const lbl = $(`.sk-lbl[data-i="${i}"]`);
+  const [name, vals] = s;
+  if (vals) {
+    const st = softState[mode.id];
+    st[i] = (st[i] + 1) % vals.length;
+    if (mode.id === 'tone' && name === 'WAVE') toneWave = vals[st[i]];
+    renderLabels();
+    toast(name, vals[st[i]]);
+  } else {
+    lbl.classList.add('flash');
+    setTimeout(() => lbl.classList.remove('flash'), 180);
+    toast(name, 'done');
+  }
+  $$('.k.sk')[i].classList.add('on');
+  setTimeout(() => $$('.k.sk')[i].classList.remove('on'), 250);
+}
+
+/* ── colours from the active palette, for canvas drawing ────────────────── */
+let C = {};
+function readPalette() {
+  const cs = getComputedStyle($('#oled'));
+  for (const k of ['fg', 'dim', 'faint', 'acc', 'acc2', 'hot', 'ok', 'bad', 'grid']) C[k] = cs.getPropertyValue('--' + k).trim();
+  wfLut = null;
+}
+
+/* ── fake signals ───────────────────────────────────────────────────────── */
+const MORSE = { A: '.-', B: '-...', C: '-.-.', D: '-..', E: '.', F: '..-.', G: '--.', H: '....', I: '..', J: '.---', K: '-.-', L: '.-..', M: '--', N: '-.', O: '---', P: '.--.', Q: '--.-', R: '.-.', S: '...', T: '-', U: '..-', V: '...-', W: '.--', X: '-..-', Y: '-.--', Z: '--..', 0: '-----', 1: '.----', 2: '..---', 3: '...--', 4: '....-', 5: '.....', 6: '-....', 7: '--...', 8: '---..', 9: '----.', '/': '-..-.', '?': '..--..', '=': '-...-' };
+function keying(text, wpm) {
+  const dit = 1.2 / wpm; let t = 0.4; const ons = [], chars = [];
+  for (const ch of text) {
+    if (ch === ' ') { t += dit * 4; chars.push({ ch, code: '/', start: t - dit * 4, end: t }); continue; }
+    const code = MORSE[ch]; const start = t;
+    for (const el of code) { const d = el === '.' ? dit : 3 * dit; ons.push([t, t + d, start]); t += d + dit; }
+    t += dit * 2; chars.push({ ch, code, start, end: t });
+  }
+  return { ons, chars, total: t + 1.2 };
+}
+const RX = keying('CQ CQ DE DL1ABC DL1ABC PSE K ', 18);
+const TX = keying('CQ CQ DE DL1ABC PSE K ', 20);
+function isOn(tl, t) { t %= tl.total; for (const o of tl.ons) { if (t < o[0]) return false; if (t < o[1]) return true; } return false; }
+
+const t0 = performance.now();
+let now = 0, frozenAt = 0;
+let toneFreq = 1000, toneWave = 'SINE';
+const rnd = (() => { let s = 7; return () => ((s = (s * 16807) % 2147483647) / 2147483647); })();
+const noise = () => rnd() * 2 - 1;
+
+/* ── screens ────────────────────────────────────────────────────────────── */
+const SCREENS = {
+  morse: () => `<div class="scr" style="grid-template-rows: auto minmax(0, 1.25fr) minmax(0, 0.45fr) auto">
+      <div class="row">
+        <div class="ro acc"><span class="l">Tone · auto</span><span class="v glow" id="m-tone">702<span class="u">Hz</span></span></div>
+        <div class="ro"><span class="l">Signal / noise</span><span class="v" id="m-snr">39<span class="u">dB</span></span></div>
+        <div class="ro hot"><span class="l">Speed</span><span class="v glow" id="m-wpm">18<span class="u">WPM</span></span></div>
+        <div style="margin-left:auto; display:flex; gap:6px"><span class="chip ok">LOCKED</span><span class="chip">FILTER WIDE</span></div>
+      </div>
+      <div class="box"><span class="t">Signal</span><span class="meta">waveform · 3 s</span><canvas class="fill" id="cv-wave"></canvas></div>
+      <div class="box"><span class="t">Key-down</span><span class="meta">last 6 s</span><canvas class="fill" id="cv-keys"></canvas></div>
+      <div class="box decoded"><span class="t inv">Decoded</span><div class="code tail"><span id="m-code"></span></div><div class="text tail"><span><span id="m-text"></span><span class="cursor"></span></span></div></div>
+    </div>`,
+  dtmf: () => `<div class="scr" style="grid-template-rows: auto auto minmax(0, 1fr)">
+      <div class="row">
+        <div class="ro acc"><span class="l">Tone pair</span><span class="v glow" id="d-pair">770 + 1336<span class="u">Hz</span></span></div>
+        <div class="ro"><span class="l">Twist</span><span class="v" id="d-twist">+1.2<span class="u">dB</span></span></div>
+        <div class="ro"><span class="l">Duration</span><span class="v" id="d-dur">62<span class="u">ms</span></span></div>
+        <div style="margin-left:auto"><span class="chip ok">VALID</span></div>
+      </div>
+      <div class="box" style="padding: 2.2cqh 1.4cqw 1.6cqh"><span class="t inv">Digits</span><div class="dtmf-seq tail"><span id="d-seq"></span></div></div>
+      <div style="display:grid; grid-template-columns: 1.1fr 1fr; gap: 2cqw; min-height:0">
+        <div class="box" style="padding: 2.6cqh 1.2cqw 1.2cqh"><span class="t">Keypad matrix</span><div class="matrix" id="d-matrix"></div></div>
+        <div class="box" style="padding: 3cqh 1.2cqw 4.2cqh"><span class="t">Goertzel</span><span class="meta">8 bins</span><div class="gbars" id="d-bars"></div></div>
+      </div>
+    </div>`,
+  freq: () => `<div class="scr" style="grid-template-rows: auto auto minmax(0, 1fr)">
+      <div class="row" style="align-items:center; gap: 4cqw">
+        <div class="huge glow" id="f-big">440.<span class="dimd">27</span><span class="u">Hz</span></div>
+        <div class="ro hot"><span class="l">Note</span><span class="v glow" id="f-note" style="font-size:min(9cqh,6cqw)">A4</span></div>
+        <div class="ro"><span class="l">Cents</span><span class="v" id="f-cents">+1.1</span></div>
+      </div>
+      <div style="padding: 0 1cqw 3cqh"><div class="tuner"><div class="scale"></div><div class="zero"></div><div class="needle" id="f-needle" style="left:51%"></div>
+        <div class="ticks"><span>−50</span><span>−25</span><span>0</span><span>+25</span><span>+50 ct</span></div></div></div>
+      <div class="box"><span class="t">Stability</span><span class="meta">last 10 s · ±10 ct band</span><canvas class="fill" id="cv-freq"></canvas></div>
+    </div>`,
+  spectrum: () => `<div class="scr" style="grid-template-rows: auto minmax(0, 1fr) minmax(0, 1.25fr); gap: 1.2cqh">
+      <div class="row">
+        <div class="ro acc"><span class="l">Marker</span><span class="v glow" id="s-mkr">702.1<span class="u">Hz</span></span></div>
+        <div class="ro"><span class="l">Level</span><span class="v" id="s-lvl">−18.4<span class="u">dBFS</span></span></div>
+        <div class="ro"><span class="l">Resolution</span><span class="v">11.7<span class="u">Hz</span></span></div>
+        <div style="margin-left:auto; display:flex; gap:6px"><span class="chip on">FFT 4096</span><span class="chip">AVG 4</span><span class="chip">PEAK HOLD</span></div>
+      </div>
+      <div class="box"><span class="t inv">Spectrum</span><span class="meta">0 – 4 kHz · ref 0 dB</span><canvas class="fill" id="cv-spec"></canvas></div>
+      <div class="box"><span class="t">Waterfall</span><canvas class="fill" id="cv-wf"></canvas></div>
+    </div>`,
+  monitor: () => `<div class="scr" style="grid-template-rows: minmax(0, 1.1fr) minmax(0, 1fr)">
+      <div style="display:grid; grid-template-columns: 1fr 0.9fr; gap: 2cqw; min-height:0">
+        <div class="box"><span class="t">Level</span><span class="meta">dBFS</span><svg id="mt-svg" viewBox="0 0 300 150" style="position:absolute; inset: 6% 4% 2%; width:92%; height:92%"></svg></div>
+        <div style="display:grid; align-content:center; gap: 3cqh">
+          <div class="ro acc"><span class="l">Peak</span><span class="v glow" id="mt-peak">−4.2<span class="u">dBFS</span></span></div>
+          <div class="ro"><span class="l">RMS</span><span class="v" id="mt-rms">−14.8<span class="u">dBFS</span></span></div>
+          <div class="ro hot"><span class="l">Dominant</span><span class="v glow" id="mt-freq">702<span class="u">Hz</span></span></div>
+        </div>
+      </div>
+      <div class="box"><span class="t">History</span><span class="meta">level · frequency · 10 s</span><canvas class="fill" id="cv-hist"></canvas></div>
+    </div>`,
+  encoder: () => `<div class="scr" style="grid-template-rows: auto auto minmax(0, 1fr) auto">
+      <div class="row">
+        <div class="ro hot"><span class="l">Speed</span><span class="v glow">20<span class="u">WPM</span></span></div>
+        <div class="ro acc"><span class="l">Pitch</span><span class="v glow">700<span class="u">Hz</span></span></div>
+        <div class="ro"><span class="l">Farnsworth</span><span class="v">off</span></div>
+        <div class="ro"><span class="l">Length</span><span class="v">0:14</span></div>
+        <div style="margin-left:auto"><span class="chip ok" id="e-state">▶ PLAYING</span></div>
+      </div>
+      <div class="box" style="padding: 2.4cqh 1.4cqw 1.6cqh"><span class="t inv">Text</span><div class="text" id="e-text" style="font: 400 clamp(16px, 6.4cqh, 44px)/1.1 var(--mono); letter-spacing: .06em; white-space: nowrap; overflow: hidden"></div></div>
+      <div class="box"><span class="t">Keying</span><span class="meta">dit · dah · gap</span><canvas class="fill" id="cv-enc"></canvas></div>
+      <div style="font: 500 clamp(11px, 2.4cqh, 16px)/1.2 var(--mono); color: var(--dim); white-space: nowrap; overflow: hidden" id="e-code"></div>
+    </div>`,
+  tone: () => `<div class="scr" style="grid-template-rows: auto auto auto minmax(0, 1fr)">
+      <div class="tabs" id="t-tabs"></div>
+      <div class="row" style="align-items:center; gap: 4cqw">
+        <div class="huge glow" id="t-freq"></div>
+        <div style="display:grid; gap: 1.4cqh"><span class="chip ok">▶ OUTPUT ON</span><span class="chip">SWEEP OFF</span></div>
+      </div>
+      <div class="row" style="align-items:center; gap: 2cqw">
+        <div class="ro acc" style="min-width: 22cqw"><span class="l">Level</span><span class="v glow">−12.0<span class="u">dBFS</span></span></div>
+        <div style="flex:1; height: 1.6cqh; min-height: 6px; background: var(--faint); position: relative"><i style="position:absolute; inset: 0 40% 0 0; background: linear-gradient(90deg, var(--acc2), var(--acc))"></i></div>
+      </div>
+      <div class="box"><span class="t">Waveform</span><span class="meta" id="t-meta"></span><canvas class="fill" id="cv-tone"></canvas></div>
+    </div>`,
+  rec: () => `<div class="scr" style="grid-template-rows: auto auto minmax(0, 1fr)">
+      <div class="row" style="align-items:center; gap: 4cqw">
+        <div class="huge glow" id="r-time">00:01:27<span class="dimd">.4</span></div>
+        <div style="display:grid; gap: 1.4cqh"><span class="chip" id="r-state">■ STOPPED</span><span class="chip">WAV · 48 kHz · 24 bit</span></div>
+      </div>
+      <div class="box" style="height: 13cqh; min-height: 44px"><span class="t">Input level</span><span class="meta">L · R</span><canvas class="fill" id="cv-rec"></canvas></div>
+      <div class="box" style="padding: 2.4cqh 1cqw 1cqh; overflow:hidden"><span class="t inv">Recordings</span>
+        <table class="files"><tbody>
+          <tr class="sel"><td>rec-2026-11-03-1604.wav</td><td>01:27</td><td>12.5 MB</td></tr>
+          <tr><td>rec-2026-11-03-1550.wav</td><td>00:42</td><td>6.0 MB</td></tr>
+          <tr><td>dtmf-test-0815.wav</td><td>00:09</td><td>1.3 MB</td></tr>
+          <tr><td>cq-dl1abc.wav</td><td>02:13</td><td>19.1 MB</td></tr>
+        </tbody></table></div>
+    </div>`,
+};
+
+function setMode(m) {
+  mode = m; opts.mode = m.id;
+  history.replaceState(null, '', '#' + new URLSearchParams(opts));
+  $('#content').innerHTML = SCREENS[m.id]();
+  renderLabels();
+  setup[m.id]?.();
+}
+
+/* per-screen static setup */
+const DTMF_ROWS = [697, 770, 852, 941], DTMF_COLS = [1209, 1336, 1477, 1633];
+const DTMF_KEYS = ['123A', '456B', '789C', '*0#D'];
+const setup = {
+  dtmf() {
+    $('#d-matrix').innerHTML = '<span></span>' + DTMF_COLS.map((c) => `<span class="h">${c}</span>`).join('')
+      + DTMF_ROWS.map((r, i) => `<span class="h">${r}</span>` + [...DTMF_KEYS[i]].map((k) => `<span class="c" data-k="${k}">${k}</span>`).join('')).join('');
+    $('#d-bars').innerHTML = [...DTMF_ROWS, ...DTMF_COLS].map((f) => `<div class="gbar" data-f="${f}"><i></i><span>${f}</span></div>`).join('');
+  },
+  monitor() {
+    const svg = $('#mt-svg'); let s = '';
+    const marks = [[-60, '-60'], [-40, '-40'], [-30, '-30'], [-20, '-20'], [-10, '-10'], [-6, '-6'], [-3, '-3'], [0, '0']];
+    const ang = (db) => (-50 + (Math.max(-60, Math.min(0, db)) + 60) / 60 * 100) * Math.PI / 180;
+    s += `<path d="${arc(150, 150, 120, ang(-60), ang(-6))}" fill="none" stroke="var(--fg)" stroke-width="1.5"/>`;
+    s += `<path d="${arc(150, 150, 120, ang(-6), ang(0))}" fill="none" stroke="var(--bad)" stroke-width="4"/>`;
+    for (let db = -60; db <= 0; db += 2) { const a = ang(db), r2 = db % 10 === 0 ? 108 : 113; s += `<line x1="${150 + Math.sin(a) * 120}" y1="${150 - Math.cos(a) * 120}" x2="${150 + Math.sin(a) * r2}" y2="${150 - Math.cos(a) * r2}" stroke="${db > -6 ? 'var(--bad)' : 'var(--fg)'}" stroke-width="1"/>`; }
+    for (const [db, t] of marks) { const a = ang(db); s += `<text x="${150 + Math.sin(a) * 134}" y="${150 - Math.cos(a) * 134 + 4}" fill="${db > -6 ? 'var(--bad)' : 'var(--dim)'}" font-size="11" text-anchor="middle" font-family="-apple-system, Arial">${t}</text>`; }
+    s += `<text x="150" y="146" dx="18" fill="var(--dim)" font-size="11" letter-spacing="2" font-family="-apple-system, Arial">dBFS</text>`;
+    s += `<line id="mt-needle" x1="150" y1="150" x2="150" y2="36" stroke="var(--hot)" stroke-width="2" stroke-linecap="round" style="filter: drop-shadow(0 0 3px var(--hot))"/>`;
+    s += `<circle cx="150" cy="150" r="6" fill="var(--faint)"/>`;
+    svg.innerHTML = s;
+    svg.dataset.ang = '';
+  },
+  tone() { renderTone(); },
+};
+function arc(cx, cy, r, a1, a2) { return `M${cx + Math.sin(a1) * r} ${cy - Math.cos(a1) * r} A${r} ${r} 0 0 1 ${cx + Math.sin(a2) * r} ${cy - Math.cos(a2) * r}`; }
+function renderTone() {
+  const st = softState.tone || [0];
+  toneWave = MODES[6].soft[0][1][st[0]];
+  $('#t-tabs').innerHTML = ['SINE', 'SQUARE', 'SAW', 'NOISE'].map((w) => `<span class="chip ${w === toneWave ? 'on' : ''}">${w}</span>`).join('');
+  const [a, b] = toneFreq.toFixed(1).split('.');
+  $('#t-freq').innerHTML = `${a.replace(/\B(?=(\d{3})+(?!\d))/g, '\u2009')}.<span class="dimd">${b}</span><span class="u">Hz</span>`;
+  $('#t-meta').textContent = toneWave === 'NOISE' ? 'white noise' : `${toneWave.toLowerCase()} · 3 periods`;
+}
+
+/* ── canvas helpers ─────────────────────────────────────────────────────── */
+function cv(id) {
+  const c = document.getElementById(id);
+  if (!c) return null;
+  const r = c.getBoundingClientRect(), dpr = devicePixelRatio || 1;
+  const w = Math.max(1, Math.round(r.width * dpr)), h = Math.max(1, Math.round(r.height * dpr));
+  if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
+  return { c, x: c.getContext('2d'), w, h, u: w / Math.max(1, c.offsetWidth) * (r.width / Math.max(1, c.offsetWidth) > 0 ? 1 : 1) };
+}
+function gridLines(g, cols, rows) {
+  const { x, w, h } = g; x.strokeStyle = C.grid; x.lineWidth = 1;
+  x.beginPath();
+  for (let i = 1; i < cols; i++) { const px = Math.round(w * i / cols) + 0.5; x.moveTo(px, 0); x.lineTo(px, h); }
+  for (let i = 1; i < rows; i++) { const py = Math.round(h * i / rows) + 0.5; x.moveTo(0, py); x.lineTo(w, py); }
+  x.stroke();
+}
+function font(g, px, weight = 500) { return `${weight} ${px * (devicePixelRatio || 1) * (+getComputedStyle(device).getPropertyValue('--z') || 1)}px -apple-system, Helvetica, Arial`; }
+function glowStroke(x, color, width, blur) { x.strokeStyle = color; x.lineWidth = width; x.shadowColor = color; x.shadowBlur = blur; }
+
+/* waterfall colour map */
+let wfLut = null;
+function lut() {
+  if (wfLut) return wfLut;
+  const stops = opts.pal === 'amber' ? [[0, 0, 0, 0], [0.35, 70, 30, 0], [0.6, 220, 120, 10], [0.85, 255, 200, 90], [1, 255, 245, 220]]
+    : opts.pal === 'cyan' ? [[0, 0, 0, 0], [0.35, 0, 40, 60], [0.6, 0, 170, 210], [0.85, 120, 240, 255], [1, 240, 255, 255]]
+    : [[0, 0, 0, 0], [0.3, 0, 10, 90], [0.5, 0, 90, 230], [0.65, 0, 210, 255], [0.8, 255, 230, 40], [0.92, 255, 80, 30], [1, 255, 255, 255]];
+  wfLut = new Uint8ClampedArray(256 * 3);
+  for (let i = 0; i < 256; i++) {
+    const v = i / 255; let j = 0; while (j < stops.length - 2 && v > stops[j + 1][0]) j++;
+    const [p0, ...a] = stops[j], [p1, ...b] = stops[j + 1], f = (v - p0) / (p1 - p0 || 1);
+    for (let c = 0; c < 3; c++) wfLut[i * 3 + c] = a[c] + (b[c] - a[c]) * f;
+  }
+  return wfLut;
+}
+
+/* ── animation per screen ───────────────────────────────────────────────── */
+const hist = { freq: [], level: [], mf: [] };
+let peak = null, specAvg = null;
+function spectrum(n, t) {
+  const out = new Float32Array(n), keyed = isOn(RX, t);
+  for (let i = 0; i < n; i++) {
+    const f = i / n * 4000;
+    let p = Math.pow(10, (-92 + noise() * 5 - f / 600) / 10);
+    const add = (fc, db, bw) => { p += Math.pow(10, db / 10) * Math.exp(-((f - fc) ** 2) / (2 * bw * bw)); };
+    if (keyed) { add(702, -18, 9); add(1404, -52, 9); add(2106, -66, 9); }
+    add(1000, -34 + Math.sin(t * 0.7) * 2, 7);
+    add(2600 + Math.sin(t / 6) * 180, -48, 14);
+    add(3300, -70 + Math.sin(t * 3) * 6, 60);
+    out[i] = 10 * Math.log10(p);
+  }
+  return out;
+}
+const draw = {
+  morse(t) {
+    const g = cv('cv-wave');
+    if (g) {
+      const { x, w, h } = g; x.clearRect(0, 0, w, h); gridLines(g, 12, 4);
+      const span = 3, mid = h / 2; x.beginPath();
+      for (let px = 0; px < w; px += 3) {
+        const tt = t - span + (px / w) * span, on = isOn(RX, tt);
+        const a = (on ? 0.7 + noise() * 0.12 : 0.04 + rnd() * 0.05) * (h * 0.46) * Math.abs(Math.sin(px * 0.9));
+        x.moveTo(px + 0.5, mid - a); x.lineTo(px + 0.5, mid + a);
+      }
+      glowStroke(x, C.acc, 1 * (devicePixelRatio || 1), 4); x.stroke(); x.shadowBlur = 0;
+    }
+    const k = cv('cv-keys');
+    if (k) {
+      const { x, w, h } = k; x.clearRect(0, 0, w, h);
+      const span = 6; x.fillStyle = C.fg; x.shadowColor = C.fg; x.shadowBlur = 3;
+      const from = t - span;
+      for (let base = Math.floor(from / RX.total) * RX.total; base < t; base += RX.total)
+        for (const [a, b] of RX.ons) {
+          const s = base + a, e = base + b; if (e < from || s > t) continue;
+          const x0 = ((Math.max(s, from) - from) / span) * w, x1 = ((Math.min(e, t) - from) / span) * w;
+          x.fillRect(x0, h * 0.32, Math.max(1, x1 - x0), h * 0.36);
+        }
+      x.shadowBlur = 0;
+    }
+    const tt = t % RX.total, done = RX.chars.filter((c) => c.end <= tt);
+    const txt = done.map((c) => c.ch).join('');
+    const el = $('#m-text'); if (el && el.dataset.v !== txt) { el.textContent = txt.replace(/ /g, ' '); el.dataset.v = txt; }
+    const code = $('#m-code'); if (code) code.textContent = done.slice(-14).map((c) => c.code).join(' ');
+    if ((t * 4 | 0) % 2 === 0) { const tn = $('#m-tone'); if (tn) tn.firstChild.textContent = String(701 + Math.round(noise())); }
+  },
+  dtmf(t) {
+    const seq = '0891 5550 1234 #', step = 0.42, n = Math.floor(t / step), idx = n % (seq.length + 6);
+    const shown = seq.slice(0, Math.min(idx, seq.length)), cur = idx < seq.length ? seq[idx] : null;
+    const el = $('#d-seq'); if (el) el.innerHTML = (shown.replace(/ /g, ' ') || ' ') + (cur && cur !== ' ' ? `<b>${cur}</b>` : '');
+    const on = cur && cur !== ' ' && (t % step) < step * 0.62;
+    let r = -1, c = -1;
+    if (on) DTMF_KEYS.forEach((row, i) => { const j = row.indexOf(cur); if (j >= 0) { r = i; c = j; } });
+    $$('#d-matrix .c').forEach((e) => e.classList.toggle('on', on && e.dataset.k === cur));
+    $$('#d-bars .gbar').forEach((b, i) => {
+      const hit = on && (i === r || i === 4 + c);
+      b.classList.toggle('on', hit);
+      b.firstElementChild.style.height = (hit ? 78 + rnd() * 14 : 6 + rnd() * 8) + '%';
+    });
+    if (on) { const p = $('#d-pair'); if (p) p.firstChild.textContent = `${DTMF_ROWS[r]} + ${DTMF_COLS[c]}`; }
+  },
+  freq(t) {
+    const f = 440.27 + Math.sin(t * 0.9) * 0.35 + noise() * 0.05;
+    hist.freq.push(f); if (hist.freq.length > 600) hist.freq.shift();
+    if ((t * 8 | 0) !== (draw._fq || 0)) {
+      draw._fq = t * 8 | 0;
+      const [a, b] = f.toFixed(2).split('.'); const big = $('#f-big');
+      if (big) big.innerHTML = `${a}.<span class="dimd">${b}</span><span class="u">Hz</span>`;
+      const cents = 1200 * Math.log2(f / 440);
+      $('#f-cents') && ($('#f-cents').textContent = (cents >= 0 ? '+' : '−') + Math.abs(cents).toFixed(1));
+      $('#f-needle') && ($('#f-needle').style.left = (50 + cents) + '%');
+    }
+    const g = cv('cv-freq'); if (!g) return;
+    const { x, w, h } = g; x.clearRect(0, 0, w, h); gridLines(g, 10, 4);
+    const band = (cent) => h / 2 - (cent / 25) * (h / 2);
+    x.fillStyle = 'color-mix(in srgb, ' + C.ok + ' 10%, transparent)'; x.fillRect(0, band(10), w, band(-10) - band(10));
+    x.beginPath();
+    hist.freq.forEach((v, i) => { const px = w - (hist.freq.length - 1 - i) * (w / 600), py = band(1200 * Math.log2(v / 440)); i ? x.lineTo(px, py) : x.moveTo(px, py); });
+    glowStroke(x, C.hot, 1.6 * (devicePixelRatio || 1), 8); x.stroke(); x.shadowBlur = 0;
+  },
+  spectrum(t) {
+    const g = cv('cv-spec'), wfc = cv('cv-wf'); if (!g || !wfc) return;
+    const n = 320, s = spectrum(n, t);
+    if (!specAvg || specAvg.length !== n) { specAvg = Float32Array.from(s); peak = Float32Array.from(s); }
+    for (let i = 0; i < n; i++) { specAvg[i] = specAvg[i] * 0.6 + s[i] * 0.4; peak[i] = Math.max(peak[i] - 0.25, specAvg[i]); }
+    const { x, w, h } = g; x.clearRect(0, 0, w, h);
+    const ax = 16 * (devicePixelRatio || 1), ph = h - ax, y = (db) => ph * (-db / 100), X = (i) => (i / (n - 1)) * w;
+    gridLines({ x, w, h: ph }, 8, 5);
+    const grad = x.createLinearGradient(0, 0, 0, ph); grad.addColorStop(0, C.acc); grad.addColorStop(1, 'rgba(0,0,0,0)');
+    x.beginPath(); x.moveTo(0, ph); for (let i = 0; i < n; i++) x.lineTo(X(i), y(specAvg[i])); x.lineTo(w, ph); x.closePath();
+    x.globalAlpha = 0.35; x.fillStyle = grad; x.fill(); x.globalAlpha = 1;
+    x.beginPath(); for (let i = 0; i < n; i++) i ? x.lineTo(X(i), y(specAvg[i])) : x.moveTo(0, y(specAvg[i]));
+    glowStroke(x, C.acc, 1.3 * (devicePixelRatio || 1), 6); x.stroke(); x.shadowBlur = 0;
+    x.beginPath(); for (let i = 0; i < n; i++) i ? x.lineTo(X(i), y(peak[i])) : x.moveTo(0, y(peak[i]));
+    x.strokeStyle = C.dim; x.lineWidth = 1; x.setLineDash([2, 3]); x.stroke(); x.setLineDash([]);
+    const mi = Math.round(702 / 4000 * (n - 1)); x.fillStyle = C.hot;
+    x.beginPath(); const mx = X(mi), my = y(peak[mi]) - 4; x.moveTo(mx, my); x.lineTo(mx - 5, my - 9); x.lineTo(mx + 5, my - 9); x.fill();
+    x.fillStyle = C.dim; x.font = font(g, 10);
+    x.textAlign = 'center'; x.textBaseline = 'bottom';
+    for (let k = 0; k <= 4; k++) { const lbl = k + ' kHz', tw = x.measureText(lbl).width; x.fillText(lbl, Math.max(tw / 2, Math.min(w - tw / 2, X((k / 4) * (n - 1)))), h - 1); }
+    x.textAlign = 'left'; x.textBaseline = 'alphabetic';
+    x.strokeStyle = C.faint; x.beginPath(); x.moveTo(0, ph + 0.5); x.lineTo(w, ph + 0.5); x.stroke();
+    for (let d = 1; d < 5; d++) x.fillText(-d * 20 + ' dB', 4, (ph * d) / 5 - 3);
+    const lv = $('#s-lvl'); if (lv && (t * 6 | 0) % 2) lv.firstChild.textContent = '−' + (-peak[mi]).toFixed(1);
+    // waterfall
+    const W = wfc.w, H = wfc.h, wx = wfc.x;
+    wx.drawImage(wfc.c, 0, 0, W, H - 2, 0, 2, W, H - 2);
+    const row = wx.createImageData(W, 2), L = lut();
+    for (let px = 0; px < W; px++) {
+      const db = s[Math.min(n - 1, Math.floor((px / W) * n))];
+      const v = Math.max(0, Math.min(255, ((db + 95) / 80) * 255)) | 0;
+      for (let r = 0; r < 2; r++) { const o = (r * W + px) * 4; row.data[o] = L[v * 3]; row.data[o + 1] = L[v * 3 + 1]; row.data[o + 2] = L[v * 3 + 2]; row.data[o + 3] = 255; }
+    }
+    wx.putImageData(row, 0, 0);
+  },
+  monitor(t) {
+    const keyed = isOn(RX, t);
+    const target = keyed ? -6 - rnd() * 3 : -48 + noise() * 4;
+    draw._lv = draw._lv === undefined ? -40 : draw._lv + (target - draw._lv) * (target > draw._lv ? 0.5 : 0.12);
+    const lv = draw._lv;
+    hist.level.push(lv); hist.mf.push(keyed ? 702 + noise() : null); if (hist.level.length > 500) { hist.level.shift(); hist.mf.shift(); }
+    const nd = $('#mt-needle');
+    if (nd) { const a = (-50 + (Math.max(-60, Math.min(0, lv)) + 60) / 60 * 100) * Math.PI / 180; nd.setAttribute('x2', 150 + Math.sin(a) * 114); nd.setAttribute('y2', 150 - Math.cos(a) * 114); }
+    if ((t * 5 | 0) !== draw._mt) {
+      draw._mt = t * 5 | 0;
+      const mx = Math.max(...hist.level.slice(-40));
+      $('#mt-peak') && ($('#mt-peak').firstChild.textContent = '−' + Math.abs(mx).toFixed(1));
+      $('#mt-rms') && ($('#mt-rms').firstChild.textContent = '−' + Math.abs(lv - 8).toFixed(1));
+      $('#mt-freq') && ($('#mt-freq').firstChild.textContent = keyed ? '702' : '—');
+    }
+    const g = cv('cv-hist'); if (!g) return;
+    const { x, w, h } = g; x.clearRect(0, 0, w, h); gridLines(g, 10, 4);
+    const N = 500, X = (i) => w - (hist.level.length - 1 - i) * (w / N);
+    x.beginPath(); x.moveTo(X(0), h);
+    hist.level.forEach((v, i) => x.lineTo(X(i), h - ((v + 60) / 60) * h * 0.9));
+    x.lineTo(w, h); x.closePath();
+    x.fillStyle = 'color-mix(in srgb, ' + C.acc + ' 25%, transparent)'; x.fill();
+    x.beginPath(); hist.level.forEach((v, i) => (i ? x.lineTo : x.moveTo).call(x, X(i), h - ((v + 60) / 60) * h * 0.9));
+    glowStroke(x, C.acc, 1.2 * (devicePixelRatio || 1), 5); x.stroke(); x.shadowBlur = 0;
+    x.fillStyle = C.hot; hist.mf.forEach((f, i) => { if (f) x.fillRect(X(i), h * 0.18 + (f - 702) * 3, 2, 2); });
+  },
+  encoder(t) {
+    const tt = t % TX.total, ci = TX.chars.findIndex((c) => tt < c.end);
+    const tx = $('#e-text');
+    if (tx && tx.dataset.ci !== String(ci)) {
+      tx.dataset.ci = ci;
+      tx.innerHTML = TX.chars.map((c, i) => `<span style="${i < ci ? 'color:var(--fg)' : i === ci ? 'background:var(--sel-bg);color:var(--sel-fg)' : 'color:var(--dim)'}">${c.ch === ' ' ? '&nbsp;' : c.ch}</span>`).join('');
+      $('#e-code').textContent = TX.chars.slice(Math.max(0, ci - 6), ci + 1).map((c) => c.code).join('  ');
+    }
+    const g = cv('cv-enc'); if (!g) return;
+    const { x, w, h } = g; x.clearRect(0, 0, w, h);
+    const span = 5, head = w * 0.35, from = tt - span * 0.35, toX = (s) => ((s - from) / span) * w;
+    for (const [a, b] of TX.ons) {
+      if (b < from || a > from + span) continue;
+      const past = a < tt;
+      x.fillStyle = past ? C.acc : C.faint; x.shadowColor = C.acc; x.shadowBlur = past ? 6 : 0;
+      x.fillRect(toX(a), h * 0.3, Math.max(1, toX(b) - toX(a)), h * 0.4);
+    }
+    x.shadowBlur = 0; x.fillStyle = C.hot; x.fillRect(head - 1, 0, 2, h);
+  },
+  tone(t) {
+    const g = cv('cv-tone'); if (!g) return;
+    const { x, w, h } = g; x.clearRect(0, 0, w, h); gridLines(g, 12, 4);
+    x.beginPath();
+    for (let px = 0; px <= w; px += 1) {
+      const ph = (px / w) * 3 + t * 0.15; let v;
+      switch (toneWave) {
+        case 'SQUARE': v = (ph % 1) < 0.5 ? 0.75 : -0.75; break;
+        case 'SAW': v = ((ph % 1) * 2 - 1) * 0.75; break;
+        case 'NOISE': v = noise() * 0.6; break;
+        default: v = Math.sin(ph * Math.PI * 2) * 0.75;
+      }
+      const py = h / 2 - v * (h / 2);
+      px ? x.lineTo(px, py) : x.moveTo(px, py);
+    }
+    glowStroke(x, C.acc, 1.6 * (devicePixelRatio || 1), 8); x.stroke(); x.shadowBlur = 0;
+  },
+  rec(t) {
+    const tm = $('#r-time'), st = $('#r-state');
+    const secs = 87.4 + (recording ? t - (draw._recFrom ?? (draw._recFrom = t)) : 0);
+    if (!recording) draw._recFrom = undefined;
+    if (tm) { const hh = Math.floor(secs / 3600), mm = Math.floor(secs / 60) % 60, ss = Math.floor(secs) % 60; tm.innerHTML = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}<span class="dimd">.${Math.floor((secs % 1) * 10)}</span>`; tm.style.color = recording ? 'var(--bad)' : ''; }
+    if (st) { st.textContent = recording ? '● RECORDING' : '■ STOPPED'; st.className = 'chip' + (recording ? ' on' : ''); }
+    const g = cv('cv-rec'); if (!g) return;
+    const { x, w, h } = g; x.clearRect(0, 0, w, h);
+    const segs = 48, gap = 2 * (devicePixelRatio || 1), sw = (w - gap * (segs - 1)) / segs;
+    [0, 1].forEach((ch) => {
+      const lvl = isOn(RX, t + ch * 0.01) ? 0.72 + rnd() * 0.08 : 0.12 + rnd() * 0.05;
+      for (let i = 0; i < segs; i++) {
+        const f = i / segs, lit = f < lvl;
+        x.fillStyle = lit ? (f > 0.88 ? C.bad : f > 0.7 ? C.hot : C.ok) : C.faint;
+        x.fillRect(i * (sw + gap), ch * (h / 2) + h * 0.08, sw, h * 0.34);
+      }
+    });
+  },
+};
+
+function loop(ts) {
+  const t = (ts - t0) / 1000;
+  if (running) now = t - frozenAt; else frozenAt = t - now;
+  const clock = new Date(); $('#st-clock').textContent = clock.toTimeString().slice(0, 5);
+  draw[mode.id]?.(now);
+  requestAnimationFrame(loop);
+}
+
+applyOpts();
+fitDevice();
+setMode(mode);
+updateRun();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
