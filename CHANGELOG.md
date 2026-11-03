@@ -70,8 +70,15 @@ All notable changes to this project are documented here. The format follows
   web zip, optional GitHub Pages and optional macOS signing, SHA-256 checksums; actions pinned to
   commit SHAs.
 
+- Documentation: README with real screenshots (`pnpm screenshots`), updated architecture and
+  roadmap, code of conduct, security policy, issue and pull-request templates.
+
 ### Fixed
 
 - Insufficient colour contrast of secondary text and the light accent colour (WCAG AA).
 - Keyboard focus was lost while the microphone permission was requested (button got disabled).
 - The selected input device was not restored in WebKit when the device list loaded late.
+- Safari/WebKit refused to start capture ("access denied") because the AudioContext was created
+  after awaiting `getUserMedia`, outside the user gesture; it is now created first.
+- Tone generator: a restart reported "stopped" while the new signal was playing, and Stop during
+  a restart was ignored.

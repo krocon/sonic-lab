@@ -3,80 +3,85 @@
 **Local, privacy-first audio signal analyzer for the web and the desktop.**
 
 AudioLab captures audio from your microphone, visualises it in real time and decodes signals –
-starting with acoustic Morse code. Everything runs on your device: no server, no cloud, no
-telemetry. The same Angular application ships as a web app and as a [Tauri 2](https://tauri.app)
-desktop app for macOS, Windows and Linux.
+Morse code and telephone keypad tones (DTMF) – and comes with a spectrum analyzer, a tone
+generator and a recorder. Everything runs on your device: no server, no cloud, no telemetry. The
+same Angular application ships as a web app and as a [Tauri 2](https://tauri.app) desktop app for
+macOS, Windows and Linux.
 
-> **Status: early development.** The Morse decoder works end to end in the browser; more modules
-> follow – see [docs/ROADMAP.md](docs/ROADMAP.md).
-
-<!-- Screenshots: replace with real captures once audio is connected (prompts/12). -->
-<!-- ![Morse decoder](docs/images/morse-decoder.png) -->
+![Morse decoder decoding the demo signal](docs/images/morse-decoder.png)
 
 ## Features
 
-| Module             | Status    |
-| ------------------ | --------- |
-| Morse Decoder      | Available |
-| DTMF Decoder       | Available |
-| Frequency Analyzer | Available |
-| Spectrum Analyzer  | Available |
-| Signal Monitor     | Available |
-| Morse Encoder      | Available |
-| Tone Generator     | Available |
-| Audio Recorder     | Available |
+| Module                 | What it does                                                                                                                                                                                              |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Morse Decoder**      | Automatic or fixed tone frequency, adaptive threshold and speed (WPM), robust against noise, fading, clicks, sloppy keying and Farnsworth spacing; Morse and plain text output, unknown sequences marked. |
+| **DTMF Decoder**       | All 16 keys, ITU-style checks (frequency tolerance, twist, energy ratio), live keypad and tone levels.                                                                                                    |
+| **Frequency Analyzer** | Dominant frequency with note name and cents, stability, 10 s history.                                                                                                                                     |
+| **Spectrum Analyzer**  | FFT 1024–16384 points, Hann/Blackman-Harris, log/linear axis, averaging, peak hold, spectrogram.                                                                                                          |
+| **Signal Monitor**     | RMS/peak level, clipping warning, dominant frequency, 30 s history.                                                                                                                                       |
+| **Morse Encoder**      | Text → Morse with live preview and click-free audio playback, Farnsworth spacing.                                                                                                                         |
+| **Tone Generator**     | Sine, square, triangle, sawtooth, white/pink noise, sweeps, two-tone and DTMF; level-capped.                                                                                                              |
+| **Audio Recorder**     | In-memory recording (10 min max), playback, WAV export (16-bit or 32-bit float).                                                                                                                          |
 
-**Morse decoder:** microphone or demo input, live waveform, level meter and key-down timeline,
-automatic or fixed tone frequency, adaptive threshold and speed (WPM) detection, decoded Morse and
-plain text, copy and reset. Unknown sequences are marked instead of guessed.
+Every input-based module has a **Demo signal** input, so you can try it without a microphone.
+
+| Spectrum analyzer                                                        | DTMF decoder                                              |
+| ------------------------------------------------------------------------ | --------------------------------------------------------- |
+| ![Spectrum analyzer with spectrogram](docs/images/spectrum-analyzer.png) | ![DTMF decoder with keypad](docs/images/dtmf-decoder.png) |
 
 ## Privacy
 
-- Audio is processed locally and is never uploaded.
-- The microphone is only opened after you press **Start** and is released when you stop or
-  leave the view.
-- Nothing is recorded or exported unless you explicitly ask for it.
+- Audio is processed locally and never uploaded; there is no backend and no telemetry.
+- The microphone opens only after you press **Start** and is released when you stop, leave the
+  view or close the app. The status bar shows whether a microphone is open.
+- Nothing is stored or exported unless you explicitly ask for it.
+- The desktop app allows the microphone and nothing else (camera, location, … are denied).
 
 Details: [docs/PRIVACY.md](docs/PRIVACY.md).
 
 ## Getting started
 
-Prerequisites: Node.js 22.22+ or 24.15+, pnpm 10, and for the desktop app Rust (stable) plus the
-[Tauri prerequisites](https://tauri.app/start/prerequisites/) for your OS. See
-[docs/BUILDING.md](docs/BUILDING.md).
+**Web:** serve the build over HTTPS (or use `http://localhost` during development) – browsers only
+allow microphone access in a secure context. Release builds are attached to GitHub releases as
+`audiolab-web-<version>.zip` and can be deployed to GitHub Pages.
+
+**Desktop:** download the installer for your OS from the releases page. Builds are currently
+unsigned; see [docs/BUILDING.md](docs/BUILDING.md#releases) for what that means.
+
+**From source** (Node.js 22.22+/24.15+, pnpm 10; for the desktop app also Rust and the
+[Tauri prerequisites](https://tauri.app/start/prerequisites/)):
 
 ```bash
 pnpm install
 pnpm start          # web app on http://localhost:1420
-pnpm tauri:dev      # desktop app (Tauri 2) with live reload
+pnpm tauri:dev      # desktop app with live reload
 ```
-
-Microphone access in browsers requires a secure context: `http://localhost` works for
-development, deployed builds must be served over HTTPS.
 
 ## Development
 
 ```bash
-pnpm test           # unit tests (Vitest via Angular CLI)
-pnpm lint           # ESLint (Angular, TypeScript, template a11y, layer boundaries)
-pnpm format:check   # Prettier
-pnpm e2e            # Playwright end-to-end tests (Chromium)
-pnpm check          # everything above except e2e, plus web build and Rust fmt/clippy/test
+pnpm test           # unit, integration and signal tests (Vitest)
+pnpm test:coverage  # with coverage thresholds
+pnpm test:signals   # Morse robustness scenarios (CER limits)
+pnpm lint           # ESLint incl. layer boundaries + worklet type-check
+pnpm e2e            # Playwright (Chromium); pnpm e2e:all for Firefox and WebKit too
+pnpm check          # version sync, scripts, format, lint, tests, web build, Rust checks
 pnpm tauri:build    # desktop bundle for the current OS
 ```
 
-Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) ·
-Audio pipeline: [docs/AUDIO-PIPELINE.md](docs/AUDIO-PIPELINE.md) ·
-Contributing: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- Signal processing and measured accuracy: [docs/AUDIO-PIPELINE.md](docs/AUDIO-PIPELINE.md)
+- Tests: [docs/TESTING.md](docs/TESTING.md) · Building and releases: [docs/BUILDING.md](docs/BUILDING.md)
+- Roadmap: [docs/ROADMAP.md](docs/ROADMAP.md) · Contributing: [CONTRIBUTING.md](CONTRIBUTING.md)
 
-The `prompts/` folder contains the step-by-step development roadmap as self-contained work
-orders for coding assistants ([prompts/README.md](prompts/README.md)).
+The development history is documented as work orders in [prompts/](prompts/README.md).
 
 ## Browser support
 
-Current desktop versions of Chromium-based browsers, Firefox and Safari. AudioLab relies on
-`getUserMedia`, the Web Audio API and `AudioWorklet`; unsupported environments get a clear
-message instead of a broken page.
+Current desktop versions of Chromium-based browsers, Firefox and Safari. AudioLab needs
+`getUserMedia`, the Web Audio API and `AudioWorklet`; unsupported or insecure environments get a
+clear message instead of a broken page. Automated tests run in Chromium locally and in Chromium,
+Firefox and WebKit in CI.
 
 ## License
 

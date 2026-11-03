@@ -1,7 +1,9 @@
 # Contributing to AudioLab
 
-Thanks for your interest! AudioLab is in early development; the roadmap lives in
-[docs/ROADMAP.md](docs/ROADMAP.md) and, in more detail, in [prompts/](prompts/README.md).
+Thanks for your interest! The roadmap lives in [docs/ROADMAP.md](docs/ROADMAP.md); the
+development history in [prompts/](prompts/README.md). Good first contributions: real test
+recordings with known transcripts (see [docs/TESTING.md](docs/TESTING.md#known-gaps)) and
+verification on Windows and Linux.
 
 ## Setup
 
@@ -14,7 +16,7 @@ pnpm tauri:dev    # desktop (needs Rust + Tauri prerequisites, see docs/BUILDING
 ## Before you open a pull request
 
 ```bash
-pnpm check        # format, lint, unit tests, web build, Rust fmt/clippy/test
+pnpm check        # version sync, scripts, format, lint, unit tests, web build, Rust checks
 pnpm e2e          # Playwright (run `pnpm e2e:install` once if Chromium is missing)
 ```
 
@@ -36,10 +38,19 @@ All checks must pass. Do not disable or skip tests to make them green – fix th
   done. No microphone or manual input in automated tests.
 - Angular components: standalone, `OnPush`, signals for local state, small files.
 
-## Commits and changelog
+## Branches, commits and changelog
 
-- Small, focused commits with descriptive messages (imperative mood).
-- Add user-visible changes to `CHANGELOG.md` under **Unreleased**.
+- Work on a branch (`feature/…`, `fix/…`, `docs/…`) and open a pull request against `main`; the
+  template lists what reviewers check.
+- Small, focused commits with descriptive messages in the imperative mood ("Add DTMF twist
+  check"), one topic per commit.
+- Add user-visible changes to `CHANGELOG.md` under **Unreleased**
+  ([Keep a Changelog](https://keepachangelog.com/en/1.1.0/) sections: Added, Changed, Fixed, …).
+
+## Code of conduct and security
+
+Everyone taking part follows the [Code of Conduct](CODE_OF_CONDUCT.md). Report vulnerabilities
+privately as described in [SECURITY.md](SECURITY.md).
 
 ## Reporting bugs
 

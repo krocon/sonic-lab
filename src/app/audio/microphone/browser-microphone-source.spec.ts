@@ -126,6 +126,39 @@ describe('BrowserMicrophoneSource', () => {
     });
   });
 
+  it('creates and resumes the audio context before asking for the microphone (Safari gesture rule)', async () => {
+    const t = setup();
+    const order: string[] = [];
+    const env = {
+      ...t.env,
+      createContext: () => {
+        order.push('context');
+        return t.env.createContext();
+      },
+      mediaDevices: {
+        ...t.env.mediaDevices,
+        getUserMedia: (c: MediaStreamConstraints) => {
+          order.push('getUserMedia');
+          return (t.env.mediaDevices as MediaDevices).getUserMedia(c);
+        },
+        addEventListener: () => undefined,
+      } as unknown as MediaDevices,
+    };
+    await new BrowserMicrophoneSource(env).start();
+    expect(order).toEqual(['context', 'getUserMedia']);
+  });
+
+  it('closes the context when the permission is denied', async () => {
+    const denied = Object.assign(new Error('denied'), { name: 'NotAllowedError' });
+    const t = setup();
+    (t.env.mediaDevices as unknown as { getUserMedia: () => Promise<never> }).getUserMedia = () =>
+      Promise.reject(denied);
+    await expect(new BrowserMicrophoneSource(t.env).start()).rejects.toMatchObject({
+      kind: 'permission-denied',
+    });
+    expect(t.isClosed()).toBe(true);
+  });
+
   it('maps a denied permission', async () => {
     const denied = Object.assign(new Error('denied'), { name: 'NotAllowedError' });
     const t = setup();

@@ -96,6 +96,17 @@ export class BrowserMicrophoneSource implements AudioSource {
     if (!mediaDevices?.getUserMedia) return this.fail({ kind: 'unsupported' });
 
     this.setState({ status: 'requesting-permission' });
+    // Create and resume the context *before* the first await: WebKit/Safari only lets an
+    // AudioContext start inside the user gesture that called start().
+    let context: AudioContext;
+    let resumed: Promise<void>;
+    try {
+      context = this.env.createContext();
+      resumed = context.resume().catch(() => undefined);
+    } catch (err: unknown) {
+      return this.fail(mapCaptureError(err));
+    }
+    this.context = context;
     try {
       const stream = await mediaDevices.getUserMedia({
         audio: {
@@ -112,8 +123,6 @@ export class BrowserMicrophoneSource implements AudioSource {
         return;
       }
       this.stream = stream;
-      const context = this.env.createContext();
-      this.context = context;
       await context.audioWorklet.addModule(this.env.workletUrl);
       const source = context.createMediaStreamSource(stream);
       const node = this.env.createWorkletNode(context, {
@@ -140,7 +149,8 @@ export class BrowserMicrophoneSource implements AudioSource {
           }
         });
       }
-      await context.resume();
+      await resumed;
+      if (context.state === 'suspended') await context.resume(); // second chance (permission prompt was a gesture)
       if (generation !== this.generation) return;
       this.frame.sampleRate = context.sampleRate;
       const settings = stream.getAudioTracks()[0]?.getSettings?.();

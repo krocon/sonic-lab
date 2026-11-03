@@ -49,6 +49,7 @@ run because instrumentation makes it ~10× slower.
   yet. Contributions welcome: short (< 30 s), self-recorded or public-domain WAVs plus the
   expected text under `test-data/`, with the licence noted next to the file.
 - **Firefox E2E** could not be launched in the local development sandbox (browser process start
-  fails); it runs in CI. WebKit runs locally but is flaky with more than two parallel workers
-  (concurrent AudioContexts), so CI uses two workers.
+  fails); it runs in CI. WebKit runs locally (29 tests incl. axe, 2 workers stable); the fake
+  microphone patches `MediaDevices.prototype` because WebKit may return a fresh `MediaDevices`
+  object, and the axe checks run with reduced motion so no colour is measured mid-transition.
 - **Live microphone test** with a real speaker/microphone is manual.

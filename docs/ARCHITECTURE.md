@@ -37,20 +37,33 @@ src/
 │   ├── shell/               app frame: top bar, navigation, outlet, status bar
 │   ├── core/
 │   │   ├── modules/         AnalysisModule type + module catalog (single source of truth)
-│   │   ├── capture/         CaptureSession (use case: run an AudioSource, feed consumers)
+│   │   ├── capture/         CaptureSession, capture providers, demo signals, microphone activity
 │   │   ├── settings/        SettingsStore (versioned JSON in localStorage, never throws)
 │   │   ├── status/          StatusMessage + mapping of audio states/errors to user text
 │   │   └── theme/           ThemeService (system / light / dark)
-│   ├── audio/               framework-free: AudioFrame, AudioSource (+ implementations, DSP)
-│   ├── decoders/            framework-free: SignalDecoder (+ Morse, DTMF, …)
-│   ├── platform/            PlatformAdapter + browser/Tauri implementations
-│   ├── features/            one folder per page (overview, morse-decoder, …)
-│   └── shared/              icon set, status banner, visualisations
-├── testing/                 fakes and signal generators for tests (not in the app build)
-├── styles/                  tokens.css (design tokens), base.css
-e2e/                         Playwright tests
-src-tauri/                   Tauri 2 crate (audiolab_lib), capabilities, icons, plists
-prompts/                     development roadmap as work orders
+│   ├── audio/               framework-free
+│   │   ├── microphone/      BrowserMicrophoneSource (getUserMedia → AudioWorklet), error mapping
+│   │   ├── synthetic/       SyntheticAudioSource (demo input, tests)
+│   │   ├── synthesis/       deterministic generators (tone, keyed tone, noise, mix), PRNG
+│   │   ├── dsp/             FFT, windows, spectrum + peaks, Goertzel, biquad, notes
+│   │   ├── output/          KeyedTonePlayer (Morse playback), ToneGenerator
+│   │   └── *.ts             AudioFrame/AudioSource contracts, ring buffer, level meter,
+│   │                        time series, recorder, WAV encoder, composite source
+│   ├── decoders/            framework-free: SignalDecoder contract
+│   │   ├── morse/           alphabet, timing/synthesis, tone/keying/timing stages, decoder
+│   │   └── dtmf/            tones/keys, DtmfDecoder
+│   ├── platform/            PlatformAdapter, FileExportAdapter (browser / Tauri)
+│   ├── features/            one folder per page: overview, morse-decoder, morse-encoder,
+│   │                        dtmf-decoder, frequency-analyzer, spectrum-analyzer,
+│   │                        signal-monitor, tone-generator, audio-recorder, module-placeholder
+│   └── shared/              icons, capture controls, status banner, canvas visualisations
+├── worklets/                AudioWorklet processors (TypeScript, bundled by scripts/build-worklets.mjs)
+├── testing/                 fakes and impaired-signal generators for tests (not in the app build)
+└── styles/                  tokens.css (design tokens), base.css (elements, shared page styles)
+e2e/                         Playwright tests (+ fixtures/fake-microphone.ts)
+scripts/                     worklet build, version sync, release notes, screenshots
+src-tauri/                   Tauri 2 crate (audiolab_lib): platform, permissions, window state, export
+prompts/                     development roadmap as work orders (all executed)
 ```
 
 ## Key contracts
@@ -101,7 +114,7 @@ source. The concrete source is injected via the `AUDIO_SOURCE` token.
 ## Adding a module
 
 1. Add an entry to `src/app/core/modules/module-catalog.ts` (status `planned` creates a
-   placeholder route automatically).
+   placeholder page and route automatically).
 2. Implement the algorithm in `src/app/audio` or `src/app/decoders` with tests.
 3. Add a feature page under `src/app/features/<module>/` and a dedicated route in
    `app.routes.ts`; switch the status to `in-development` / `available`.

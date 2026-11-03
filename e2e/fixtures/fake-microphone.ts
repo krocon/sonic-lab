@@ -28,7 +28,8 @@ export async function installFakeMicrophone(
       { kind: 'audioinput', deviceId: 'default', groupId: 'g', label: 'Default - Fake Mic' },
       { kind: 'audioinput', deviceId: 'fake-usb', groupId: 'g', label: 'Fake USB Mic' },
     ];
-    const md = navigator.mediaDevices;
+    // patch the prototype: WebKit may hand out a fresh MediaDevices object per access
+    const md = MediaDevices.prototype;
     md.enumerateDevices = async () =>
       devices.map((d) => ({ ...d, toJSON: () => d })) as unknown as MediaDeviceInfo[];
     md.getUserMedia = async () => {

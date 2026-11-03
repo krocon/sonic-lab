@@ -40,7 +40,8 @@
     "version:set": "node scripts/version.mjs set",
     "release:prepare": "node scripts/version.mjs prepare",
     "release:notes": "node scripts/release-notes.mjs",
-    "scripts:test": "node --test \"scripts/*.test.mjs\""
+    "scripts:test": "node --test \"scripts/*.test.mjs\"",
+    "screenshots": "pnpm build && node scripts/screenshots.mjs"
   },
   "dependencies": {
     "@angular/common": "^22.2.0",

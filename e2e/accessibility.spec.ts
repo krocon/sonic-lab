@@ -7,7 +7,8 @@ const PAGES = ['/', '/#/morse-decoder', '/#/dtmf-decoder'];
 for (const scheme of ['light', 'dark'] as const) {
   for (const path of PAGES) {
     test(`${path} has no axe violations (${scheme})`, async ({ page }) => {
-      await page.emulateMedia({ colorScheme: scheme });
+      // reduced motion switches CSS transitions off, so axe never measures a colour mid-transition
+      await page.emulateMedia({ colorScheme: scheme, reducedMotion: 'reduce' });
       await page.goto(path);
       await expect(page.locator('main h1')).toBeVisible();
       const results = await new AxeBuilder({ page })

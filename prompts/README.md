@@ -5,21 +5,24 @@ aufeinander auf, prüfen aber jeweils zuerst den tatsächlichen Projektzustand.
 
 ## Empfohlene Reihenfolge
 
-| #   | Datei                                   | Abhängig von   | Ergebnis                                             |
-| --- | --------------------------------------- | -------------- | ---------------------------------------------------- |
-| 00  | `00-project-setup.md`                   | –              | ✅ erledigt (Angular 22 + Tauri 2, Tooling, Shell)   |
-| 01  | `01-architecture-and-foundation.md`     | 00             | Interfaces, Schichtgrenzen, Settings, Session-Modell |
-| 02  | `02-audio-capture-and-visualization.md` | 01             | Mikrofon, AudioWorklet, Lifecycle, Waveform, Pegel   |
-| 03  | `03-morse-decoder.md`                   | 02             | erster funktionierender Morse-Decoder (MVP)          |
-| 04  | `04-morse-decoder-robustness.md`        | 03             | adaptive Schwellen, Rauschen, WPM, Störimpulse       |
-| 10  | `10-testing-and-quality.md`             | 04             | Test- und Performance-Härtung des MVP                |
-| 09  | `09-tauri-desktop-integration.md`       | 02 (besser 04) | Mikrofon in Tauri auf macOS/Windows/Linux            |
-| 05  | `05-morse-encoder.md`                   | 03             | Text → Morse → Ton                                   |
-| 06  | `06-frequency-and-spectrum-analyzer.md` | 02             | Frequenz, FFT, Spektrum/Spektrogramm, Signal Monitor |
-| 07  | `07-dtmf-decoder.md`                    | 06             | DTMF via Goertzel                                    |
-| 08  | `08-tone-generator-and-recorder.md`     | 02, 05         | Testtöne, lokale Aufnahme + Export                   |
-| 11  | `11-release-and-distribution.md`        | 09, 10         | CI-Matrix, Releases, Versionierung                   |
-| 12  | `12-documentation-and-open-source.md`   | laufend        | README, Doku, Lizenz, Beitragsrichtlinien            |
+Stand 2026-11-03: alle Prompts 00–12 sind ausgeführt (siehe `CHANGELOG.md`, offene Verifikationen in
+`docs/ROADMAP.md`).
+
+| #   | Datei                                   | Abhängig von   | Ergebnis                                                |
+| --- | --------------------------------------- | -------------- | ------------------------------------------------------- |
+| 00  | `00-project-setup.md`                   | –              | ✅ erledigt (Angular 22 + Tauri 2, Tooling, Shell)      |
+| 01  | `01-architecture-and-foundation.md`     | 00             | ✅ Interfaces, Schichtgrenzen, Settings, Session-Modell |
+| 02  | `02-audio-capture-and-visualization.md` | 01             | ✅ Mikrofon, AudioWorklet, Lifecycle, Waveform, Pegel   |
+| 03  | `03-morse-decoder.md`                   | 02             | ✅ erster funktionierender Morse-Decoder (MVP)          |
+| 04  | `04-morse-decoder-robustness.md`        | 03             | ✅ adaptive Schwellen, Rauschen, WPM, Störimpulse       |
+| 10  | `10-testing-and-quality.md`             | 04             | ✅ Test- und Performance-Härtung des MVP                |
+| 09  | `09-tauri-desktop-integration.md`       | 02 (besser 04) | ✅ umgesetzt; Desktop-Mikrofon noch unverifiziert       |
+| 05  | `05-morse-encoder.md`                   | 03             | ✅ Text → Morse → Ton                                   |
+| 06  | `06-frequency-and-spectrum-analyzer.md` | 02             | ✅ Frequenz, FFT, Spektrum/Spektrogramm, Signal Monitor |
+| 07  | `07-dtmf-decoder.md`                    | 06             | ✅ DTMF via Goertzel                                    |
+| 08  | `08-tone-generator-and-recorder.md`     | 02, 05         | ✅ Testtöne, lokale Aufnahme + Export                   |
+| 11  | `11-release-and-distribution.md`        | 09, 10         | ✅ CI-Matrix, Releases, Versionierung                   |
+| 12  | `12-documentation-and-open-source.md`   | laufend        | ✅ README, Doku, Lizenz, Beitragsrichtlinien            |
 
 Die Nummern sind Kennungen, nicht zwingend die Ausführungsreihenfolge: 10 und 09 lohnen sich
 direkt nach dem MVP (03/04), bevor weitere Module (05–08) dazukommen. 12 kann nach jedem

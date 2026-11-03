@@ -1,0 +1,43 @@
+name: Bug report
+description: Something does not work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for reporting! Please never attach recordings that contain private conversations.
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module
+      options: [Morse Decoder, DTMF Decoder, Frequency Analyzer, Spectrum Analyzer, Signal Monitor, Morse Encoder, Tone Generator, Audio Recorder, App shell / other]
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Platform
+      description: Browser and version, or desktop OS and AudioLab version
+      placeholder: Chrome 140 on macOS 26 / AudioLab 0.1.0 on Windows 11
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Audio input device
+      placeholder: Built-in microphone, USB interface, Bluetooth headset, demo signal …
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: For decoder problems describe the signal (speed, tone frequency, noise, source).
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error messages
+      description: Messages shown in the app or the browser console (no audio data).
