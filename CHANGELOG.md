@@ -73,6 +73,12 @@ All notable changes to this project are documented here. The format follows
 - Documentation: README with real screenshots (`pnpm screenshots`), updated architecture and
   roadmap, code of conduct, security policy, issue and pull-request templates.
 
+### Changed
+
+- New skeuomorphic "radio front panel" look: brushed graphite/aluminium chassis, screwed-on
+  modules, glass displays with phosphor/amber readouts, hardware keys with LEDs, faders, LED level
+  ladders, rotary knobs (tone generator) and an analog VU meter (signal monitor).
+
 ### Fixed
 
 - Insufficient colour contrast of secondary text and the light accent colour (WCAG AA).

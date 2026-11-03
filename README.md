@@ -25,7 +25,16 @@ macOS, Windows and Linux.
 
 Every input-based module has a **Demo signal** input, so you can try it without a microphone.
 
-| Spectrum analyzer                                                        | DTMF decoder                                              |
+The interface is styled like the front panel of a piece of radio equipment – screwed-on modules,
+dark glass displays with phosphor and amber readouts, hardware keys with indicator LEDs, faders,
+rotary knobs and a moving-coil meter – in a graphite or an aluminium finish (follows the system
+theme, switchable in the top bar).
+
+| Signal monitor                                                      | Tone generator                                                      |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| ![Signal monitor with analog meter](docs/images/signal-monitor.png) | ![Tone generator with rotary knobs](docs/images/tone-generator.png) |
+
+| Spectrum analyzer                                                        | DTMF decoder (aluminium finish)                           |
 | ------------------------------------------------------------------------ | --------------------------------------------------------- |
 | ![Spectrum analyzer with spectrogram](docs/images/spectrum-analyzer.png) | ![DTMF decoder with keypad](docs/images/dtmf-decoder.png) |
 

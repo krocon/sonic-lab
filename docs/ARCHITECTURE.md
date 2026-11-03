@@ -205,6 +205,16 @@ dependency, no capability). On the web, `FileExportAdapter` uses the File System
 download link. Recording uses the app's own WAV encoder (16-bit PCM or 32-bit float), not
 `MediaRecorder`, whose formats differ per browser.
 
+### ADR-012 – Skeuomorphic "front panel" design
+
+The UI imitates radio equipment: modules with screws, dark glass displays (`.lcd`, display
+tokens `--display-*` – dark in both finishes), hardware keys with LEDs (`.btn`, `aria-pressed`
+lights the LED), faders (styled `input[type=range]`), rotary knobs (`shared/controls/knob.ts`,
+ARIA slider, drag/wheel/keyboard, optional log scale) and a VU meter
+(`shared/visualization/analog-meter.ts`, decorative, `aria-hidden`). Everything is CSS custom
+properties, gradients and inline SVG – no images, fonts or UI libraries. Two finishes: graphite
+(dark) and aluminium (light). Contrast is verified by the axe E2E checks in both finishes.
+
 ### ADR-006 – Tooling versions
 
 Angular CLI defaults (Vitest through `@angular/build:unit-test`, TypeScript ~6.0) are kept
