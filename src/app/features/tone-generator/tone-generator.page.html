@@ -16,32 +16,34 @@
         </select>
       </label>
       @if (has('frequency')) {
-        <label class="form-field">
-          <span>{{
-            has('sweep') ? 'Start frequency' : has('frequency2') ? 'Frequency 1' : 'Frequency'
-          }}</span>
-          <span class="form-value">{{ settings().frequency }} Hz</span>
-          <input
-            type="range"
-            min="0"
-            max="1000"
-            [value]="toSlider(settings().frequency)"
-            (input)="update({ frequency: slider($event) })"
+        <div class="knobs">
+          <app-knob
+            [label]="
+              has('sweep') ? 'Start frequency' : has('frequency2') ? 'Frequency 1' : 'Frequency'
+            "
+            unit="Hz"
+            [min]="20"
+            [max]="20000"
+            [log]="true"
+            [defaultValue]="1000"
+            [size]="96"
+            [value]="settings().frequency"
+            (valueChange)="update({ frequency: $event })"
           />
-        </label>
-      }
-      @if (has('frequency2')) {
-        <label class="form-field">
-          <span>{{ has('sweep') ? 'End frequency' : 'Frequency 2' }}</span>
-          <span class="form-value">{{ settings().frequency2 }} Hz</span>
-          <input
-            type="range"
-            min="0"
-            max="1000"
-            [value]="toSlider(settings().frequency2)"
-            (input)="update({ frequency2: slider($event) })"
-          />
-        </label>
+          @if (has('frequency2')) {
+            <app-knob
+              [label]="has('sweep') ? 'End frequency' : 'Frequency 2'"
+              unit="Hz"
+              [min]="20"
+              [max]="20000"
+              [log]="true"
+              [defaultValue]="4000"
+              [size]="96"
+              [value]="settings().frequency2"
+              (valueChange)="update({ frequency2: $event })"
+            />
+          }
+        </div>
       }
       @if (has('sweep')) {
         <label class="form-field">
@@ -75,36 +77,26 @@
 
     <section class="panel" aria-labelledby="output-title">
       <h2 id="output-title">Output</h2>
-      <label class="form-field">
-        <span>Level (peak)</span>
-        <span class="form-value">{{ settings().levelDb }} dBFS</span>
-        <input
-          type="range"
+      <div class="knobs">
+        <app-knob
+          label="Level (peak)"
+          unit="dBFS"
           [min]="minLevel"
           [max]="maxLevel"
-          step="1"
+          [defaultValue]="-20"
           [value]="settings().levelDb"
-          (input)="update({ levelDb: num($event) })"
+          (valueChange)="update({ levelDb: $event })"
         />
-      </label>
-      <label class="form-field">
-        <span>Balance</span>
-        <span class="form-value">{{
-          settings().balance === 0
-            ? 'centre'
-            : settings().balance < 0
-              ? 'left ' + (-settings().balance * 100).toFixed(0) + ' %'
-              : 'right ' + (settings().balance * 100).toFixed(0) + ' %'
-        }}</span>
-        <input
-          type="range"
-          min="-1"
-          max="1"
-          step="0.05"
+        <app-knob
+          label="Balance"
+          [min]="-1"
+          [max]="1"
+          [step]="0.05"
+          [defaultValue]="0"
           [value]="settings().balance"
-          (input)="update({ balance: num($event) })"
+          (valueChange)="update({ balance: $event })"
         />
-      </label>
+      </div>
       <p class="note">
         Level is capped at {{ maxLevel }} dBFS. Start quietly – test signals can be loud on
         headphones.

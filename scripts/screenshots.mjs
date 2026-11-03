@@ -29,6 +29,9 @@ const shots = [
   { name: 'morse-decoder', path: '/#/morse-decoder', demo: true, wait: 9000, scheme: 'dark' },
   { name: 'spectrum-analyzer', path: '/#/spectrum-analyzer', demo: true, wait: 5000, scheme: 'dark' },
   { name: 'dtmf-decoder', path: '/#/dtmf-decoder', demo: true, wait: 4700, scheme: 'light' },
+  { name: 'signal-monitor', path: '/#/signal-monitor', demo: true, wait: 3000, scheme: 'dark' },
+  { name: 'tone-generator', path: '/#/tone-generator', demo: false, wait: 500, scheme: 'dark' },
+  { name: 'morse-encoder', path: '/#/morse-encoder', demo: false, wait: 500, scheme: 'light' },
   { name: 'overview', path: '/', demo: false, wait: 500, scheme: 'light' },
 ];
 

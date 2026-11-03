@@ -30,45 +30,50 @@ function toPercent(db: number): number {
       display: flex;
       align-items: center;
       gap: var(--space-3);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-sm);
+      background-color: var(--display-bg);
+      background-image: var(--display-reflection);
+      box-shadow: var(--display-inset);
     }
     .track {
       position: relative;
       flex: 1;
-      height: 0.5rem;
-      border-radius: var(--radius-pill);
-      /* full-width scale; the unlit part is covered from the right */
+      height: 0.7rem;
+      /* LED ladder: the full colour scale, cut into segments */
       background: linear-gradient(
         90deg,
-        var(--color-accent) 0 75%,
-        var(--color-warning) 75% 90%,
-        var(--color-danger) 90%
+        var(--led-green) 0 75%,
+        var(--led-amber) 75% 90%,
+        var(--led-red) 90%
       );
-      overflow: hidden;
+      mask: repeating-linear-gradient(90deg, #000 0 5px, transparent 5px 7px);
+      filter: drop-shadow(0 0 3px rgb(109 255 160 / 35%));
     }
     .cover {
       position: absolute;
       inset: 0 0 0 auto;
       width: 100%;
-      background: var(--color-surface-sunken);
+      background: rgb(5 8 7 / 82%);
     }
     .hold {
       position: absolute;
       top: 0;
       bottom: 0;
-      width: 2px;
+      width: 3px;
       left: 0;
-      background: var(--color-text);
-      opacity: 0.7;
+      background: #ffffff;
     }
     .value {
-      min-width: 4.5rem;
+      min-width: 5rem;
       font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      font-size: var(--text-sm);
+      color: var(--display-amber);
+      text-shadow: var(--display-glow-amber);
       text-align: right;
     }
     .value.clip {
-      color: var(--color-danger);
+      color: var(--led-red);
     }
   `,
   host: {

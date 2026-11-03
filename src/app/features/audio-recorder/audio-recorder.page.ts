@@ -42,12 +42,21 @@ const MAX_MINUTES = 10;
       gap: var(--space-3);
     }
     .time {
+      padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-sm);
+      background-color: var(--display-bg);
+      box-shadow: var(--display-inset);
       font-family: var(--font-mono);
       font-size: var(--text-xl);
+      color: var(--display-text);
+      text-shadow: var(--display-glow);
+      font-variant-numeric: tabular-nums;
     }
     .rec {
       color: var(--color-danger);
-      font-weight: var(--weight-medium);
+      font-weight: var(--weight-bold);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
     .note {
       margin: 0;

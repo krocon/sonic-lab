@@ -26,7 +26,7 @@ export class HistoryCanvas {
   /** Use a logarithmic y axis (e.g. for frequencies). */
   readonly log = input(false);
   readonly unit = input('');
-  readonly color = input('--color-signal');
+  readonly color = input('--display-trace');
   readonly label = input('History');
 
   private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
@@ -47,9 +47,9 @@ export class HistoryCanvas {
     const s = this.series();
     if (this.frame++ % 60 === 0) {
       this.colors = {
-        line: cssVar(this.host, this.color(), '#38bdf8'),
-        grid: cssVar(this.host, '--color-grid', 'rgba(127,127,127,.2)'),
-        text: cssVar(this.host, '--color-text-subtle', '#888'),
+        line: cssVar(this.host, this.color(), '#6dffa0'),
+        grid: cssVar(this.host, '--display-grid', 'rgba(120,200,150,.14)'),
+        text: cssVar(this.host, '--display-label', '#7fb894'),
       };
       this.lastVersion = -1;
     }

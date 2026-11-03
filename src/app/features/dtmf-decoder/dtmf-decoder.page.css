@@ -20,23 +20,45 @@
 }
 
 .key {
+  position: relative;
   display: grid;
   place-items: center;
   height: 3.5rem;
   border-radius: var(--radius-md);
-  border: var(--border-width) solid var(--color-border);
-  background: var(--color-surface-sunken);
+  border: var(--border-width) solid var(--key-edge);
+  background: var(--key-face);
   font-family: var(--font-mono);
   font-size: var(--text-xl);
   font-weight: var(--weight-bold);
-  color: var(--color-text-muted);
-  transition: background var(--duration-fast) var(--easing);
+  color: var(--key-text);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 22%),
+    inset 0 -2px 0 rgb(0 0 0 / 22%),
+    0 2px 3px rgb(0 0 0 / 45%);
+}
+
+/* LED in each key */
+.key::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--led-off);
+  box-shadow: inset 0 1px 1px rgb(0 0 0 / 60%);
 }
 
 .key.active {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: var(--color-accent-contrast);
+  background: var(--key-face-pressed);
+  transform: translateY(1px);
+  box-shadow: inset 0 2px 4px rgb(0 0 0 / 45%);
+}
+
+.key.active::after {
+  background: var(--led-green);
+  box-shadow: 0 0 8px var(--led-green);
 }
 
 .bars {
@@ -50,6 +72,7 @@
   display: grid;
   grid-template-rows: 1fr auto;
   gap: var(--space-1);
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
   color: var(--color-text-subtle);
   text-align: center;
@@ -58,21 +81,26 @@
 .bar {
   position: relative;
   border-radius: var(--radius-sm);
-  background: var(--color-surface-sunken);
+  background-color: var(--display-bg);
+  box-shadow: var(--display-inset);
   overflow: hidden;
 }
 
+/* LED column: segments lit from the bottom */
 .fill {
   position: absolute;
-  inset: auto 0 0 0;
+  inset: auto 3px 3px 3px;
+  mask: repeating-linear-gradient(0deg, #000 0 4px, transparent 4px 6px);
 }
 
 .fill.row {
-  background: var(--color-signal);
+  background: var(--display-trace);
+  box-shadow: 0 0 8px var(--display-trace);
 }
 
 .fill.col {
-  background: var(--color-mark);
+  background: var(--display-amber);
+  box-shadow: 0 0 8px var(--display-amber);
 }
 
 .hint {
@@ -89,13 +117,17 @@
 
 .digits {
   display: block;
-  min-height: 3rem;
-  padding: var(--space-3);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-sunken);
+  min-height: 3.5rem;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  background-color: var(--display-bg);
+  background-image: var(--display-reflection);
+  box-shadow: var(--display-inset);
   font-family: var(--font-mono);
-  font-size: var(--text-xl);
-  letter-spacing: 0.1em;
+  font-size: var(--text-2xl);
+  letter-spacing: 0.18em;
+  color: var(--display-cyan);
+  text-shadow: 0 0 8px rgb(111 227 255 / 55%);
   overflow-wrap: anywhere;
 }
 

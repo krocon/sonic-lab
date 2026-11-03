@@ -61,18 +61,27 @@ const UPDATE_SECONDS = 0.1;
     .big {
       display: flex;
       align-items: baseline;
-      gap: var(--space-2);
+      justify-content: flex-end;
+      gap: var(--space-3);
       margin: 0;
+      padding: var(--space-4) var(--space-5);
+      border-radius: var(--radius-sm);
+      background-color: var(--display-bg);
+      background-image: var(--display-reflection);
+      box-shadow: var(--display-inset);
       font-family: var(--font-mono);
     }
     .big .value {
-      font-size: clamp(2.5rem, 8vw, 5rem);
-      font-weight: var(--weight-bold);
-      color: var(--color-accent-strong);
+      font-size: clamp(2.5rem, 9vw, 5.5rem);
+      font-weight: var(--weight-regular);
+      letter-spacing: 0.04em;
+      color: var(--display-text);
+      text-shadow: 0 0 10px rgb(109 255 160 / 55%);
+      font-variant-numeric: tabular-nums;
     }
     .big .unit {
       font-size: var(--text-xl);
-      color: var(--color-text-muted);
+      color: var(--display-text-dim);
     }
     .history {
       height: 12rem;

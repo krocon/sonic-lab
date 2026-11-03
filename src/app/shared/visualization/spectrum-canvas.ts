@@ -54,11 +54,11 @@ export class SpectrumCanvas {
     const a = this.analyzer();
     if (this.frame++ % 60 === 0) {
       this.colors = {
-        line: cssVar(this.host, '--color-signal', '#38bdf8'),
-        hold: cssVar(this.host, '--color-mark', '#f59e0b'),
-        grid: cssVar(this.host, '--color-grid', 'rgba(127,127,127,.2)'),
-        text: cssVar(this.host, '--color-text-subtle', '#888'),
-        mark: cssVar(this.host, '--color-accent', '#2dd4bf'),
+        line: cssVar(this.host, '--display-trace-alt', '#ffd23f'),
+        hold: cssVar(this.host, '--display-cyan', '#6fe3ff'),
+        grid: cssVar(this.host, '--display-grid', 'rgba(120,200,150,.14)'),
+        text: cssVar(this.host, '--display-label', '#7fb894'),
+        mark: cssVar(this.host, '--display-mark', '#ff5a4a'),
       };
       this.lastVersion = -1;
     }
@@ -98,7 +98,7 @@ export class SpectrumCanvas {
     ctx.stroke();
 
     const binHz = a.sampleRate / a.options.size;
-    const path = (data: Float32Array, color: string) => {
+    const path = (data: Float32Array, color: string, fill: boolean) => {
       ctx.strokeStyle = color;
       ctx.lineWidth = 1.25 * dpr;
       ctx.beginPath();
@@ -121,14 +121,31 @@ export class SpectrumCanvas {
         }
       }
       ctx.stroke();
+      if (fill && !first) {
+        // filled "panadapter" area under the trace
+        ctx.lineTo(lastX, height);
+        ctx.lineTo(x(k0 * binHz), height);
+        ctx.closePath();
+        ctx.globalAlpha = 0.28;
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
     };
-    if (this.peakHold()) path(a.peakHold, this.colors.hold);
-    path(a.db, this.colors.line);
+    if (this.peakHold()) path(a.peakHold, this.colors.hold, false);
+    path(a.db, this.colors.line, true);
 
     const m = this.marker();
     if (m && m.frequency >= minHz && m.frequency <= maxHz) {
       const mx = x(m.frequency);
       const my = y(m.db);
+      // red cursor line through the peak, as on a panadapter
+      ctx.strokeStyle = this.colors.mark;
+      ctx.lineWidth = dpr;
+      ctx.beginPath();
+      ctx.moveTo(Math.round(mx) + 0.5, 0);
+      ctx.lineTo(Math.round(mx) + 0.5, height);
+      ctx.stroke();
       ctx.fillStyle = this.colors.mark;
       ctx.beginPath();
       ctx.arc(mx, my, 4 * dpr, 0, 2 * Math.PI);

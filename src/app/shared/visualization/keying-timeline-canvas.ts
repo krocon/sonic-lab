@@ -64,7 +64,7 @@ export class KeyingTimelineCanvas {
   private draw(): void {
     const t = this.timeline();
     if (this.frame++ % 60 === 0) {
-      this.color = cssVar(this.host, '--color-mark', '#f59e0b');
+      this.color = cssVar(this.host, '--display-amber', '#ffc642');
       this.lastVersion = -1;
     }
     if (t.version === this.lastVersion) return;

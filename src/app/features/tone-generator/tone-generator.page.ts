@@ -16,6 +16,7 @@ import {
 import { SettingsStore, isRecord, read } from '../../core/settings/settings-store';
 import { StatusMessage } from '../../core/status/status-message';
 import { DTMF_KEYS, dtmfFrequencies, isDtmfKey } from '../../decoders/dtmf/dtmf-tones';
+import { Knob } from '../../shared/controls/knob';
 import { Icon } from '../../shared/icon/icon';
 import { StatusBanner } from '../../shared/status/status-banner';
 
@@ -83,20 +84,23 @@ const store = () =>
         : null,
   });
 
-/** Slider position (0–1000) ↔ frequency on a log scale 20 Hz – 20 kHz. */
-const toSlider = (f: number) => Math.round((Math.log(f / 20) / Math.log(1000)) * 1000);
-const fromSlider = (v: number) => Math.round(20 * Math.pow(1000, v / 1000));
-
 /** Test signals: tones, noise, sweeps, two-tone and DTMF. */
 @Component({
   selector: 'app-tone-generator-page',
-  imports: [Icon, StatusBanner],
+  imports: [Icon, Knob, StatusBanner],
   templateUrl: './tone-generator.page.html',
   styles: `
     .layout {
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       gap: var(--space-4);
+    }
+    .knobs {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+      gap: var(--space-5);
+      padding: var(--space-3) 0;
     }
     .play {
       display: flex;
@@ -105,18 +109,18 @@ const fromSlider = (v: number) => Math.round(20 * Math.pow(1000, v / 1000));
       gap: var(--space-3);
     }
     .playing-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
       color: var(--color-danger);
-      font-weight: var(--weight-medium);
+      font-weight: var(--weight-bold);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
     .keys {
       display: grid;
       grid-template-columns: repeat(4, 2.5rem);
       gap: var(--space-1);
-    }
-    .keys button[aria-pressed='true'] {
-      background: var(--color-accent);
-      border-color: var(--color-accent);
-      color: var(--color-accent-contrast);
     }
     .keys .btn {
       min-height: 2.5rem;
@@ -145,7 +149,6 @@ export class ToneGeneratorPage {
   protected readonly status = signal<StatusMessage | null>(null);
   protected readonly minLevel = MIN_LEVEL_DB;
   protected readonly maxLevel = MAX_LEVEL_DB;
-  protected readonly toSlider = toSlider;
   /** Start/stop/restart run one after another – a Stop during a restart must win. */
   private queue: Promise<void> = Promise.resolve();
 
@@ -189,10 +192,6 @@ export class ToneGeneratorPage {
   private enqueue(task: () => Promise<void>): Promise<void> {
     this.queue = this.queue.then(task, task);
     return this.queue;
-  }
-
-  protected slider(event: Event): number {
-    return fromSlider(Number((event.target as HTMLInputElement).value));
   }
 
   protected num(event: Event): number {

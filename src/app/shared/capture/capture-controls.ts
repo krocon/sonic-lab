@@ -70,14 +70,11 @@ let nextId = 0;
     }
     .label {
       font-size: var(--text-xs);
+      font-weight: var(--weight-bold);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
       color: var(--color-text-subtle);
-    }
-    select {
-      min-height: 2.25rem;
-      padding: 0 var(--space-2);
-      border-radius: var(--radius-md);
-      border: var(--border-width) solid var(--color-border-strong);
-      background: var(--color-surface-raised);
+      text-shadow: var(--silkscreen-shadow);
     }
     .buttons {
       display: flex;
