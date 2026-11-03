@@ -1,7 +1,7 @@
 import { DOCUMENT, Injectable, inject } from '@angular/core';
-import { invoke } from '@tauri-apps/api/core';
 import { PlatformAdapter, webCapabilities } from './platform-adapter';
 import { NativePlatformInfo, PlatformInfo } from './platform-info';
+import { tauri } from './tauri-bridge';
 
 @Injectable()
 export class TauriPlatformAdapter extends PlatformAdapter {
@@ -10,7 +10,7 @@ export class TauriPlatformAdapter extends PlatformAdapter {
   override async describe(): Promise<PlatformInfo> {
     const base = webCapabilities(this.window);
     try {
-      const info = await invoke<NativePlatformInfo>('platform_info');
+      const info = await tauri.invoke<NativePlatformInfo>('platform_info');
       return {
         kind: 'desktop',
         label: `Desktop · ${info.os} ${info.arch}`,

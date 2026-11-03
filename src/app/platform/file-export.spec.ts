@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { BrowserFileExport, TauriFileExport } from './file-export';
+import { tauri } from './tauri-bridge';
 
-const invoke = vi.hoisted(() => vi.fn());
-vi.mock('@tauri-apps/api/core', () => ({ invoke, isTauri: () => false }));
+afterEach(() => vi.restoreAllMocks());
 
 describe('BrowserFileExport', () => {
   afterEach(() => delete (window as { showSaveFilePicker?: unknown }).showSaveFilePicker);
@@ -47,7 +47,10 @@ describe('TauriFileExport', () => {
   it('sends raw bytes with the suggested name and maps the result', async () => {
     TestBed.configureTestingModule({ providers: [TauriFileExport] });
     const adapter = TestBed.inject(TauriFileExport);
-    invoke.mockResolvedValueOnce('/Users/me/rec.wav').mockResolvedValueOnce(null);
+    const invoke = vi
+      .spyOn(tauri, 'invoke')
+      .mockResolvedValueOnce('/Users/me/rec.wav')
+      .mockResolvedValueOnce(null);
     expect(await adapter.save(new Blob([new Uint8Array([1, 2])]), 'rec.wav', 'audio/wav')).toEqual({
       status: 'saved',
       location: '/Users/me/rec.wav',
