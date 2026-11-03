@@ -47,9 +47,9 @@ export class HistoryCanvas {
     const s = this.series();
     if (this.frame++ % 60 === 0) {
       this.colors = {
-        line: cssVar(this.host, this.color(), '#6dffa0'),
-        grid: cssVar(this.host, '--display-grid', 'rgba(120,200,150,.14)'),
-        text: cssVar(this.host, '--display-label', '#7fb894'),
+        line: cssVar(this.host, this.color(), '#1c3593'),
+        grid: cssVar(this.host, '--display-grid', 'rgba(25,45,110,.14)'),
+        text: cssVar(this.host, '--display-label', '#3d4d78'),
       };
       this.lastVersion = -1;
     }

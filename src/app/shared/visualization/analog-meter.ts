@@ -48,12 +48,15 @@ export function meterAngle(db: number): number {
     </svg>
   `,
   styles: `
+    /* the backlit dial sits behind a black bezel */
     :host {
       display: block;
       padding: 6px;
       border-radius: var(--radius-sm);
-      background: var(--display-bg);
-      box-shadow: var(--display-inset);
+      background: #050506;
+      box-shadow:
+        inset 0 2px 6px rgb(0 0 0 / 90%),
+        0 0 0 1px rgb(255 255 255 / 9%);
     }
     svg {
       display: block;

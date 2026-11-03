@@ -17,24 +17,20 @@ async function waveformHasSignal(page: Page): Promise<boolean> {
   });
 }
 
-const statusBar = (page: Page) => page.locator('footer.statusbar');
 const listening = (page: Page) => page.getByRole('status').filter({ hasText: 'Listening' });
 
 test.describe('audio capture', () => {
   test('starts and stops the microphone', async ({ page }) => {
     await installFakeMicrophone(page);
     await page.goto('/#/morse-decoder');
-    await expect(statusBar(page)).toContainText('Microphone off');
-
     await page.getByRole('button', { name: 'Start' }).click();
     await expect(listening(page)).toBeVisible();
-    await expect(statusBar(page)).toContainText('Microphone on');
+    await expect.poll(() => fakeMicStats(page)).toEqual({ calls: 1, stopped: 0 });
     await expect.poll(() => waveformHasSignal(page)).toBe(true);
     await expect(page.getByRole('meter', { name: 'Input level' })).not.toContainText('– dB');
 
     await page.getByRole('button', { name: 'Stop' }).click();
     await expect(page.getByRole('status').filter({ hasText: 'Stopped' })).toBeVisible();
-    await expect(statusBar(page)).toContainText('Microphone off');
     await expect.poll(() => fakeMicStats(page)).toEqual({ calls: 1, stopped: 1 });
   });
 
@@ -42,9 +38,8 @@ test.describe('audio capture', () => {
     await installFakeMicrophone(page);
     await page.goto('/#/morse-decoder');
     await page.getByRole('button', { name: 'Start' }).click();
-    await expect(statusBar(page)).toContainText('Microphone on');
+    await expect.poll(() => fakeMicStats(page)).toEqual({ calls: 1, stopped: 0 });
     await page.getByRole('link', { name: 'Tone Generator' }).click();
-    await expect(statusBar(page)).toContainText('Microphone off');
     await expect.poll(async () => (await fakeMicStats(page)).stopped).toBe(1);
   });
 
@@ -67,7 +62,6 @@ test.describe('audio capture', () => {
       .selectOption({ label: 'Demo signal (synthetic, no microphone)' });
     await page.getByRole('button', { name: 'Start' }).click();
     await expect(listening(page)).toBeVisible();
-    await expect(statusBar(page)).toContainText('Microphone off');
     await expect.poll(() => waveformHasSignal(page)).toBe(true);
     expect((await fakeMicStats(page)).calls).toBe(0);
   });
@@ -76,11 +70,10 @@ test.describe('audio capture', () => {
     await installFakeMicrophone(page);
     await page.goto('/#/morse-decoder');
     await page.getByRole('button', { name: 'Start' }).click();
-    await expect(statusBar(page)).toContainText('Microphone on');
+    await expect.poll(() => fakeMicStats(page)).toEqual({ calls: 1, stopped: 0 });
     await page
       .getByLabel('Audio input')
       .selectOption({ label: 'Demo signal (synthetic, no microphone)' });
-    await expect(statusBar(page)).toContainText('Microphone off');
     await expect(listening(page)).toBeVisible();
     await expect.poll(async () => (await fakeMicStats(page)).stopped).toBe(1);
   });
@@ -91,7 +84,6 @@ test.describe('audio capture', () => {
     await page.getByRole('button', { name: 'Start' }).click();
     await expect(page.getByText('Microphone access was denied.')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Start' })).toBeEnabled();
-    await expect(statusBar(page)).toContainText('Microphone off');
   });
 
   test('explains a missing device', async ({ page }) => {

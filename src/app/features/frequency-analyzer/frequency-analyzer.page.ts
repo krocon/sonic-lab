@@ -76,7 +76,7 @@ const UPDATE_SECONDS = 0.1;
       font-weight: var(--weight-regular);
       letter-spacing: 0.04em;
       color: var(--display-text);
-      text-shadow: 0 0 10px rgb(109 255 160 / 55%);
+      text-shadow: var(--display-glow);
       font-variant-numeric: tabular-nums;
     }
     .big .unit {

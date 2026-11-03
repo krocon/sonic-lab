@@ -9,11 +9,10 @@ body {
   height: 100%;
 }
 
-/* The chassis: black brushed metal behind everything */
+/* Behind the faceplate (see shell) */
 body {
   margin: 0;
   background-color: var(--chassis);
-  background-image: var(--chassis-texture);
   color: var(--color-text);
   font-family: var(--font-sans);
   font-size: var(--text-md);
@@ -60,11 +59,10 @@ samp {
   font-size: 0.92em;
 }
 
-/* ── Sections: raised parts of the front plate, separated by dark grooves ──────────────── */
+/* ── Sections: areas of the device face, marked only by an engraved outline ────────────── */
 .panel {
   position: relative;
-  background: var(--section-face);
-  border: var(--border-width) solid var(--section-edge);
+  border: var(--border-width) solid var(--section-line);
   border-radius: var(--radius-lg);
   box-shadow: var(--section-shadow);
 }
@@ -101,11 +99,6 @@ samp {
   text-shadow: var(--display-glow);
 }
 
-.lcd.amber {
-  color: var(--display-amber);
-  text-shadow: var(--display-glow-amber);
-}
-
 /* ── Badges: small engraved plates with an LED ──────────────────────────────────────────── */
 .badge {
   display: inline-flex;
@@ -133,13 +126,13 @@ samp {
 }
 
 .badge[data-tone='accent']::before {
-  background: var(--led-green);
-  box-shadow: 0 0 6px var(--led-green);
+  background: var(--led-red);
+  box-shadow: 0 0 6px var(--led-red);
 }
 
 .badge[data-tone='warning']::before {
-  background: var(--led-amber);
-  box-shadow: 0 0 6px var(--led-amber);
+  background: var(--led-blue);
+  box-shadow: 0 0 6px var(--led-blue);
 }
 
 /* ── Keys: plastic keycaps with a skirt and an indicator LED ────────────────────────────── */
@@ -204,20 +197,20 @@ samp {
   opacity: 0.6;
 }
 
-/* primary action: amber LED lit, amber legend */
+/* primary action: blue LED lit, blue legend */
 .btn-primary {
   color: var(--color-accent-strong);
 }
 
 .btn-primary::after {
-  background: var(--led-amber);
-  box-shadow: 0 0 6px var(--led-amber);
+  background: var(--led-blue);
+  box-shadow: 0 0 6px var(--led-blue);
 }
 
-/* engaged (latched) state: green LED lit */
+/* engaged (latched) state: red LED lit */
 .btn[aria-pressed='true']::after {
-  background: var(--led-green);
-  box-shadow: 0 0 6px var(--led-green);
+  background: var(--led-red);
+  box-shadow: 0 0 6px var(--led-red);
 }
 
 /* red LED for keys that record or transmit */
@@ -258,7 +251,7 @@ textarea {
   border-radius: var(--radius-sm);
   background-color: var(--display-bg);
   background-image: var(--display-reflection);
-  color: var(--display-amber);
+  color: var(--display-value);
   font-family: var(--font-mono);
   box-shadow: var(--display-inset);
 }
@@ -272,7 +265,7 @@ select {
 
 select option {
   background: var(--display-bg);
-  color: var(--display-amber);
+  color: var(--display-value);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -307,38 +300,15 @@ select option {
   flex: 1 0 auto;
 }
 
-/* module name: printed on the plate above the module's sections */
+/* The module name is not printed on the panel – the lit mode key shows it – but it stays the
+   page heading for assistive technology. */
 .module-head {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-1) var(--space-2) 0;
-}
-
-.module-head h1 {
-  font-size: var(--text-xs);
-  font-weight: 800;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--color-text);
-  text-shadow: var(--silkscreen-shadow);
-  white-space: nowrap;
-}
-
-.module-head .eyebrow {
-  order: -1;
-  padding: 1px var(--space-2);
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-sm);
-  white-space: nowrap;
-}
-
-/* a printed rule runs from the name to the right edge */
-.module-head::after {
-  content: '';
-  flex: 1;
+  position: absolute;
+  width: 1px;
   height: 1px;
-  background: linear-gradient(90deg, var(--color-border-strong), transparent);
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 .module-page .panel {
@@ -419,8 +389,8 @@ select option {
   margin: 0;
   font-family: var(--font-mono);
   font-size: var(--text-lg);
-  color: var(--display-amber);
-  text-shadow: var(--display-glow-amber);
+  color: var(--display-value);
+  text-shadow: var(--display-glow);
   font-variant-numeric: tabular-nums;
 }
 

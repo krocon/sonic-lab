@@ -6,7 +6,7 @@ import {
 } from '../../audio/microphone/browser-microphone-source';
 import { SignalGenerator } from '../../audio/synthesis/signal';
 import { SyntheticAudioSource } from '../../audio/synthetic/synthetic-audio-source';
-import { AUDIO_SOURCE, CaptureSession, VIRTUAL_DEVICE_IDS } from './capture-session';
+import { AUDIO_SOURCE, CaptureSession } from './capture-session';
 import { demoSignal } from './demo-signal';
 
 export const DEMO_DEVICE_ID = 'audiolab:demo';
@@ -37,7 +37,6 @@ export function provideAudioCapture(options: AudioCaptureOptions = {}): Provider
         ]);
       },
     },
-    { provide: VIRTUAL_DEVICE_IDS, useValue: [DEMO_DEVICE_ID] },
     CaptureSession,
   ];
 }

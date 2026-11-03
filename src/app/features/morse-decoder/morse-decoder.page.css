@@ -140,8 +140,8 @@ kbd {
   background-color: var(--display-bg);
   box-shadow: var(--display-inset);
   font-family: var(--font-mono);
-  color: var(--display-amber);
-  text-shadow: var(--display-glow-amber);
+  color: var(--display-value);
+  text-shadow: var(--display-glow);
 }
 
 .stats .btn {
@@ -161,8 +161,8 @@ output {
 }
 
 .morse {
-  color: var(--display-amber);
-  text-shadow: var(--display-glow-amber);
+  color: var(--display-value);
+  text-shadow: var(--display-glow);
   letter-spacing: 0.08em;
 }
 

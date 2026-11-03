@@ -40,12 +40,12 @@ function toPercent(db: number): number {
       position: relative;
       flex: 1;
       height: 0.7rem;
-      /* LED ladder: the full colour scale, cut into segments */
+      /* LCD bar graph: dark segments, the top of the scale in red */
       background: linear-gradient(
         90deg,
-        var(--led-green) 0 75%,
-        var(--led-amber) 75% 90%,
-        var(--led-red) 90%
+        var(--display-text) 0 75%,
+        var(--display-value) 75% 90%,
+        var(--display-mark) 90%
       );
       mask: repeating-linear-gradient(90deg, #000 0 5px, transparent 5px 7px);
     }
@@ -53,7 +53,9 @@ function toPercent(db: number): number {
       position: absolute;
       inset: 0 0 0 auto;
       width: 100%;
-      background: rgb(5 8 7 / 82%);
+      /* unlit segments stay faintly visible, as on a real LCD */
+      background: var(--display-bg);
+      opacity: 0.82;
     }
     .hold {
       position: absolute;
@@ -61,14 +63,14 @@ function toPercent(db: number): number {
       bottom: 0;
       width: 3px;
       left: 0;
-      background: #ffffff;
+      background: var(--display-mark);
     }
     .value {
       min-width: 5rem;
       font-family: var(--font-mono);
       font-size: var(--text-sm);
-      color: var(--display-amber);
-      text-shadow: var(--display-glow-amber);
+      color: var(--display-value);
+      text-shadow: var(--display-glow);
       text-align: right;
     }
     .value.clip {

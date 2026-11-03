@@ -54,11 +54,11 @@ export class SpectrumCanvas {
     const a = this.analyzer();
     if (this.frame++ % 60 === 0) {
       this.colors = {
-        line: cssVar(this.host, '--display-trace-alt', '#ffd23f'),
-        hold: cssVar(this.host, '--display-cyan', '#6fe3ff'),
-        grid: cssVar(this.host, '--display-grid', 'rgba(120,200,150,.14)'),
-        text: cssVar(this.host, '--display-label', '#7fb894'),
-        mark: cssVar(this.host, '--display-mark', '#ff5a4a'),
+        line: cssVar(this.host, '--display-trace-alt', '#2747b0'),
+        hold: cssVar(this.host, '--display-cyan', '#0b4f74'),
+        grid: cssVar(this.host, '--display-grid', 'rgba(25,45,110,.14)'),
+        text: cssVar(this.host, '--display-label', '#3d4d78'),
+        mark: cssVar(this.host, '--display-mark', '#a01c12'),
       };
       this.lastVersion = -1;
     }

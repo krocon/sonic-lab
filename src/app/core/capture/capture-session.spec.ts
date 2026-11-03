@@ -1,13 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { FakeAudioSource } from '../../../testing/fake-audio-source';
 import { SettingsStore } from '../settings/settings-store';
-import { CaptureActivity } from './capture-activity';
-import {
-  AUDIO_SOURCE,
-  CAPTURE_SETTINGS,
-  CaptureSession,
-  VIRTUAL_DEVICE_IDS,
-} from './capture-session';
+import { AUDIO_SOURCE, CAPTURE_SETTINGS, CaptureSession } from './capture-session';
 import { CaptureSettings } from './capture-settings';
 
 function memorySettings(deviceId = ''): SettingsStore<CaptureSettings> {
@@ -45,7 +39,6 @@ describe('CaptureSession', () => {
         CaptureSession,
         { provide: AUDIO_SOURCE, useValue: source },
         { provide: CAPTURE_SETTINGS, useValue: settings },
-        { provide: VIRTUAL_DEVICE_IDS, useValue: ['demo'] },
       ],
     });
     session = TestBed.inject(CaptureSession);
@@ -117,18 +110,6 @@ describe('CaptureSession', () => {
     await session.refreshDevices();
     expect(session.selectedDeviceId()).toBe('');
     expect(session.notice()?.tone).toBe('warning');
-  });
-
-  it('reports an open microphone only for real devices', async () => {
-    const activity = TestBed.inject(CaptureActivity);
-    await session.start();
-    expect(activity.microphoneOpen()).toBe(true);
-    await session.stop();
-    expect(activity.microphoneOpen()).toBe(false);
-
-    session.selectDevice('demo');
-    await session.start();
-    expect(activity.microphoneOpen()).toBe(false);
   });
 
   it('stops the source when destroyed and on pagehide', async () => {

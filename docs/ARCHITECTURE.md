@@ -34,10 +34,10 @@ or `@tauri-apps/*`; `eslint.config.js` fails the lint otherwise. Features never 
 src/
 ├── app/
 │   ├── app.ts, app.config.ts, app.routes.ts
-│   ├── shell/               front panel: nameplate, mode keys, indicators, outlet
+│   ├── shell/               front panel: row of mode keys, speaker grille, outlet
 │   ├── core/
 │   │   ├── modules/         AnalysisModule type + module catalog (single source of truth)
-│   │   ├── capture/         CaptureSession, capture providers, demo signals, microphone activity
+│   │   ├── capture/         CaptureSession, capture providers, demo signals
 │   │   ├── settings/        SettingsStore (versioned JSON in localStorage, never throws)
 │   │   └── status/          StatusMessage + mapping of audio states/errors to user text
 │   ├── audio/               framework-free
@@ -208,30 +208,39 @@ download link. Recording uses the app's own WAV encoder (16-bit PCM or 32-bit fl
 ### ADR-012 – SDR front-panel design, dark only
 
 The window imitates the front panel of an SDR transceiver instead of a web page. The shell is a
-chassis with a console holding the nameplate, a keypad of mode keys and the indicator LEDs
-(platform, microphone API, microphone, local only), and the workspace of the selected module.
-There is no overview page: `/` redirects to the Morse decoder. Mode keys are router links with a
-short legend from the module catalog (`AnalysisModule.key`) and the full module name as their
+top row with the mode keys (grouped under printed brackets) and a speaker grille, and below it
+the workspace of the selected module. There is no overview page, nameplate or status bar: `/`
+redirects to the Morse decoder, the lit mode key names the module (its `<h1>` is visually
+hidden), and each module shows its own capture state. Mode keys are router links with a short
+legend from the module catalog (`AnalysisModule.key`) and the full module name as their
 accessible name.
 
 Controls are hardware, not form widgets:
 
-- **Keys** (`.btn`): plastic keycaps with a skirt and an indicator LED; `aria-pressed` latches
-  the key down and lights the LED (green; red for recording).
+- **Keys** (`.btn`): black keycaps with a skirt, a cast shadow and an indicator LED;
+  `aria-pressed` latches the key down and lights the LED red; a primary key shows a blue ready
+  LED. The accent (knob arcs, selected legends) is blue.
 - **Key selectors** (`shared/controls/key-selector.ts`): one-of-many choices as joined keys or a
   keypad, an ARIA radio group with roving tab stop and arrow keys. They replace `<select>` for
   every fixed set of options; only the input-device list (dynamic) stays a drop-down.
 - **Knobs** (`shared/controls/knob.ts`): knurled skirt and index turn, the light on the machined
-  cap stays put, a scale arc lights up to the value; `variant="dial"` is a large tuning dial with
-  a finger dimple. ARIA slider, drag/wheel/keyboard, optional log scale and value format. They
+  cap stays put, a scale arc lights up to the value, and the knob casts a shadow down and to the
+  right; `variant="dial"` is a large tuning dial with a ribbed ring, a spun-metal disc and a
+  finger dimple. ARIA slider, drag/wheel/keyboard, optional log scale and value format. They
   replace every `input[type=range]`.
-- **Displays** (`.lcd`, `--display-*` tokens): dark glass with a black frame and phosphor/amber
-  readouts; the VU meter (`shared/visualization/analog-meter.ts`) is decorative and
-  `aria-hidden`.
+- **Displays** (`.lcd`, `--display-*` tokens): backlit blue-grey LCDs with dark segments behind
+  a black frame; canvases read the same tokens. The VU meter
+  (`shared/visualization/analog-meter.ts`) is decorative and `aria-hidden`.
 
-Sections are raised parts of the plate separated by dark grooves (`--groove`); module pages fill
-the workspace height. Everything is CSS custom properties, gradients and inline SVG – no images,
-fonts or UI libraries. There is a single dark finish (`color-scheme: dark`), independent of
+The whole window is one faceplate: `shell/faceplate.png`, cut from a reference rendering into a
+9-slice image (side edges and bottom lip keep their size, the plate stretches) and drawn as the
+shell's `border-image`. The reference's top rail and top edge are cut out – the plate starts
+under the title bar with its light band fading in – the corners are square (the bottom lip runs
+straight to both sides), and the left edge is the mirrored right edge so the slices meet without
+a seam. Sections have no surface of their own, only an engraved outline
+(`--section-line`), and sit 1px apart (`--groove`). Module pages fill the workspace height.
+Everything else is CSS custom properties, gradients and inline SVG – no other images, no fonts or
+UI libraries. There is a single dark finish (`color-scheme: dark`), independent of
 `prefers-color-scheme`, like real equipment; this replaced the graphite/aluminium themes and the
 theme toggle. Contrast is verified by the axe E2E checks on every module.
 

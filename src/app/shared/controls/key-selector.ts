@@ -139,8 +139,8 @@ export interface KeyOption<T> {
       box-shadow: var(--led-off-shadow);
     }
     .key[aria-checked='true'] .led {
-      background: var(--led-green);
-      box-shadow: 0 0 6px var(--led-green);
+      background: var(--led-red);
+      box-shadow: 0 0 6px var(--led-red);
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

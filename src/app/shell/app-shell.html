@@ -1,14 +1,6 @@
 <a class="skip-link" href="#main">Skip to content</a>
 
-<div class="console">
-  <header class="nameplate">
-    <span class="brand-mark"><app-icon name="logo" [size]="20" /></span>
-    <span class="brand-text">
-      <span class="brand-name">Audio<span>Lab</span></span>
-      <span class="brand-model">Signal analyzer</span>
-    </span>
-  </header>
-
+<div class="top-row">
   <nav class="modes" aria-label="Analysis modules">
     @for (group of groups; track group.id) {
       <div class="mode-group" role="group" [attr.aria-label]="group.label">
@@ -32,44 +24,6 @@
       </div>
     }
   </nav>
-
-  <footer class="statusbar" aria-label="Status">
-    <p class="silkscreen indicators-title" aria-hidden="true">Indicators</p>
-    @if (platformInfo.value(); as info) {
-      <span class="status-item">
-        <span class="led on" aria-hidden="true"></span>
-        <span
-          >{{ info.label }}
-          @if (info.appVersion) {
-            <span class="muted">v{{ info.appVersion }}</span>
-          }
-        </span>
-      </span>
-      <span class="status-item" [class.warn]="!info.secureContext || !info.mediaDevicesAvailable">
-        <span class="led" aria-hidden="true"></span>
-        <span>
-          @if (!info.secureContext) {
-            Insecure context – microphone needs HTTPS or localhost
-          } @else if (!info.mediaDevicesAvailable) {
-            Microphone API unavailable
-          } @else {
-            Microphone API available
-          }
-        </span>
-      </span>
-    } @else {
-      <span class="status-item muted">Detecting platform…</span>
-    }
-    <span class="status-item" [class.live]="capture.microphoneOpen()">
-      <span class="led mic" aria-hidden="true"></span>
-      <span>{{ capture.microphoneOpen() ? 'Microphone on' : 'Microphone off' }}</span>
-    </span>
-    <span class="status-item" title="All processing happens on this device">
-      <span class="led on" aria-hidden="true"></span>
-      <span>Local only</span>
-    </span>
-  </footer>
-
   <div class="grille" aria-hidden="true"></div>
 </div>
 

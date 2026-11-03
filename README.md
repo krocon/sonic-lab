@@ -25,11 +25,12 @@ macOS, Windows and Linux.
 
 Every input-based module has a **Demo signal** input, so you can try it without a microphone.
 
-The window is the front panel of an SDR transceiver: a black chassis, a keypad of mode keys with
-indicator LEDs instead of a menu, glass displays with phosphor and amber readouts, latching
-hardware keys instead of drop-downs, machined rotary knobs and a tuning dial instead of sliders,
-and a moving-coil meter. It is always dark – like real hardware – whatever the system theme.
-There is no start page: the app opens in the Morse decoder, and a mode key switches modules.
+The window is the front panel of an SDR transceiver: one black metal faceplate, a row of mode
+keys with indicator LEDs instead of a menu, backlit blue-grey LCDs, latching hardware keys instead
+of drop-downs, machined rotary knobs and a spun-metal tuning dial that cast shadows instead of
+sliders, and a moving-coil meter. It is always dark – like real hardware – whatever the system
+theme. There is no start page: the app opens in the Morse decoder, and a mode key switches
+modules.
 
 | Signal monitor                                                      | Tone generator                                                      |
 | ------------------------------------------------------------------- | ------------------------------------------------------------------- |
@@ -43,7 +44,7 @@ There is no start page: the app opens in the Morse decoder, and a mode key switc
 
 - Audio is processed locally and never uploaded; there is no backend and no telemetry.
 - The microphone opens only after you press **Start** and is released when you stop, leave the
-  view or close the app. An indicator LED on the front panel shows whether a microphone is open.
+  view or close the app. While capture runs, the module shows "Listening" and its Stop key is lit.
 - Nothing is stored or exported unless you explicitly ask for it.
 - The desktop app allows the microphone and nothing else (camera, location, … are denied).
 

@@ -135,7 +135,7 @@ const store = () =>
       font-size: clamp(1.75rem, 4vw, 2.75rem);
       line-height: 1.1;
       color: var(--display-text);
-      text-shadow: 0 0 10px rgb(109 255 160 / 55%);
+      text-shadow: var(--display-glow);
       font-variant-numeric: tabular-nums;
       white-space: nowrap;
     }
@@ -154,7 +154,6 @@ const store = () =>
     .vfo-out.on {
       color: var(--display-mark);
       opacity: 1;
-      text-shadow: 0 0 6px rgb(255 90 74 / 60%);
     }
     .knob-row {
       justify-content: space-evenly;

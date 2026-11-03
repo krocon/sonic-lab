@@ -11,8 +11,9 @@ AudioLab is designed so that audio never leaves your device.
 - **Microphone on user action only.** Access is requested only after you press **Start**. The
   stream is stopped when you press **Stop**, leave the view, close or hide the page
   (`pagehide`), close the window or quit the app. If the device disappears, capture stops and a
-  message explains what happened. The indicator panel shows "Microphone on" whenever a real
-  microphone is open (the synthetic demo input never opens the microphone).
+  message explains what happened. Capture belongs to the module you are in: while it runs, the
+  module shows "Listening" next to its lit Stop key (the synthetic demo input never opens the
+  microphone).
 - **No browser voice processing.** Echo cancellation, noise suppression and automatic gain are
   switched off – not for privacy, but so that the signal is analysed as it arrives.
 - **No background recording.** Nothing is captured while capture is not visibly running.
@@ -30,8 +31,8 @@ AudioLab is designed so that audio never leaves your device.
 ## Web: secure context
 
 Browsers expose `getUserMedia` only in a secure context: `https://…` or `http://localhost`.
-A deployed web build must therefore be served over HTTPS. AudioLab shows a warning among the
-indicator LEDs when it runs in an insecure context.
+A deployed web build must therefore be served over HTTPS. In an insecure context, pressing
+**Start** explains that microphone access needs a secure connection.
 
 ## Desktop permissions
 

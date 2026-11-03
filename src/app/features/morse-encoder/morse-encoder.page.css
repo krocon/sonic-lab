@@ -14,7 +14,7 @@ textarea {
   font-size: var(--text-lg);
   letter-spacing: 0.04em;
   resize: vertical;
-  text-shadow: var(--display-glow-amber);
+  text-shadow: var(--display-glow);
 }
 
 .label {
@@ -45,8 +45,8 @@ textarea {
   box-shadow: var(--display-inset);
   font-family: var(--font-mono);
   font-size: var(--text-sm);
-  color: var(--display-amber);
-  text-shadow: var(--display-glow-amber);
+  color: var(--display-value);
+  text-shadow: var(--display-glow);
   font-variant-numeric: tabular-nums;
 }
 
@@ -82,10 +82,15 @@ textarea {
 }
 
 .token.active {
-  border-color: var(--led-green);
-  box-shadow:
-    0 0 8px rgb(57 255 106 / 55%),
-    inset 0 0 6px rgb(57 255 106 / 25%);
+  /* the sounding character is shown inverted, like a selected LCD field */
+  border-color: var(--display-text);
+  background: var(--display-text);
+}
+
+.token.active .char,
+.token.active .code {
+  color: var(--display-bg);
+  text-shadow: none;
 }
 
 .token.unsupported .char,
@@ -101,8 +106,8 @@ textarea {
 }
 
 .code {
-  color: var(--display-amber);
-  text-shadow: var(--display-glow-amber);
+  color: var(--display-value);
+  text-shadow: var(--display-glow);
   letter-spacing: 0.1em;
 }
 
@@ -118,8 +123,8 @@ textarea {
   background-image: var(--display-reflection);
   box-shadow: var(--display-inset);
   font-family: var(--font-mono);
-  color: var(--display-amber);
-  text-shadow: var(--display-glow-amber);
+  color: var(--display-value);
+  text-shadow: var(--display-glow);
   letter-spacing: 0.08em;
   overflow-wrap: break-word;
 }

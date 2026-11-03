@@ -120,7 +120,7 @@ export type KnobVariant = 'knob' | 'dial';
     }
     .arc {
       stroke: var(--color-accent);
-      filter: drop-shadow(0 0 2px rgb(255 182 39 / 80%));
+      filter: drop-shadow(0 0 2px rgb(61 155 255 / 80%));
     }
 
     /* knob body: knurled skirt (turns), machined cap (light stays put), index (turns) */
@@ -128,9 +128,11 @@ export type KnobVariant = 'knob' | 'dial';
       position: absolute;
       inset: calc(var(--size) * 0.2);
       border-radius: 50%;
+      /* light from the top left: the knob casts its shadow down and to the right */
       box-shadow:
-        0 calc(var(--size) * 0.07) calc(var(--size) * 0.14) rgb(0 0 0 / 75%),
-        0 0 0 1px #000;
+        0 0 0 1px #000,
+        calc(var(--size) * 0.03) calc(var(--size) * 0.05) calc(var(--size) * 0.06) rgb(0 0 0 / 70%),
+        calc(var(--size) * 0.09) calc(var(--size) * 0.15) calc(var(--size) * 0.18) rgb(0 0 0 / 65%);
     }
     .rotor,
     .cap,
@@ -182,17 +184,36 @@ export type KnobVariant = 'knob' | 'dial';
       box-shadow: 0 0 3px rgb(255 255 255 / 45%);
     }
 
-    /* tuning dial: big, fine knurl, flat face with a finger dimple */
+    /* tuning dial: ribbed rubber ring around a spun-metal disc with a finger dimple */
     .dial .rotor {
       background:
-        radial-gradient(circle at 50% 8%, rgb(255 255 255 / 20%), transparent 55%),
-        repeating-conic-gradient(#08090a 0deg 1.5deg, #3d434a 2deg 2.5deg, #08090a 3deg 4deg);
+        radial-gradient(circle at 50% 8%, rgb(255 255 255 / 16%), transparent 55%),
+        repeating-conic-gradient(#060708 0deg 1.5deg, #2c3036 2deg 2.5deg, #060708 3deg 4deg);
     }
     .dial .cap {
-      inset: 7%;
+      inset: 13%;
+      /* concentric turning grooves over a bow-tie reflection, as on spun aluminium */
       background:
-        radial-gradient(circle at 50% 22%, rgb(255 255 255 / 11%), transparent 60%),
-        radial-gradient(circle, #202328 0 60%, #16181b 100%);
+        repeating-radial-gradient(circle, rgb(255 255 255 / 3%) 0 1px, transparent 1px 3px),
+        conic-gradient(
+          from 0deg,
+          #111214,
+          #3e4146 9%,
+          #141518 20%,
+          #0e0f11 32%,
+          #2d3034 43%,
+          #111214 50%,
+          #3e4146 59%,
+          #141518 70%,
+          #0e0f11 82%,
+          #2d3034 93%,
+          #111214
+        );
+      box-shadow:
+        inset 0 1px 1px rgb(255 255 255 / 22%),
+        inset 0 -2px 4px rgb(0 0 0 / 70%),
+        0 0 0 1px #000,
+        0 0 0 3px rgb(0 0 0 / 35%);
     }
     .dial .pointer {
       top: 15%;
@@ -227,8 +248,8 @@ export type KnobVariant = 'knob' | 'dial';
       box-shadow: var(--display-inset);
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--display-amber);
-      text-shadow: var(--display-glow-amber);
+      color: var(--display-value);
+      text-shadow: var(--display-glow);
       text-align: center;
       white-space: nowrap;
       font-variant-numeric: tabular-nums;

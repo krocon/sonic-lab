@@ -40,15 +40,15 @@ import { StatusMessage } from '../../core/status/status-message';
     }
     [data-tone='success'] .dot,
     [data-tone='info'] .dot {
-      background: var(--led-green);
-      box-shadow: 0 0 6px var(--led-green);
+      background: var(--led-red);
+      box-shadow: 0 0 6px var(--led-red);
     }
     [data-tone='warning'] {
       color: var(--color-warning);
     }
     [data-tone='warning'] .dot {
-      background: var(--led-amber);
-      box-shadow: 0 0 6px var(--led-amber);
+      background: var(--led-blue);
+      box-shadow: 0 0 6px var(--led-blue);
     }
     [data-tone='danger'] {
       color: var(--color-danger);

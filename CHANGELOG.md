@@ -75,10 +75,12 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
-- The window is now the front panel of an SDR transceiver: black chassis, a console with
-  nameplate, a keypad of mode keys with LEDs (replaces the sidebar navigation) and indicator LEDs
-  (replaces the status bar), raised sections separated by grooves that fill the window, glass
-  displays with phosphor/amber readouts, LED level ladders and an analog VU meter.
+- The window is now the front panel of an SDR transceiver: a row of mode keys with LEDs replaces
+  the sidebar navigation; the nameplate, the page titles and the status bar are gone (each module
+  shows its own capture state). The window is one black metal faceplate (9-slice image);
+  sections are transparent with engraved outlines, 1px apart, and fill the window; displays are
+  backlit blue-grey LCDs; keys and knobs cast shadows; red LEDs and a blue accent; an analog VU
+  meter.
 - Hardware controls everywhere: latching key selectors (ARIA radio groups) replace drop-downs
   and the peak-hold checkbox; machined rotary knobs with a lit scale arc replace all sliders
   (Morse decoder, Morse encoder, tone generator); the tone generator has a tuning dial and a

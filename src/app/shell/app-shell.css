@@ -1,85 +1,41 @@
 :host {
   display: grid;
-  grid-template-columns: var(--console-width) minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
   height: 100dvh;
   overflow: hidden;
+  /* The faceplate is a 9-slice image: side edges (24px) and bottom lip (20px) keep their size,
+     the plate stretches to the window. It starts right under the title bar, without a top edge,
+     and has square corners. The border keeps the content off the edges. */
+  border-style: solid;
+  border-width: 0 24px 20px;
+  border-image: url('./faceplate.png') 0 24 20 fill / 0 24px 20px stretch;
 }
 
-/* ── Console: nameplate, mode keys, indicators ──────────────────────────────────────────── */
-.console {
+/* ── Top row: mode keys and a speaker grille ────────────────────────────────────────────── */
+.top-row {
   display: flex;
-  flex-direction: column;
-  min-height: 0;
-  margin: var(--groove) 0 var(--groove) var(--groove);
-  overflow-y: auto;
-  scrollbar-width: thin;
-  background: var(--section-face);
-  border: var(--border-width) solid var(--section-edge);
+  align-items: stretch;
+  gap: var(--space-5);
+  margin: 0 var(--groove);
+  padding: var(--space-2) var(--space-4) var(--space-3);
+  border: var(--border-width) solid var(--section-line);
+  border-top: none;
   border-radius: var(--radius-lg);
   box-shadow: var(--section-shadow);
 }
 
-.nameplate {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-3) var(--space-3) 0.875rem;
-  border-bottom: 1px solid #000;
-  box-shadow: 0 1px 0 rgb(255 255 255 / 5%);
-}
-
-.brand-mark {
-  display: grid;
-  place-items: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  flex: none;
-  border-radius: 50%;
-  background: var(--display-bg);
-  color: var(--display-trace);
-  box-shadow:
-    inset 0 2px 5px rgb(0 0 0 / 90%),
-    0 0 0 2px #000,
-    0 0 0 3px rgb(255 255 255 / 9%);
-  filter: drop-shadow(0 0 4px rgb(109 255 160 / 35%));
-}
-
-.brand-text {
-  display: grid;
-  line-height: 1.05;
-}
-
-.brand-name {
-  font-size: 1.3rem;
-  font-weight: 800;
-  font-style: italic;
-  letter-spacing: -0.01em;
-  color: var(--color-text);
-  text-shadow: var(--silkscreen-shadow);
-}
-
-.brand-name span {
-  color: var(--color-accent-strong);
-}
-
-.brand-model {
-  margin-top: 2px;
-  font-size: var(--text-2xs);
-  font-weight: var(--weight-bold);
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--color-text-subtle);
-}
-
 .modes {
-  display: grid;
-  gap: var(--space-3);
-  padding: var(--space-3) 0.875rem var(--space-4);
+  display: flex;
+  gap: var(--space-5);
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
 }
 
 .mode-group {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-columns: 4.75rem;
+  grid-auto-flow: column;
   gap: var(--space-1) 6px;
 }
 
@@ -125,9 +81,9 @@
   justify-items: center;
   align-content: end;
   gap: 3px;
-  height: 3.5rem;
+  height: 3.25rem;
   margin-bottom: 3px;
-  padding: 0 2px 0.4rem;
+  padding: 0 2px 0.35rem;
   border-radius: var(--radius-md);
   border: var(--border-width) solid var(--key-edge);
   background: var(--key-face);
@@ -173,83 +129,24 @@
 }
 
 .mode-key.active .mode-led {
-  background: var(--led-green);
-  box-shadow: 0 0 7px var(--led-green);
+  background: var(--led-red);
+  box-shadow: 0 0 7px var(--led-red);
 }
 
 .mode-key.active app-icon {
   color: var(--color-accent-strong);
-  filter: drop-shadow(0 0 3px rgb(255 182 39 / 55%));
+  filter: drop-shadow(0 0 3px rgb(61 155 255 / 60%));
 }
 
 .mode-key.active .mode-legend {
   color: var(--color-accent-strong);
 }
 
-/* ── Indicator LEDs ─────────────────────────────────────────────────────────────────────── */
-.statusbar {
-  display: grid;
-  gap: 7px;
-  padding: var(--space-3) 0.875rem;
-  border-top: 1px solid #000;
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 5%);
-  font-size: var(--text-2xs);
-  font-weight: var(--weight-bold);
-  letter-spacing: 0.1em;
-  line-height: 1.35;
-  text-transform: uppercase;
-  color: var(--silkscreen);
-  text-shadow: var(--silkscreen-shadow);
-}
-
-.status-item {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-2);
-}
-
-.muted {
-  color: var(--color-text-subtle);
-}
-
-.led {
-  flex: none;
-  width: 8px;
-  height: 8px;
-  margin-top: 2px;
-  border-radius: 50%;
-  background: var(--led-green);
-  box-shadow: 0 0 6px var(--led-green);
-}
-
-.led.mic {
-  background: var(--led-off);
-  box-shadow: var(--led-off-shadow);
-}
-
-.live {
-  color: var(--color-danger);
-}
-
-.live .led.mic {
-  background: var(--led-red);
-  box-shadow: 0 0 9px var(--led-red);
-}
-
-.warn {
-  color: var(--color-warning);
-}
-
-.warn .led {
-  background: var(--led-amber);
-  box-shadow: 0 0 6px var(--led-amber);
-}
-
-/* perforated speaker grille fills what is left of the console */
+/* perforated speaker grille fills the rest of the row */
 .grille {
   flex: 1 1 0;
-  min-height: 0;
-  margin: var(--space-1) 0.875rem 0.875rem;
+  min-width: 0;
+  margin-top: var(--space-2);
   border-radius: var(--radius-md);
   background:
     radial-gradient(circle, #000 0 1.7px, transparent 2.2px) 0 0 / 8px 8px,
@@ -263,50 +160,8 @@
   outline: none;
 }
 
-/* Narrow windows: the console becomes a strip above the workspace. */
 @media (max-width: 820px) {
-  :host {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr);
-  }
-
-  .grille,
-  .brand-model,
-  .indicators-title {
+  .grille {
     display: none;
-  }
-
-  .console {
-    flex-flow: row wrap;
-    align-items: center;
-    margin: var(--groove) var(--groove) 0;
-    overflow: visible;
-  }
-
-  .nameplate {
-    border-bottom: none;
-    box-shadow: none;
-  }
-
-  .modes {
-    display: flex;
-    flex: 1 1 auto;
-    gap: var(--space-2);
-    padding: var(--space-2);
-    overflow-x: auto;
-  }
-
-  .mode-group {
-    grid-template-columns: none;
-    grid-auto-columns: 4.5rem;
-    grid-auto-flow: column;
-  }
-
-  .statusbar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-1) var(--space-4);
-    width: 100%;
-    padding: var(--space-2) 0.875rem;
   }
 }

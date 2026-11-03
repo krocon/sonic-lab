@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { installFakeMicrophone } from './fixtures/fake-microphone';
+import { fakeMicStats, installFakeMicrophone } from './fixtures/fake-microphone';
 
 test('tone generator plays, changes waveform while playing and stops', async ({ page }) => {
   const errors: string[] = [];
@@ -28,7 +28,7 @@ test('records the microphone and exports a WAV download', async ({ page }) => {
   await expect(page.getByRole('status').filter({ hasText: 'Recording' })).toBeVisible();
   await expect(page.getByLabel('Recorded time')).toHaveText(/^0:01\.\d$/, { timeout: 5_000 });
   await page.getByRole('button', { name: 'Stop recording' }).click();
-  await expect(page.locator('footer.statusbar')).toContainText('Microphone off');
+  await expect.poll(async () => (await fakeMicStats(page)).stopped).toBe(1);
 
   await page.getByRole('radio', { name: 'WAV 32-bit float' }).click();
   const [download] = await Promise.all([

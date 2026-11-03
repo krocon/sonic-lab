@@ -79,7 +79,7 @@ const UPDATE_SECONDS = 0.1;
           [max]="5000"
           [log]="true"
           unit=" Hz"
-          color="--color-mark"
+          color="--display-cyan"
           label="Frequency history"
         />
       </section>

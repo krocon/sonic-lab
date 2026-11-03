@@ -73,8 +73,8 @@ export class WaveformCanvas {
     const buffer = this.buffer();
     if (this.frameCount++ % 60 === 0) {
       this.colors = {
-        line: cssVar(this.host, '--display-trace', '#6dffa0'),
-        axis: cssVar(this.host, '--display-grid-strong', 'rgba(120,200,150,.3)'),
+        line: cssVar(this.host, '--display-trace', '#1c3593'),
+        axis: cssVar(this.host, '--display-grid-strong', 'rgba(25,45,110,.32)'),
       };
       this.dirty = true;
     }

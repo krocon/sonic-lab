@@ -7,17 +7,11 @@ import {
   isAudioSourceError,
 } from '../../audio/audio-source';
 import { StatusMessage, describeSourceState } from '../status/status-message';
-import { CaptureActivity } from './capture-activity';
 import { CaptureSettings, captureSettingsStore } from './capture-settings';
 import { SettingsStore } from '../settings/settings-store';
 
 /** The audio source a capture session drives (microphone in the app, fakes in tests). */
 export const AUDIO_SOURCE = new InjectionToken<AudioSource>('AUDIO_SOURCE');
-
-/** Device ids that are not real microphones (they don't light up the microphone indicator). */
-export const VIRTUAL_DEVICE_IDS = new InjectionToken<readonly string[]>('VIRTUAL_DEVICE_IDS', {
-  factory: () => [],
-});
 
 export const CAPTURE_SETTINGS = new InjectionToken<SettingsStore<CaptureSettings>>(
   'CAPTURE_SETTINGS',
@@ -39,12 +33,9 @@ export type FrameConsumer = (frame: AudioFrame) => void;
  */
 export class CaptureSession {
   private readonly source = inject(AUDIO_SOURCE);
-  private readonly activity = inject(CaptureActivity);
-  private readonly virtualIds = inject(VIRTUAL_DEVICE_IDS);
   private readonly settings = inject(CAPTURE_SETTINGS);
   private readonly consumers = new Set<FrameConsumer>();
   private unsubscribeFrames: (() => void) | null = null;
-  private countedAsMicrophone = false;
 
   private readonly stateSignal = signal<AudioSourceState>(this.source.state);
   readonly state = this.stateSignal.asReadonly();
@@ -68,7 +59,6 @@ export class CaptureSession {
       win?.removeEventListener('pagehide', onPageHide);
       void this.stop();
       this.consumers.clear();
-      this.setMicrophoneOpen(false);
     });
   }
 
@@ -136,15 +126,7 @@ export class CaptureSession {
 
   private onState(state: AudioSourceState): void {
     this.stateSignal.set(state);
-    const isMic = state.status === 'running' && !this.virtualIds.includes(this.selectedDeviceId());
-    this.setMicrophoneOpen(isMic || state.status === 'requesting-permission');
     if (state.status === 'error') this.detachFrames();
-  }
-
-  private setMicrophoneOpen(open: boolean): void {
-    if (open === this.countedAsMicrophone) return;
-    this.countedAsMicrophone = open;
-    this.activity.adjust(open ? 1 : -1);
   }
 
   private detachFrames(): void {

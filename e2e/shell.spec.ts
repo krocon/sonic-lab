@@ -44,6 +44,6 @@ test('does not request the microphone on load', async ({ page }) => {
 test('stays dark when the system prefers a light theme', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'light' });
   await page.goto('/#/morse-decoder');
-  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(13, 14, 16)');
+  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(5, 5, 6)');
   await expect(page.locator('html')).toHaveCSS('color-scheme', 'dark');
 });

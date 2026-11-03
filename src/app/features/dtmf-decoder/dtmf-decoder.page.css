@@ -56,8 +56,8 @@
 }
 
 .key.active::after {
-  background: var(--led-green);
-  box-shadow: 0 0 8px var(--led-green);
+  background: var(--led-red);
+  box-shadow: 0 0 8px var(--led-red);
 }
 
 .bars {
@@ -85,7 +85,7 @@
 .bar {
   position: relative;
   border-radius: 2px;
-  background: rgb(255 255 255 / 3%);
+  background: rgb(25 45 110 / 7%);
   overflow: hidden;
 }
 
@@ -98,12 +98,10 @@
 
 .fill.row {
   background: var(--display-trace);
-  box-shadow: 0 0 8px var(--display-trace);
 }
 
 .fill.col {
-  background: var(--display-amber);
-  box-shadow: 0 0 8px var(--display-amber);
+  background: var(--display-value);
 }
 
 .digits-head {
@@ -124,7 +122,7 @@
   font-size: var(--text-2xl);
   letter-spacing: 0.18em;
   color: var(--display-cyan);
-  text-shadow: 0 0 8px rgb(111 227 255 / 55%);
+  text-shadow: var(--display-glow);
   overflow-wrap: anywhere;
 }
 
