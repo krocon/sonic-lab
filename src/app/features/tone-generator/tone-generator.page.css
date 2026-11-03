@@ -1,0 +1,80 @@
+.screen {
+  grid-template-rows: auto auto auto minmax(0, 1fr);
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8cqh 0.8cqw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tabs .chip {
+  padding: 0.5cqh 1cqw;
+  font-size: clamp(9px, 1.9cqh, 13px);
+}
+
+.vfo {
+  align-items: center;
+}
+
+.readout {
+  display: grid;
+  gap: 0.8cqh;
+  min-width: 0;
+}
+
+.main {
+  font-size: min(17cqh, 10cqw);
+}
+
+.sub {
+  min-height: 1.2em;
+  font-size: clamp(11px, 2.6cqh, 18px);
+  color: var(--oled-dim);
+}
+
+.states {
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.level {
+  align-items: center;
+}
+
+.level-bar {
+  position: relative;
+  flex: 1;
+  height: 1.6cqh;
+  min-height: 6px;
+  background: var(--oled-faint);
+}
+
+.level-bar i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: linear-gradient(90deg, var(--oled-accent-2), var(--oled-accent));
+}
+
+.wave {
+  width: calc(100% - 16px);
+  height: calc(100% - 16px);
+  overflow: visible;
+}
+
+.wave .axis {
+  stroke: var(--display-grid-strong);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.wave path {
+  fill: none;
+  stroke: var(--oled-accent);
+  stroke-width: 1.6;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 4px rgb(60 200 255 / 60%));
+}

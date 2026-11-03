@@ -1,19 +1,24 @@
 import { expect, test } from '@playwright/test';
 import { fakeMicStats, installFakeMicrophone } from './fixtures/fake-microphone';
+import { frontPanel } from './fixtures/front-panel';
 
 test('tone generator plays, changes waveform while playing and stops', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/#/tone-generator');
-  await page.getByRole('button', { name: 'Play' }).click();
-  await expect(page.getByRole('status').filter({ hasText: 'Playing' })).toBeVisible();
-  await page.getByRole('radio', { name: 'Pink noise' }).click();
-  await expect(page.getByRole('status').filter({ hasText: 'Playing' })).toBeVisible();
-  await page.getByRole('radio', { name: 'DTMF' }).click();
-  await page.getByRole('radio', { name: '#' }).click();
-  await expect(page.getByRole('radio', { name: '#' })).toBeChecked();
-  await page.getByRole('button', { name: 'Stop' }).click();
-  await expect(page.getByRole('button', { name: 'Play' })).toBeVisible();
+  const panel = frontPanel(page);
+  await panel.key('Play').click();
+  await expect(panel.state()).toHaveText('Output on');
+  for (let i = 0; i < 5; i++) await panel.softKey('Waveform').click();
+  await expect(panel.softKey('Waveform')).toHaveAccessibleName('Waveform: PINK NOISE');
+  await expect(panel.state()).toHaveText('Output on');
+  for (let i = 0; i < 4; i++) await panel.softKey('Waveform').click();
+  await expect(panel.softKey('Waveform')).toHaveAccessibleName('Waveform: DTMF');
+  await panel.key('9').click();
+  await expect(panel.softKey('DTMF key')).toHaveAccessibleName('DTMF key: 9');
+  await panel.key('Stop').click();
+  await expect(panel.key('Play')).toBeEnabled();
+  await expect(panel.state()).toHaveText('Output off');
   expect(errors).toEqual([]);
 });
 
@@ -24,16 +29,18 @@ test('records the microphone and exports a WAV download', async ({ page }) => {
     () => delete (window as { showSaveFilePicker?: unknown }).showSaveFilePicker,
   );
   await page.goto('/#/audio-recorder');
-  await page.getByRole('button', { name: 'Record' }).click();
+  const panel = frontPanel(page);
+  await panel.key('Record').click();
   await expect(page.getByRole('status').filter({ hasText: 'Recording' })).toBeVisible();
-  await expect(page.getByLabel('Recorded time')).toHaveText(/^0:01\.\d$/, { timeout: 5_000 });
-  await page.getByRole('button', { name: 'Stop recording' }).click();
+  await expect(page.getByLabel('Recorded time')).toHaveText(/^\s*0:01\.\d\s*$/, { timeout: 5_000 });
+  await panel.key('Stop').click();
   await expect.poll(async () => (await fakeMicStats(page)).stopped).toBe(1);
 
-  await page.getByRole('radio', { name: 'WAV 32-bit float' }).click();
+  await panel.softKey('Format').click();
+  await expect(panel.softKey('Format')).toHaveAccessibleName('Format: 32 FLOAT');
   const [download] = await Promise.all([
     page.waitForEvent('download'),
-    page.getByRole('button', { name: 'Export…' }).click(),
+    panel.softKey('Export…').click(),
   ]);
   expect(download.suggestedFilename()).toMatch(/^audiolab-.*\.wav$/);
   const path = await download.path();
@@ -43,6 +50,6 @@ test('records the microphone and exports a WAV download', async ({ page }) => {
   expect(bytes.readUInt16LE(20)).toBe(3); // float
   expect(bytes.length).toBeGreaterThan(48000 * 4); // > 1 s
 
-  await page.getByRole('button', { name: 'Discard' }).click();
-  await expect(page.getByText('Recording discarded.')).toBeVisible();
+  await panel.softKey('Discard').click();
+  await expect(panel.message()).toHaveText('Recording discarded.');
 });

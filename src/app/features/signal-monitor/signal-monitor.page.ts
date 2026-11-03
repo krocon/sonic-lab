@@ -5,8 +5,7 @@ import { TimeSeries } from '../../audio/time-series';
 import { provideAudioCapture } from '../../core/capture/audio-capture.providers';
 import { CaptureSession } from '../../core/capture/capture-session';
 import { demoAnalysisSignal } from '../../core/capture/demo-signal';
-import { CaptureControls } from '../../shared/capture/capture-controls';
-import { StatusBanner } from '../../shared/status/status-banner';
+import { attachPanel, panelAction } from '../../core/panel/front-panel';
 import { HistoryCanvas } from '../../shared/visualization/history-canvas';
 import { AnalogMeter } from '../../shared/visualization/analog-meter';
 import { LevelMeterBar } from '../../shared/visualization/level-meter-bar';
@@ -16,53 +15,44 @@ const UPDATE_SECONDS = 0.1;
 /** Level, clipping and dominant frequency at a glance, with a 30-second history. */
 @Component({
   selector: 'app-signal-monitor-page',
-  imports: [CaptureControls, AnalogMeter, LevelMeterBar, HistoryCanvas, StatusBanner],
+  imports: [AnalogMeter, LevelMeterBar, HistoryCanvas],
   providers: [provideAudioCapture({ demo: demoAnalysisSignal })],
   template: `
-    <div class="module-page">
+    <div class="screen">
       <header class="module-head">
-        <p class="eyebrow">Analyze</p>
         <h1>Signal Monitor</h1>
       </header>
-      <section class="panel" aria-label="Capture controls"><app-capture-controls /></section>
-      <section class="panel" aria-labelledby="now-title">
-        <h2 id="now-title">Now</h2>
-        <div class="now">
+      <div class="now">
+        <section class="box meter-box" aria-labelledby="level-title">
+          <h2 id="level-title" class="box-title">Level</h2>
           <app-analog-meter class="vu" [meter]="meter" [active]="session.running()" />
-          <div class="now-side">
-            <app-level-meter-bar [meter]="meter" [active]="session.running()" />
-            <dl class="readouts">
-              <div class="readout">
-                <dt>RMS</dt>
-                <dd>{{ rms() === null ? '–' : rms()!.toFixed(1) + ' dBFS' }}</dd>
-              </div>
-              <div class="readout">
-                <dt>Peak</dt>
-                <dd>{{ peak() === null ? '–' : peak()!.toFixed(1) + ' dBFS' }}</dd>
-              </div>
-              <div class="readout">
-                <dt>Dominant frequency</dt>
-                <dd>{{ frequency() === null ? '–' : frequency()!.toFixed(0) + ' Hz' }}</dd>
-              </div>
-            </dl>
+          <app-level-meter-bar [meter]="meter" [active]="session.running()" />
+        </section>
+        <dl class="side">
+          <div class="ro accent">
+            <dt>Peak</dt>
+            <dd class="glow">
+              {{ peak() === null ? '–' : peak()!.toFixed(1) }}<span class="unit">dBFS</span>
+            </dd>
           </div>
-        </div>
-        @if (clipped()) {
-          <app-status-banner
-            [message]="{
-              tone: 'danger',
-              text: 'Clipping detected.',
-              hint: 'Lower the input gain in the system settings.',
-            }"
-          />
-          <button type="button" class="btn" (click)="clipped.set(false)">Clear warning</button>
-        }
-      </section>
-      <section class="panel" aria-labelledby="history-title">
-        <h2 id="history-title">Last 30 seconds</h2>
-        <p class="label">Level (RMS)</p>
+          <div class="ro">
+            <dt>RMS</dt>
+            <dd>{{ rms() === null ? '–' : rms()!.toFixed(1) }}<span class="unit">dBFS</span></dd>
+          </div>
+          <div class="ro hot">
+            <dt>Dominant frequency</dt>
+            <dd class="glow">{{ frequency() === null ? '–' : frequency()!.toFixed(0) + ' Hz' }}</dd>
+          </div>
+          @if (clipped()) {
+            <div class="clip"><span class="chip live">Clip</span></div>
+          }
+        </dl>
+      </div>
+      <section class="box history" aria-labelledby="history-title">
+        <h2 id="history-title" class="box-title">Last 30 seconds</h2>
+        <span class="box-meta">level · dominant frequency</span>
         <app-history-canvas
-          class="chart history"
+          class="chart"
           [series]="levels"
           [seconds]="30"
           [min]="-80"
@@ -70,44 +60,53 @@ const UPDATE_SECONDS = 0.1;
           unit=" dB"
           label="Level history"
         />
-        <p class="label">Dominant frequency</p>
         <app-history-canvas
-          class="chart history"
+          class="chart"
           [series]="frequencies"
           [seconds]="30"
           [min]="50"
           [max]="5000"
           [log]="true"
           unit=" Hz"
-          color="--display-cyan"
+          color="--display-trace-alt"
           label="Frequency history"
         />
       </section>
     </div>
   `,
   styles: `
-    .history {
-      height: 8rem;
+    .screen {
+      grid-template-rows: minmax(0, 1.1fr) minmax(0, 1fr);
     }
     .now {
       display: grid;
-      grid-template-columns: minmax(14rem, 22rem) minmax(0, 1fr);
-      gap: var(--space-4);
-      align-items: start;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+      gap: 2cqw;
+      min-height: 0;
     }
-    .now-side {
+    .meter-box {
       display: grid;
-      gap: var(--space-3);
+      grid-template-rows: minmax(0, 1fr) auto;
+      gap: 6px;
+      padding: 12px 12px 10px;
     }
-    @media (max-width: 760px) {
-      .now {
-        grid-template-columns: minmax(0, 1fr);
-      }
+    .vu {
+      min-height: 0;
     }
-    .label {
+    .side {
+      display: grid;
+      align-content: center;
+      gap: 3cqh;
       margin: 0;
-      font-size: var(--text-xs);
-      color: var(--color-text-subtle);
+    }
+    .history {
+      display: grid;
+      grid-template-rows: 1fr 1fr;
+      gap: 6px;
+      padding: 12px 8px 6px;
+    }
+    .chart {
+      min-height: 0;
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -140,6 +139,25 @@ export class SignalMonitorPage {
       this.rms.set(r.rmsDb);
       this.peak.set(r.peakDb);
       this.frequency.set(f);
+    });
+    attachPanel({
+      softkeys: [
+        panelAction({
+          label: 'CLR CLIP',
+          name: 'Clear clipping warning',
+          run: () => this.clipped.set(false),
+          disabled: () => !this.clipped(),
+        }),
+      ],
+      capture: this.session,
+      message: () =>
+        this.clipped()
+          ? {
+              tone: 'danger',
+              text: 'Clipping detected.',
+              hint: 'Lower the input gain in the system settings.',
+            }
+          : null,
     });
   }
 }

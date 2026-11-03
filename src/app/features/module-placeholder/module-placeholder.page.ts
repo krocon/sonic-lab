@@ -8,12 +8,12 @@ import { Icon } from '../../shared/icon/icon';
   imports: [Icon],
   template: `
     @if (module(); as m) {
-      <section class="panel placeholder" aria-labelledby="placeholder-title">
-        <span class="icon"><app-icon [name]="m.icon" [size]="32" /></span>
-        <p class="eyebrow">Planned module</p>
+      <section class="placeholder" aria-labelledby="placeholder-title">
+        <span class="icon"><app-icon [name]="m.icon" [size]="40" /></span>
+        <p class="label">Planned module</p>
         <h1 id="placeholder-title">{{ m.title }}</h1>
-        <p class="text">{{ m.summary }}</p>
-        <p class="text">
+        <p>{{ m.summary }}</p>
+        <p class="note">
           This module is on the roadmap and will be built with
           <code>prompts/{{ m.prompt }}</code
           >.
@@ -22,25 +22,20 @@ import { Icon } from '../../shared/icon/icon';
     }
   `,
   styles: `
-    /* the workspace makes the host a full-height flex column */
-    :host {
-      align-items: center;
-      justify-content: center;
-      padding: var(--space-5);
-    }
     .placeholder {
       display: grid;
+      place-content: center;
       justify-items: center;
-      gap: var(--space-3);
-      max-width: 32rem;
-      padding: var(--space-7) var(--space-6);
+      gap: 1.6cqh;
+      height: 100%;
       text-align: center;
     }
     .icon {
-      color: var(--color-text-subtle);
+      color: var(--oled-accent);
     }
-    .text {
-      color: var(--color-text-muted);
+    h1 {
+      font-size: clamp(20px, 6cqh, 40px);
+      font-weight: 300;
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

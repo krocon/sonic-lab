@@ -1,128 +1,55 @@
-<div class="module-page">
+<div class="screen">
   <header class="module-head">
-    <p class="eyebrow">Generate</p>
     <h1>Tone Generator</h1>
   </header>
 
-  <div class="layout">
-    <section class="panel" aria-labelledby="signal-title">
-      <h2 id="signal-title">Signal</h2>
-      <div class="vfo" aria-hidden="true">
-        <span class="vfo-mode">{{ waveformLabel() }}</span>
-        <span class="vfo-main">{{ readout().main }}</span>
-        <span class="vfo-sub">{{ readout().sub }}</span>
-        <span class="vfo-out" [class.on]="playing()">Out</span>
-      </div>
-      <app-key-selector
-        label="Waveform"
-        [options]="waveforms"
-        [columns]="5"
-        [value]="settings().waveform"
-        (valueChange)="update({ waveform: $event })"
-      />
-      @if (has('frequency')) {
-        <div class="knob-row">
-          <app-knob
-            [label]="
-              has('sweep') ? 'Start frequency' : has('frequency2') ? 'Frequency 1' : 'Frequency'
-            "
-            unit="Hz"
-            variant="dial"
-            [min]="20"
-            [max]="20000"
-            [log]="true"
-            [defaultValue]="1000"
-            [size]="128"
-            [value]="settings().frequency"
-            (valueChange)="update({ frequency: $event })"
-          />
-          @if (has('frequency2')) {
-            <app-knob
-              [label]="has('sweep') ? 'End frequency' : 'Frequency 2'"
-              unit="Hz"
-              variant="dial"
-              [min]="20"
-              [max]="20000"
-              [log]="true"
-              [defaultValue]="4000"
-              [size]="128"
-              [value]="settings().frequency2"
-              (valueChange)="update({ frequency2: $event })"
-            />
-          }
-          @if (has('sweep')) {
-            <app-knob
-              label="Sweep duration"
-              unit="s"
-              [min]="1"
-              [max]="60"
-              [defaultValue]="10"
-              [size]="56"
-              [value]="settings().sweepSeconds"
-              (valueChange)="update({ sweepSeconds: $event })"
-            />
-          }
-        </div>
-      }
-      @if (has('dtmf')) {
-        <app-key-selector
-          class="keys"
-          label="DTMF key"
-          [options]="dtmfKeys"
-          [columns]="4"
-          [value]="settings().dtmfKey"
-          (valueChange)="update({ dtmfKey: $event })"
-        />
-      }
-    </section>
+  <ul class="tabs" aria-label="Waveforms">
+    @for (w of waveforms; track w.value) {
+      <li class="chip" [class.on]="w.value === settings().waveform">{{ w.label }}</li>
+    }
+  </ul>
 
-    <section class="panel" aria-labelledby="output-title">
-      <h2 id="output-title">Output</h2>
-      <div class="knob-row">
-        <app-knob
-          label="Level (peak)"
-          unit="dBFS"
-          [min]="minLevel"
-          [max]="maxLevel"
-          [defaultValue]="-20"
-          [size]="56"
-          [value]="settings().levelDb"
-          (valueChange)="update({ levelDb: $event })"
-        />
-        <app-knob
-          label="Balance"
-          [min]="-1"
-          [max]="1"
-          [step]="0.05"
-          [defaultValue]="0"
-          [format]="balanceText"
-          [size]="56"
-          [value]="settings().balance"
-          (valueChange)="update({ balance: $event })"
-        />
-      </div>
-      <p class="note">
-        Level is capped at {{ maxLevel }} dBFS. Start quietly – test signals can be loud on
-        headphones.
-      </p>
-      <div class="play">
-        <button
-          type="button"
-          class="btn btn-play"
-          [class.btn-primary]="!playing()"
-          (click)="toggle()"
-          [attr.aria-pressed]="playing()"
-        >
-          <app-icon [name]="playing() ? 'stop' : 'play'" [size]="16" />
-          {{ playing() ? 'Stop' : 'Play' }}
-        </button>
-        @if (playing()) {
-          <span class="playing-badge" role="status">Playing</span>
-        }
-      </div>
-      @if (status(); as s) {
-        <app-status-banner [message]="s" />
-      }
-    </section>
+  <div class="row vfo">
+    <div class="readout">
+      <p class="huge glow main">{{ readout().main }}</p>
+      <p class="sub">{{ readout().sub }}</p>
+    </div>
+    <div class="end states">
+      <span class="chip" [class.live]="playing()">{{
+        playing() ? '▶ Output on' : 'Output off'
+      }}</span>
+      <span class="chip">Balance {{ balanceText(settings().balance) }}</span>
+    </div>
   </div>
+
+  <div class="row level">
+    <dl class="readouts">
+      <div class="ro accent">
+        <dt>Level (peak)</dt>
+        <dd class="glow">{{ settings().levelDb }}<span class="unit">dBFS</span></dd>
+      </div>
+    </dl>
+    <div class="level-bar" aria-hidden="true"><i [style.width.%]="levelPercent()"></i></div>
+    <span class="note">max {{ maxLevel }} dBFS</span>
+  </div>
+
+  <section class="box" aria-labelledby="wave-title">
+    <h2 id="wave-title" class="box-title">Waveform</h2>
+    <span class="box-meta">{{ waveformLabel().toLowerCase() }}</span>
+    <svg
+      class="viz wave"
+      [attr.viewBox]="'0 0 ' + previewWidth + ' ' + previewHeight"
+      preserveAspectRatio="none"
+      aria-hidden="true"
+    >
+      <line
+        class="axis"
+        x1="0"
+        [attr.y1]="previewHeight / 2"
+        [attr.x2]="previewWidth"
+        [attr.y2]="previewHeight / 2"
+      />
+      <path [attr.d]="preview()" />
+    </svg>
+  </section>
 </div>

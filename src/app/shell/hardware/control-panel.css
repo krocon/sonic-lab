@@ -1,0 +1,83 @@
+:host {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 0;
+  padding: 16px 16px 16px 14px;
+  border-left: 1px solid rgb(0 0 0 / 55%);
+  box-shadow: inset 1px 0 0 rgb(255 255 255 / 5%);
+  color: var(--silkscreen);
+}
+
+.brand {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.logo {
+  font: 900 15px/1 var(--font-print);
+  letter-spacing: 0.18em;
+  color: var(--silkscreen);
+  text-shadow: var(--silkscreen-shadow);
+}
+
+.logo small {
+  display: block;
+  margin-top: 4px;
+  font: 700 7.5px/1 var(--font-sans);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--silkscreen-dim);
+}
+
+.knobs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  justify-items: center;
+}
+
+.mid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 14px;
+  align-items: start;
+}
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 58px);
+  gap: 8px;
+}
+
+.transport {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 8px;
+}
+
+.tkey {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+}
+
+.transport > .hk-plain {
+  margin-bottom: 4px;
+}
+
+.bottom {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: end;
+  gap: 10px;
+}
+
+.bkeys {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding-bottom: 6px;
+}

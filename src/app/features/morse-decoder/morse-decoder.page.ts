@@ -3,42 +3,35 @@ import { LevelMeter } from '../../audio/level';
 import { RingBuffer } from '../../audio/ring-buffer';
 import { provideAudioCapture } from '../../core/capture/audio-capture.providers';
 import { CaptureSession } from '../../core/capture/capture-session';
+import {
+  PanelOption,
+  attachPanel,
+  panelAction,
+  panelChoice,
+  panelValue,
+} from '../../core/panel/front-panel';
 import { StatusMessage } from '../../core/status/status-message';
-import { CaptureControls } from '../../shared/capture/capture-controls';
-import { KeyOption, KeySelector } from '../../shared/controls/key-selector';
-import { Knob } from '../../shared/controls/knob';
-import { Icon } from '../../shared/icon/icon';
-import { StatusBanner } from '../../shared/status/status-banner';
 import { KeyingTimelineCanvas } from '../../shared/visualization/keying-timeline-canvas';
 import { LevelMeterBar } from '../../shared/visualization/level-meter-bar';
 import { WaveformCanvas } from '../../shared/visualization/waveform-canvas';
 import { MorseSession } from './morse-session';
 import { FREQUENCY_RANGE, MorseSettings, Sensitivity } from './morse-settings';
 
-const MODES: readonly KeyOption<MorseSettings['frequencyMode']>[] = [
-  { value: 'auto', label: 'Auto' },
-  { value: 'manual', label: 'Fixed' },
+const MODES: readonly PanelOption<MorseSettings['frequencyMode']>[] = [
+  { value: 'auto', label: 'AUTO' },
+  { value: 'manual', label: 'FIXED' },
 ];
 
-const SENSITIVITY_KEYS: readonly KeyOption<Sensitivity>[] = [
-  { value: 'low', label: 'Low' },
-  { value: 'medium', label: 'Medium' },
-  { value: 'high', label: 'High' },
+const SENSITIVITIES: readonly PanelOption<Sensitivity>[] = [
+  { value: 'low', label: 'LOW' },
+  { value: 'medium', label: 'MED' },
+  { value: 'high', label: 'HIGH' },
 ];
 
-/** Morse decoder workspace: capture, live signal, detection settings and decoded output. */
+/** Morse decoder: live signal, key-down timeline and decoded output on the display. */
 @Component({
   selector: 'app-morse-decoder-page',
-  imports: [
-    Icon,
-    CaptureControls,
-    KeySelector,
-    Knob,
-    WaveformCanvas,
-    LevelMeterBar,
-    KeyingTimelineCanvas,
-    StatusBanner,
-  ],
+  imports: [WaveformCanvas, LevelMeterBar, KeyingTimelineCanvas],
   providers: [provideAudioCapture(), MorseSession],
   templateUrl: './morse-decoder.page.html',
   styleUrl: './morse-decoder.page.css',
@@ -51,24 +44,21 @@ export class MorseDecoderPage {
   /** ~1.4 s of history at 48 kHz for the scope. */
   protected readonly scope = new RingBuffer(65536);
   protected readonly meter = new LevelMeter();
-  protected readonly range = FREQUENCY_RANGE;
-  protected readonly modes = MODES;
-  protected readonly sensitivities = SENSITIVITY_KEYS;
   protected readonly copyStatus = signal<StatusMessage | null>(null);
 
-  protected readonly wpmLabel = computed(() => {
+  protected readonly wpmText = computed(() => {
     const wpm = this.morse.wpm();
     return wpm === null ? '–' : String(wpm);
   });
-  protected readonly snrLabel = computed(() => {
+  protected readonly snrText = computed(() => {
     const snr = this.morse.snrDb();
-    return snr === null ? '–' : `${snr} dB`;
+    return snr === null ? '–' : String(snr);
   });
-  protected readonly frequencyLabel = computed(() => {
+  protected readonly toneText = computed(() => {
     const s = this.morse.settings();
-    if (s.frequencyMode === 'manual') return `${s.frequency} Hz`;
+    if (s.frequencyMode === 'manual') return String(s.frequency);
     const f = this.morse.frequency();
-    return f === null ? 'auto' : `auto · ${f} Hz`;
+    return f === null ? '–' : String(f);
   });
 
   constructor() {
@@ -76,22 +66,68 @@ export class MorseDecoderPage {
       this.scope.write(frame.samples);
       this.meter.process(frame.samples, frame.sampleRate);
     });
-  }
 
-  protected setMode(mode: MorseSettings['frequencyMode']): void {
-    this.morse.updateSettings({ frequencyMode: mode });
-  }
-
-  protected setFrequency(frequency: number): void {
-    this.morse.updateSettings({ frequency });
-  }
-
-  protected setInitialWpm(initialWpm: number): void {
-    this.morse.updateSettings({ initialWpm });
-  }
-
-  protected setSensitivity(sensitivity: Sensitivity): void {
-    this.morse.updateSettings({ sensitivity });
+    const settings = this.morse.settings;
+    const update = (patch: Partial<MorseSettings>) => this.morse.updateSettings(patch);
+    const tone = panelValue({
+      label: 'FIXED',
+      name: 'Fixed tone',
+      value: () => settings().frequency,
+      // turning to a frequency means listening for exactly that tone
+      set: (frequency) => update({ frequency, frequencyMode: 'manual' }),
+      scale: () => ({ ...FREQUENCY_RANGE, log: false }),
+      format: (v) => `${v} Hz`,
+    });
+    const speed = panelValue({
+      label: 'START',
+      name: 'Start speed',
+      value: () => settings().initialWpm,
+      set: (initialWpm) => update({ initialWpm }),
+      scale: () => ({ min: 5, max: 50, step: 1, log: false }),
+      format: (v) => `${v} WPM`,
+    });
+    attachPanel({
+      softkeys: [
+        panelChoice({
+          label: 'TONE',
+          name: 'Tone frequency',
+          options: MODES,
+          value: () => settings().frequencyMode,
+          set: (frequencyMode) => update({ frequencyMode }),
+        }),
+        tone,
+        panelChoice({
+          label: 'SENS',
+          name: 'Sensitivity',
+          options: SENSITIVITIES,
+          value: () => settings().sensitivity,
+          set: (sensitivity) => update({ sensitivity }),
+        }),
+        speed,
+        panelAction({
+          label: 'RESET',
+          name: 'Reset',
+          run: () => this.reset(),
+          disabled: () => !this.morse.hasOutput(),
+        }),
+      ],
+      knobs: [tone, speed, null],
+      multi: tone,
+      capture: this.session,
+      copy: { name: 'Copy text', run: () => this.copy(), disabled: () => !this.morse.text() },
+      message: () => {
+        const unknown = this.morse.unknownCount();
+        return (
+          this.copyStatus() ??
+          (unknown > 0
+            ? {
+                tone: 'neutral',
+                text: `� marks ${unknown} sequence(s) that are not valid Morse characters.`,
+              }
+            : null)
+        );
+      },
+    });
   }
 
   protected async copy(): Promise<void> {

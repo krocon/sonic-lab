@@ -2,7 +2,7 @@ import { AudioSourceError, AudioSourceState } from '../../audio/audio-source';
 
 export type StatusTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger';
 
-/** A user-facing status or error line, rendered by `app-status-banner`. */
+/** A user-facing status or error line, shown in the display's message line. */
 export interface StatusMessage {
   readonly tone: StatusTone;
   readonly text: string;

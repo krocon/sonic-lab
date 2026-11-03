@@ -1,127 +1,74 @@
-<div class="module-page">
+<div class="screen">
   <header class="module-head">
-    <p class="eyebrow">Generate</p>
     <h1>Morse Encoder</h1>
   </header>
 
-  <div class="grid">
-    <section class="panel input" aria-labelledby="input-title">
-      <h2 id="input-title">Text</h2>
-      <label class="visually-hidden" for="encoder-text">Text to encode</label>
-      <textarea
-        id="encoder-text"
-        rows="4"
-        maxlength="2000"
-        spellcheck="false"
-        [value]="settings().text"
-        (input)="update({ text: text($event) })"
-      ></textarea>
-      <p class="note">
-        Letters, digits, punctuation and prosigns like <code>&lt;SK&gt;</code> or
-        <code>&lt;AR&gt;</code>.
-      </p>
-      @if (unsupported()) {
-        <p class="warning" role="status">Not encodable, skipped: {{ unsupported() }}</p>
-      }
-
-      <div class="actions">
-        <button
-          type="button"
-          class="btn"
-          [class.btn-primary]="!playing()"
-          [attr.aria-pressed]="playing()"
-          (click)="play()"
-          [disabled]="!code()"
-        >
-          <app-icon [name]="playing() ? 'stop' : 'play'" [size]="16" />
-          {{ playing() ? 'Stop' : 'Play' }}
-        </button>
-        <button type="button" class="btn" (click)="copy()" [disabled]="!code()">
-          <app-icon name="copy" [size]="16" /> Copy code
-        </button>
-        <span class="duration" title="Duration">{{ duration().toFixed(1) }} s</span>
+  <div class="row">
+    <dl class="readouts">
+      <div class="ro hot">
+        <dt>Speed</dt>
+        <dd class="glow">{{ settings().wpm }}<span class="unit">WPM</span></dd>
       </div>
-      @if (status(); as s) {
-        <app-status-banner [message]="s" />
-      }
-    </section>
-
-    <section class="panel settings" aria-labelledby="settings-title">
-      <h2 id="settings-title">Sound</h2>
-      <div class="knobs">
-        <app-knob
-          label="Speed"
-          unit="WPM"
-          [min]="5"
-          [max]="50"
-          [defaultValue]="20"
-          [size]="52"
-          [value]="settings().wpm"
-          (valueChange)="update({ wpm: $event })"
-        />
-        <app-knob
-          label="Farnsworth"
-          [min]="3"
-          [max]="settings().wpm"
-          [defaultValue]="settings().wpm"
-          [format]="farnsworthText"
-          [size]="52"
-          [value]="settings().farnsworthWpm"
-          (valueChange)="update({ farnsworthWpm: $event })"
-        />
-        <app-knob
-          label="Tone"
-          unit="Hz"
-          [min]="300"
-          [max]="1500"
-          [step]="10"
-          [defaultValue]="700"
-          [size]="52"
-          [value]="settings().frequency"
-          (valueChange)="update({ frequency: $event })"
-        />
-        <app-knob
-          label="Volume"
-          [min]="0"
-          [max]="maxVolume"
-          [step]="0.01"
-          [defaultValue]="0.3"
-          [format]="percent"
-          [size]="52"
-          [value]="settings().volume"
-          (valueChange)="update({ volume: $event })"
-        />
+      <div class="ro accent">
+        <dt>Tone</dt>
+        <dd class="glow">{{ settings().frequency }}<span class="unit">Hz</span></dd>
       </div>
-      <p class="note">
-        Farnsworth stretches the gaps between characters for learning; turn it fully right for off.
-      </p>
-    </section>
+      <div class="ro">
+        <dt>Farnsworth</dt>
+        <dd>{{ farnsworthText(settings().farnsworthWpm) }}</dd>
+      </div>
+      <div class="ro">
+        <dt>Length</dt>
+        <dd>{{ duration().toFixed(1) }}<span class="unit">s</span></dd>
+      </div>
+    </dl>
+    <div class="end">
+      <span class="chip" [class.ok]="playing()">{{ playing() ? '▶ Playing' : 'Ready' }}</span>
+    </div>
+  </div>
 
-    <section class="panel preview" aria-labelledby="preview-title">
-      <h2 id="preview-title">Morse</h2>
-      <ol class="tokens" aria-label="Characters and their Morse code">
-        @for (t of tokens(); track $index) {
-          @switch (t.kind) {
-            @case ('char') {
-              <li class="token" [class.active]="current() === $index">
-                <span class="char">{{ t.text }}</span
-                ><span class="code">{{ t.code }}</span>
-              </li>
-            }
-            @case ('word-gap') {
-              <li class="gap" aria-hidden="true"></li>
-            }
-            @case ('unsupported') {
-              <li class="token unsupported" title="Not encodable">
-                <span class="char">{{ t.text }}</span
-                ><span class="code">?</span>
-              </li>
-            }
+  <section class="box input" aria-labelledby="input-title">
+    <h2 id="input-title" class="box-title inverse">Text</h2>
+    <span class="box-meta">keyboard or keypad (multi-tap)</span>
+    <label class="visually-hidden" for="encoder-text">Text to encode</label>
+    <textarea
+      id="encoder-text"
+      rows="2"
+      maxlength="2000"
+      spellcheck="false"
+      [value]="settings().text"
+      (input)="update({ text: text($event) })"
+    ></textarea>
+  </section>
+
+  <section class="box preview" aria-labelledby="preview-title">
+    <h2 id="preview-title" class="box-title">Morse</h2>
+    <span class="box-meta">letters and prosigns like &lt;SK&gt; or &lt;AR&gt;</span>
+    <ol class="tokens" aria-label="Characters and their Morse code">
+      @for (t of tokens(); track $index) {
+        @switch (t.kind) {
+          @case ('char') {
+            <li class="token" [class.active]="current() === $index">
+              <span class="char">{{ t.text }}</span
+              ><span class="code">{{ t.code }}</span>
+            </li>
+          }
+          @case ('word-gap') {
+            <li class="gap" aria-hidden="true"></li>
+          }
+          @case ('unsupported') {
+            <li class="token unsupported" title="Not encodable">
+              <span class="char">{{ t.text }}</span
+              ><span class="code">?</span>
+            </li>
           }
         }
-      </ol>
-      <p class="label">Code</p>
-      <output class="code-line">{{ code() }}</output>
-    </section>
+      }
+    </ol>
+  </section>
+
+  <p class="visually-hidden" id="code-label">Code</p>
+  <div class="tail code-row">
+    <output class="code-line" aria-labelledby="code-label">{{ code() }}</output>
   </div>
 </div>

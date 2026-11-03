@@ -1,32 +1,114 @@
 <a class="skip-link" href="#main">Skip to content</a>
 
-<div class="top-row">
-  <nav class="modes" aria-label="Analysis modules">
-    @for (group of groups; track group.id) {
-      <div class="mode-group" role="group" [attr.aria-label]="group.label">
-        <p class="bracket" [style.grid-column]="'span ' + group.modules.length" aria-hidden="true">
-          <span>{{ group.label }}</span>
-        </p>
-        @for (module of group.modules; track module.id) {
-          <a
-            class="mode-key"
-            [routerLink]="['/', module.path]"
-            routerLinkActive="active"
-            ariaCurrentWhenActive="page"
-            [title]="module.title"
-          >
-            <span class="mode-led" aria-hidden="true"></span>
-            <app-icon [name]="module.icon" [size]="18" />
-            <span class="mode-legend" aria-hidden="true">{{ module.key }}</span>
-            <span class="visually-hidden">{{ module.title }}</span>
-          </a>
-        }
-      </div>
-    }
-  </nav>
-  <div class="grille" aria-hidden="true"></div>
-</div>
+<div class="device" [style.zoom]="zoom()" [style.--z]="zoom()">
+  <div class="front">
+    <div class="bezel">
+      <div class="glass">
+        <div class="oled">
+          <header class="status">
+            <span class="mode" aria-hidden="true">{{ module()?.title }}</span>
+            <span class="input">
+              @if (inputText()) {
+                Input · {{ inputText() }}
+              }
+            </span>
+            <span
+              class="state"
+              role="status"
+              [class.live]="state()?.live"
+              [class.alert]="state()?.alert"
+              >{{ state()?.text ?? '' }}</span
+            >
+          </header>
 
-<main id="main" class="workspace" tabindex="-1">
-  <router-outlet />
-</main>
+          <div class="main">
+            <div class="area">
+              <main id="main" class="page" tabindex="-1"><router-outlet /></main>
+
+              <app-display-overlay />
+            </div>
+
+            <div class="message" role="status" [attr.data-tone]="message()?.tone">
+              @if (message(); as m) {
+                <span class="message-text">{{ m.text }}</span>
+                @if (m.hint) {
+                  <span class="message-hint">{{ m.hint }}</span>
+                }
+              }
+            </div>
+
+            <div class="softlabels" aria-hidden="true">
+              @for (c of panel.softkeys(); track $index) {
+                <div
+                  class="sl"
+                  [class.empty]="!c"
+                  [class.selected]="!!c && panel.selected() === c"
+                  [class.off]="!!c?.disabled?.()"
+                >
+                  @if (c) {
+                    @if (c.kind === 'action') {
+                      <span class="v">{{ c.label }}</span>
+                    } @else {
+                      <span class="n">{{ c.label }}</span>
+                      <span class="v">{{ softText(c) }}</span>
+                    }
+                  }
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="flabels" aria-hidden="true">
+            @for (g of groups; track g.label) {
+              <span class="grp" [style.grid-column]="'span ' + g.span">{{ g.label }}</span>
+            }
+            @for (m of modules; track m.id) {
+              <span class="fl" [class.on]="module()?.id === m.id">{{ m.key }}</span>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidekeys" role="group" aria-label="Soft keys">
+      @for (c of panel.softkeys(); track $index; let i = $index) {
+        <div class="skcell">
+          <span class="tri" aria-hidden="true"></span>
+          <button
+            type="button"
+            class="hk hk-side"
+            [class.on]="!!c && panel.selected() === c"
+            [attr.aria-label]="softName(c, i)"
+            [attr.aria-pressed]="c?.kind === 'value' ? panel.selected() === c : null"
+            [attr.aria-disabled]="!c || !!c.disabled?.() || null"
+            (click)="panel.press(c)"
+          >
+            <span class="cap"><i class="bar"></i></span>
+          </button>
+        </div>
+      }
+    </div>
+
+    <nav class="ftray" aria-label="Analysis modules">
+      @for (m of modules; track m.id; let i = $index) {
+        <div class="fcell">
+          <span class="tri" aria-hidden="true"></span>
+          <a
+            class="hk hk-f"
+            [routerLink]="['/', m.path]"
+            routerLinkActive="on"
+            ariaCurrentWhenActive="page"
+            [attr.aria-label]="m.title"
+          >
+            <span class="cap"
+              ><span class="legend" aria-hidden="true">F{{ i + 1 }}</span
+              ><i class="bar"></i
+            ></span>
+          </a>
+        </div>
+      }
+    </nav>
+  </div>
+
+  <app-control-panel />
+</div>

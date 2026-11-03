@@ -1,0 +1,113 @@
+<div class="brand">
+  <p class="logo">AUDIOLAB<small>Audio signal analyzer</small></p>
+  <span class="led on green" aria-hidden="true"></span>
+</div>
+
+<div class="knobs">
+  @for (legend of legends; track legend; let i = $index) {
+    <app-hardware-knob [legend]="legend" [control]="panel.knobs()[i] ?? null" />
+  }
+</div>
+
+<div class="mid">
+  <div class="keypad" role="group" aria-label="Keypad">
+    @for (k of keypad; track k.key) {
+      <button type="button" class="hk hk-num" (click)="panel.digit(k.key)">
+        <span class="tag" aria-hidden="true">{{ k.tag }}</span>
+        <span class="cap">{{ k.key }}</span>
+      </button>
+    }
+    <button type="button" class="hk hk-num" aria-label="Clear" (click)="panel.clear()">
+      <span class="tag" aria-hidden="true">DEL</span>
+      <span class="cap word" aria-hidden="true">CLR</span>
+    </button>
+    <button type="button" class="hk hk-num" (click)="panel.digit('0')">
+      <span class="tag" aria-hidden="true">SPACE</span>
+      <span class="cap">0</span>
+    </button>
+    <button type="button" class="hk hk-num" aria-label="Enter" (click)="panel.enter()">
+      <span class="tag" aria-hidden="true">SET</span>
+      <span class="cap word" aria-hidden="true">ENT</span>
+    </button>
+  </div>
+
+  <div class="transport">
+    <button
+      type="button"
+      class="hk hk-plain"
+      aria-label="Audio input"
+      aria-haspopup="dialog"
+      [attr.aria-expanded]="panel.overlay() === 'input'"
+      [attr.aria-disabled]="!hasInput() || null"
+      (click)="input()"
+    >
+      <span class="cap" aria-hidden="true">INPUT</span>
+    </button>
+
+    <div class="tkey">
+      <span class="silk" aria-hidden="true">RUN</span>
+      <span class="led green" [class.on]="panel.playKey()?.active?.()" aria-hidden="true"></span>
+      <button
+        type="button"
+        class="hk hk-tr"
+        [attr.aria-label]="panel.playKey()?.name ?? 'Start'"
+        [attr.aria-pressed]="panel.playKey()?.active ? !!panel.playKey()?.active?.() : null"
+        [attr.aria-disabled]="unusable(panel.playKey()) || null"
+        (click)="run(panel.playKey())"
+      >
+        <span class="cap"><i class="sym-play"></i></span>
+      </button>
+    </div>
+    <button
+      type="button"
+      class="hk hk-tr"
+      [attr.aria-label]="panel.stopKey()?.name ?? 'Stop'"
+      [attr.aria-disabled]="unusable(panel.stopKey()) || null"
+      (click)="run(panel.stopKey())"
+    >
+      <span class="cap"><i class="sym-stop"></i></span>
+    </button>
+    <div class="tkey">
+      <span class="led red" [class.on]="record()?.active?.()" aria-hidden="true"></span>
+      <button
+        type="button"
+        class="hk hk-tr"
+        [attr.aria-label]="record()?.name ?? 'Record'"
+        [attr.aria-pressed]="record()?.active ? !!record()?.active?.() : null"
+        [attr.aria-disabled]="unusable(record()) || null"
+        (click)="run(record())"
+      >
+        <span class="cap"><i class="sym-rec"></i></span>
+      </button>
+      <span class="silk dim" aria-hidden="true">REC</span>
+    </div>
+  </div>
+</div>
+
+<div class="bottom">
+  <app-jog-dial />
+  <div class="bkeys">
+    <button
+      type="button"
+      class="hk hk-menu"
+      aria-label="Menu"
+      aria-haspopup="dialog"
+      [attr.aria-expanded]="panel.overlay() === 'menu'"
+      (click)="panel.toggleOverlay('menu')"
+    >
+      <span class="cap" aria-hidden="true">MENU</span>
+    </button>
+    <button
+      type="button"
+      class="hk hk-plain"
+      [attr.aria-label]="copy()?.name ?? 'Copy'"
+      [attr.aria-disabled]="unusable(copy()) || null"
+      (click)="run(copy())"
+    >
+      <span class="cap" aria-hidden="true">COPY</span>
+    </button>
+    <button type="button" class="hk hk-esc" aria-label="Escape" (click)="panel.escape()">
+      <span class="cap" aria-hidden="true">ESC</span>
+    </button>
+  </div>
+</div>

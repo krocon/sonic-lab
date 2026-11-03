@@ -25,16 +25,16 @@ macOS, Windows and Linux.
 
 Every input-based module has a **Demo signal** input, so you can try it without a microphone.
 
-The window is the front panel of an SDR transceiver: one black metal faceplate, a row of mode
-keys with indicator LEDs instead of a menu, backlit blue-grey LCDs, latching hardware keys instead
-of drop-downs, machined rotary knobs and a spun-metal tuning dial that cast shadows instead of
-sliders, and a moving-coil meter. It is always dark – like real hardware – whatever the system
-theme. There is no start page: the app opens in the Morse decoder, and a mode key switches
-modules.
+The window is the front panel of a transceiver with a large OLED display. The hardware never
+changes: eight F keys under the display choose the module, six soft keys next to it do what the
+display shows beside them, and a fixed control panel holds the TONE, SPEED and LEVEL knobs, a
+keypad, ▶ ■ ● and a MULTI jog dial. Only the display adapts to the module and grows with the
+window. It is always dark – like real hardware – whatever the system theme. There is no start
+page: the app opens in the Morse decoder.
 
-| Signal monitor                                                      | Tone generator                                                      |
-| ------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| ![Signal monitor with analog meter](docs/images/signal-monitor.png) | ![Tone generator with rotary knobs](docs/images/tone-generator.png) |
+| Signal monitor                                                      | Tone generator                                                          |
+| ------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| ![Signal monitor with analog meter](docs/images/signal-monitor.png) | ![Tone generator with waveform preview](docs/images/tone-generator.png) |
 
 | Spectrum analyzer                                                        | DTMF decoder                                              |
 | ------------------------------------------------------------------------ | --------------------------------------------------------- |
@@ -43,8 +43,8 @@ modules.
 ## Privacy
 
 - Audio is processed locally and never uploaded; there is no backend and no telemetry.
-- The microphone opens only after you press **Start** and is released when you stop, leave the
-  view or close the app. While capture runs, the module shows "Listening" and its Stop key is lit.
+- The microphone opens only after you press **▶** and is released when you stop, leave the
+  view or close the app. While capture runs, the display shows "Listening" and the RUN LED is lit.
 - Nothing is stored or exported unless you explicitly ask for it.
 - The desktop app allows the microphone and nothing else (camera, location, … are denied).
 

@@ -1,167 +1,371 @@
 :host {
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  display: block;
   height: 100dvh;
   overflow: hidden;
-  /* The faceplate is a 9-slice image: side edges (24px) and bottom lip (20px) keep their size,
-     the plate stretches to the window. It starts right under the title bar, without a top edge,
-     and has square corners. The border keeps the content off the edges. */
-  border-style: solid;
-  border-width: 0 24px 20px;
-  border-image: url('./faceplate.png') 0 24 20 fill / 0 24px 20px stretch;
 }
 
-/* ── Top row: mode keys and a speaker grille ────────────────────────────────────────────── */
-.top-row {
-  display: flex;
-  align-items: stretch;
-  gap: var(--space-5);
-  margin: 0 var(--groove);
-  padding: var(--space-2) var(--space-4) var(--space-3);
-  border: var(--border-width) solid var(--section-line);
-  border-top: none;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--section-shadow);
-}
-
-.modes {
-  display: flex;
-  gap: var(--space-5);
-  min-width: 0;
-  overflow-x: auto;
-  scrollbar-width: thin;
-}
-
-.mode-group {
+/* Below the minimum size the whole device is zoomed out (see AppShell), never reflowed. */
+.device {
   display: grid;
-  grid-auto-columns: 4.75rem;
-  grid-auto-flow: column;
-  gap: var(--space-1) 6px;
+  grid-template-columns: minmax(0, 1fr) var(--right-panel-width);
+  width: calc(100vw / var(--z, 1));
+  height: calc(100dvh / var(--z, 1));
+  background: var(--plate);
+  color: var(--silkscreen);
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-/* ┌── DECODE ──┐ printed over the keys of a group */
-.bracket {
+/* ── left: bezel with the OLED, soft keys, F keys ─────────────────────────────────────── */
+.front {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--sidekey-column);
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-width: 0;
+  min-height: 0;
+  padding: 16px 6px 0 20px;
+}
+
+.bezel {
+  grid-area: 1 / 1;
+  min-height: 0;
+  padding: var(--bezel);
+  border-radius: 10px 10px 3px 3px;
+  background: linear-gradient(180deg, #44474d 0%, #2b2d31 2.5%, #1f2023 40%, #18191b 100%);
+  box-shadow:
+    0 0 0 1px #070708,
+    inset 0 1px 0 rgb(255 255 255 / 20%),
+    inset 1px 0 0 rgb(255 255 255 / 5%),
+    0 14px 28px -10px rgb(0 0 0 / 80%);
+}
+
+.glass {
+  position: relative;
+  height: 100%;
+  padding: 3px;
+  border-radius: 4px;
+  background: linear-gradient(160deg, #3a3d42, #0d0d0e 30%, #0d0d0e 70%, #2a2c30);
+  box-shadow: inset 0 2px 4px rgb(0 0 0 / 90%);
+}
+
+/* faint diagonal reflection on the glass, edges slightly shaded */
+.glass::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  z-index: 2;
+  border-radius: 2px;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      118deg,
+      rgb(255 255 255 / 6.5%) 0%,
+      rgb(255 255 255 / 2.5%) 41%,
+      transparent 41.2%
+    ),
+    radial-gradient(140% 120% at 50% 50%, transparent 70%, rgb(0 0 0 / 35%) 100%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 6%);
+}
+
+.oled {
+  position: relative;
+  display: grid;
+  grid-template-rows: var(--oled-status-height) minmax(0, 1fr) var(--oled-flabel-height);
+  height: 100%;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--oled-bg);
+  color: var(--oled-fg);
+  font: 500 12px/1.2 var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* status line */
+.status {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--oled-faint);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  color: var(--oled-dim);
+}
+
+.mode {
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--oled-fg);
+}
+
+.input {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.state {
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.06em;
+}
+
+.state::before {
+  content: '■ ';
+}
+
+.state.live {
+  color: var(--oled-ok);
+}
+
+.state.live::before {
+  content: '● ';
+}
+
+.state.alert {
+  color: var(--oled-bad);
+}
+
+.state:empty::before {
+  content: none;
+}
+
+/* content area with the soft-key legends on its right */
+.main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--oled-softkey-width);
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-height: 0;
+}
+
+.area {
+  position: relative;
+  grid-area: 1 / 1;
+  min-width: 0;
+  min-height: 0;
+  container-type: size;
+}
+
+.page {
+  height: 100%;
+  padding: 14px 14px 12px;
+  overflow: hidden;
+  outline: none;
+}
+
+.page > :not(router-outlet) {
+  display: block;
+  height: 100%;
+}
+
+.message {
+  grid-area: 2 / 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  padding: 0 14px;
+  font-size: 12px;
+}
+
+.message:not(:empty) {
+  padding-block: 6px;
+  border-top: 1px solid var(--oled-faint);
+}
+
+.message-text {
+  font-weight: var(--weight-bold);
+  color: var(--oled-fg);
+}
+
+.message[data-tone='success'] .message-text {
+  color: var(--oled-ok);
+}
+
+.message[data-tone='warning'] .message-text {
+  color: var(--oled-hot);
+}
+
+.message[data-tone='danger'] .message-text {
+  color: var(--oled-bad);
+}
+
+.message-hint {
+  color: var(--oled-dim);
+}
+
+.softlabels {
+  grid-area: 1 / 2 / 3 / 3;
+  display: grid;
+  grid-template-rows: repeat(6, 1fr);
+  border-left: 1px solid var(--oled-faint);
+}
+
+.sl {
+  position: relative;
+  display: grid;
+  align-content: center;
+  justify-items: end;
+  gap: 3px;
+  margin: 4px 0;
+  padding: 0 10px 0 6px;
+  border-top: 1px solid var(--oled-faint);
+  text-align: right;
+  letter-spacing: 0.04em;
+}
+
+/* pointer to the key outside the glass */
+.sl::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: 4px;
+  height: 12px;
+  margin-top: -6px;
+  background: var(--oled-faint);
+}
+
+.sl .n {
+  font-size: 10px;
+  font-weight: var(--weight-medium);
+  text-transform: uppercase;
+  color: var(--oled-dim);
+}
+
+.sl .v {
+  font-size: 13px;
+  font-weight: var(--weight-bold);
+  color: var(--oled-fg);
+}
+
+.sl.selected {
+  background: var(--oled-select-bg);
+}
+
+.sl.selected .n,
+.sl.selected .v {
+  color: var(--oled-select-fg);
+}
+
+.sl.off .v,
+.sl.off .n {
+  color: var(--oled-faint);
+}
+
+.sl.empty::after {
+  opacity: 0.5;
+}
+
+/* F-key legends with group brackets */
+.flabels {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: 14px 1fr;
+  padding: 2px 4px 5px;
+  border-top: 1px solid var(--oled-faint);
+}
+
+.grp {
   grid-row: 1;
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: var(--text-2xs);
+  padding: 0 6px;
+  font-size: 8.5px;
   font-weight: var(--weight-bold);
-  letter-spacing: var(--tracking-caps);
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   white-space: nowrap;
-  color: var(--silkscreen);
-  text-shadow: var(--silkscreen-shadow);
+  color: var(--oled-dim);
 }
 
-.bracket::before,
-.bracket::after {
+.grp::before,
+.grp::after {
   content: '';
   flex: 1;
-  min-width: 6px;
-  height: 5px;
-  margin-top: 6px;
-  border-top: 1px solid var(--color-border-strong);
+  height: 4px;
+  margin-top: 4px;
+  border-top: 1px solid var(--oled-faint);
 }
 
-.bracket::before {
-  border-left: 1px solid var(--color-border-strong);
-  border-top-left-radius: 2px;
+.grp::before {
+  border-left: 1px solid var(--oled-faint);
 }
 
-.bracket::after {
-  border-right: 1px solid var(--color-border-strong);
-  border-top-right-radius: 2px;
+.grp::after {
+  border-right: 1px solid var(--oled-faint);
 }
 
-.mode-key {
+.fl {
   grid-row: 2;
+  display: grid;
+  place-items: center;
+  margin: 2px 4px 0;
+  border: 1px solid var(--oled-faint);
+  border-radius: 2px;
+  background: var(--oled-panel);
+  font-size: 12px;
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--oled-fg);
+}
+
+.fl.on {
+  border-color: var(--oled-select-bg);
+  background: var(--oled-select-bg);
+  color: var(--oled-select-fg);
+}
+
+/* soft keys right of the glass, aligned with their legends */
+.sidekeys {
+  grid-area: 1 / 2;
+  display: grid;
+  grid-template-rows: repeat(6, 1fr);
+  padding-top: calc(var(--bezel) + 3px + var(--oled-status-height));
+  padding-bottom: calc(var(--bezel) + 3px + var(--oled-flabel-height));
+}
+
+.skcell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-left: 4px;
+}
+
+.skcell .tri {
+  transform: rotate(-90deg);
+}
+
+/* F keys in a recessed tray with angled ends */
+.ftray {
+  grid-area: 2 / 1;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  margin: 0 -8px;
+  padding: 6px calc(var(--bezel) + 11px) 12px;
+}
+
+.ftray::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 4px;
+  background: linear-gradient(180deg, #111214, #1d1e21 30%, #222327);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 100%, 14px 100%);
+  box-shadow: inset 0 3px 6px rgb(0 0 0 / 80%);
+}
+
+.fcell {
   position: relative;
   display: grid;
   justify-items: center;
-  align-content: end;
-  gap: 3px;
-  height: 3.25rem;
-  margin-bottom: 3px;
-  padding: 0 2px 0.35rem;
-  border-radius: var(--radius-md);
-  border: var(--border-width) solid var(--key-edge);
-  background: var(--key-face);
-  box-shadow: var(--key-shadow);
-  color: var(--color-text-subtle);
-  text-decoration: none;
-  transition:
-    transform var(--duration-fast) var(--easing),
-    box-shadow var(--duration-fast) var(--easing);
+  gap: 4px;
 }
 
-.mode-key:hover {
-  filter: brightness(1.12);
-}
-
-.mode-key:active,
-.mode-key.active {
-  background: var(--key-face-pressed);
-  transform: translateY(2px);
-  box-shadow: var(--key-shadow-pressed);
-}
-
-.mode-led {
-  position: absolute;
-  top: 6px;
-  left: 50%;
-  width: 18px;
-  height: 3px;
-  margin-left: -9px;
-  border-radius: 1px;
-  background: var(--led-off);
-  box-shadow: var(--led-off-shadow);
-}
-
-.mode-legend {
-  max-width: 100%;
-  overflow: hidden;
-  font-size: var(--text-2xs);
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--key-text);
-}
-
-.mode-key.active .mode-led {
-  background: var(--led-red);
-  box-shadow: 0 0 7px var(--led-red);
-}
-
-.mode-key.active app-icon {
-  color: var(--color-accent-strong);
-  filter: drop-shadow(0 0 3px rgb(61 155 255 / 60%));
-}
-
-.mode-key.active .mode-legend {
-  color: var(--color-accent-strong);
-}
-
-/* perforated speaker grille fills the rest of the row */
-.grille {
-  flex: 1 1 0;
-  min-width: 0;
-  margin-top: var(--space-2);
-  border-radius: var(--radius-md);
-  background:
-    radial-gradient(circle, #000 0 1.7px, transparent 2.2px) 0 0 / 8px 8px,
-    radial-gradient(circle, rgb(255 255 255 / 8%) 0 1.7px, transparent 2.2px) 0 1px / 8px 8px;
-  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 50%);
-}
-
-.workspace {
+app-control-panel {
   min-height: 0;
-  overflow: auto;
-  outline: none;
-}
-
-@media (max-width: 820px) {
-  .grille {
-    display: none;
-  }
 }

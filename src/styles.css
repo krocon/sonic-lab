@@ -1,3 +1,5 @@
-/* Global styles: design tokens first, then element defaults and shared utilities. */
+/* Global styles: design tokens first, then element defaults, hardware keys and OLED blocks. */
 @import './styles/tokens.css';
 @import './styles/base.css';
+@import './styles/hardware.css';
+@import './styles/oled.css';

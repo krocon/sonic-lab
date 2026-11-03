@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { FakeAudioSource } from '../../../testing/fake-audio-source';
+import { frontPanel } from '../../../testing/front-panel';
 import { render } from '../../audio/synthesis/signal';
 import { AUDIO_SOURCE, CaptureSession } from '../../core/capture/capture-session';
 import { dtmfSequence } from '../../decoders/dtmf/dtmf-tones';
@@ -25,15 +26,12 @@ describe('DtmfDecoderPage', () => {
 
     const writeText = vi.fn(() => Promise.resolve());
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
-    (Array.from(el.querySelectorAll('button')) as HTMLButtonElement[])
-      .find((b) => b.textContent?.includes('Copy'))
-      ?.click();
-    await fixture.whenStable();
+    const hw = frontPanel();
+    await hw.run('copy');
     expect(writeText).toHaveBeenCalledWith('0815#');
+    expect(hw.message()?.text).toBe('Digits copied to the clipboard.');
 
-    (Array.from(el.querySelectorAll('button')) as HTMLButtonElement[])
-      .find((b) => b.textContent?.includes('Reset'))
-      ?.click();
+    hw.press('Clear digits');
     await fixture.whenStable();
     expect(el.querySelector('output.digits')?.textContent?.trim()).toBe('–');
   });

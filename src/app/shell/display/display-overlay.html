@@ -1,0 +1,67 @@
+@if (panel.toast(); as t) {
+  <div class="toast" aria-hidden="true">
+    <span class="toast-label">{{ t.label }}</span>
+    <span class="toast-text">{{ t.text }}</span>
+    @if (t.fraction !== undefined) {
+      <span class="track"><i [style.width.%]="t.fraction * 100"></i></span>
+    }
+  </div>
+}
+
+@switch (panel.overlay()) {
+  @case ('input') {
+    <div #sheet class="sheet" role="dialog" aria-labelledby="sheet-title" tabindex="-1">
+      <h2 id="sheet-title" class="sheet-title">Audio input</h2>
+      @if (panel.binding().capture; as capture) {
+        <div class="options">
+          <button
+            type="button"
+            class="option"
+            [attr.aria-pressed]="capture.selectedDeviceId() === ''"
+            [disabled]="capture.busy()"
+            (click)="chooseInput('')"
+          >
+            Default input
+          </button>
+          @for (d of devices(); track d.id) {
+            <button
+              type="button"
+              class="option"
+              [attr.aria-pressed]="capture.selectedDeviceId() === d.id"
+              [disabled]="capture.busy()"
+              (click)="chooseInput(d.id)"
+            >
+              {{ d.label }}
+            </button>
+          }
+        </div>
+      } @else {
+        <p class="note">This mode does not use an audio input.</p>
+      }
+      <p class="note">ESC closes this list.</p>
+    </div>
+  }
+  @case ('menu') {
+    <div #sheet class="sheet" role="dialog" aria-labelledby="sheet-title" tabindex="-1">
+      <h2 id="sheet-title" class="sheet-title">Front panel</h2>
+      <dl class="help">
+        <dt>F1 – F8</dt>
+        <dd>choose the mode; its name is lit at the bottom of the display.</dd>
+        <dt>Soft keys</dt>
+        <dd>
+          do what the display shows next to them. Settings step through their options; a value is
+          selected for the MULTI dial and the keypad (digits, then ENT).
+        </dd>
+        <dt>TONE · SPEED · LEVEL</dt>
+        <dd>change what the mode assigns to them; drag, scroll or use the arrow keys.</dd>
+        <dt>▶ ■ ●</dt>
+        <dd>start, stop, record. INPUT chooses the audio input.</dd>
+        <dt>COPY · ESC</dt>
+        <dd>copy the result; ESC closes lists and cancels an entry.</dd>
+      </dl>
+      <p class="note">
+        Audio is processed on this device only – nothing is uploaded or stored unless you export it.
+      </p>
+    </div>
+  }
+}

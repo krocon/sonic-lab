@@ -75,6 +75,14 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
+- New front panel: a transceiver with a large OLED. Eight F keys under the display choose the
+  module, six soft keys next to it carry the module's settings and actions (legends in the
+  display), and a fixed control panel holds TONE/SPEED/LEVEL knobs, a keypad 0–9 with CLR/ENT,
+  INPUT, ▶ ■ ●, a MULTI jog dial and MENU/COPY/ESC. Only the display grows with the window;
+  below 1180 × 720 the whole device scales down. Soft-key values take keypad entries (ENT) and
+  the MULTI dial; the Morse encoder accepts multi-tap text from the keypad. INPUT and MENU open
+  lists in the display. Replaces the mode-key row, the LCD panels, key selectors, knobs and
+  capture controls of the previous design (ADR-013).
 - The window is now the front panel of an SDR transceiver: a row of mode keys with LEDs replaces
   the sidebar navigation; the nameplate, the page titles and the status bar are gone (each module
   shows its own capture state). The window is one black metal faceplate (9-slice image);

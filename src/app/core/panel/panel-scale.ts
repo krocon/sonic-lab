@@ -1,4 +1,4 @@
-/** Pure helpers of the rotary knob (unit-tested, framework-free). */
+/** Pure scale helpers for knobs, the MULTI dial and soft-key values (unit-tested, framework-free). */
 export interface KnobScale {
   readonly min: number;
   readonly max: number;

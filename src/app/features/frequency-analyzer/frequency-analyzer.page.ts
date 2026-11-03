@@ -5,86 +5,140 @@ import { TimeSeries } from '../../audio/time-series';
 import { provideAudioCapture } from '../../core/capture/audio-capture.providers';
 import { CaptureSession } from '../../core/capture/capture-session';
 import { demoAnalysisSignal } from '../../core/capture/demo-signal';
-import { CaptureControls } from '../../shared/capture/capture-controls';
+import { attachPanel } from '../../core/panel/front-panel';
 import { HistoryCanvas } from '../../shared/visualization/history-canvas';
 
 /** Below this level the input counts as silence and no frequency is shown. */
 const GATE_DB = -60;
 const UPDATE_SECONDS = 0.1;
 
-/** Dominant frequency with note name, stability and a 10-second history. */
+/** Dominant frequency with note name, tuning and a 10-second history. */
 @Component({
   selector: 'app-frequency-analyzer-page',
-  imports: [CaptureControls, HistoryCanvas],
+  imports: [HistoryCanvas],
   providers: [provideAudioCapture({ demo: demoAnalysisSignal })],
   template: `
-    <div class="module-page">
+    <div class="screen">
       <header class="module-head">
-        <p class="eyebrow">Analyze</p>
         <h1>Frequency Analyzer</h1>
       </header>
-      <section class="panel" aria-label="Capture controls"><app-capture-controls /></section>
-      <section class="panel" aria-labelledby="freq-title">
-        <h2 id="freq-title" class="visually-hidden">Dominant frequency</h2>
-        <p class="big" aria-live="polite">
-          <span class="value">{{ frequencyText() }}</span
+      <div class="row top">
+        <p class="huge glow frequency" aria-live="polite">
+          <span class="value"
+            >{{ whole() }}<span class="dimmed">{{ fraction() }}</span></span
           ><span class="unit">Hz</span>
         </p>
         <dl class="readouts">
-          <div class="readout">
+          <div class="ro hot">
             <dt>Note</dt>
-            <dd>{{ noteText() }}</dd>
+            <dd class="glow note">{{ note()?.name ?? '–' }}</dd>
           </div>
-          <div class="readout">
+          <div class="ro">
+            <dt>Cents</dt>
+            <dd>{{ centsText() }}</dd>
+          </div>
+          <div class="ro">
             <dt>Level</dt>
-            <dd>{{ level() === null ? '–' : level()!.toFixed(1) + ' dBFS' }}</dd>
+            <dd>
+              {{ level() === null ? '–' : level()!.toFixed(1) }}<span class="unit">dBFS</span>
+            </dd>
           </div>
-          <div class="readout">
+          <div class="ro">
             <dt>Stability (1 s)</dt>
-            <dd>{{ stability() === null ? '–' : '± ' + stability()!.toFixed(2) + ' Hz' }}</dd>
+            <dd>
+              {{ stability() === null ? '–' : '± ' + stability()!.toFixed(2)
+              }}<span class="unit">Hz</span>
+            </dd>
           </div>
         </dl>
+      </div>
+      <div class="tuner" aria-hidden="true">
+        <div class="scale"></div>
+        <div class="zero"></div>
+        @if (note(); as n) {
+          <div class="needle" [style.left.%]="50 + n.cents"></div>
+        }
+        <div class="ticks">
+          <span>−50</span><span>−25</span><span>0</span><span>+25</span><span>+50 ct</span>
+        </div>
+      </div>
+      <section class="box" aria-labelledby="history-title">
+        <h2 id="history-title" class="box-title">Frequency</h2>
+        <span class="box-meta">last 10 s · log scale</span>
         <app-history-canvas
-          class="chart history"
+          class="viz"
           [series]="history"
           [seconds]="10"
           [min]="50"
           [max]="5000"
           [log]="true"
           unit=" Hz"
+          color="--display-trace-alt"
           label="Frequency over the last 10 seconds"
         />
       </section>
     </div>
   `,
   styles: `
-    .big {
+    .screen {
+      grid-template-rows: auto auto minmax(0, 1fr);
+    }
+    .top {
+      align-items: center;
+      gap: 4cqw;
+    }
+    .frequency {
+      flex: none;
+    }
+    .readouts {
+      display: grid;
+      grid-template-columns: repeat(2, auto);
+      gap: 2cqh 3cqw;
+    }
+    .note {
+      font-size: min(9cqh, 6cqw);
+    }
+    .tuner {
+      position: relative;
+      height: 5cqh;
+      min-height: 18px;
+      margin: 0 1cqw 3cqh;
+    }
+    .scale {
+      position: absolute;
+      inset: 0;
+      border-bottom: 1px solid var(--oled-faint);
+      background: repeating-linear-gradient(90deg, var(--oled-faint) 0 1px, transparent 1px 10%);
+    }
+    .zero {
+      position: absolute;
+      left: 50%;
+      top: -2px;
+      bottom: -2px;
+      width: 2px;
+      margin-left: -1px;
+      background: var(--oled-ok);
+    }
+    .needle {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 6px;
+      margin-left: -3px;
+      background: var(--oled-hot);
+      box-shadow: 0 0 8px var(--oled-hot);
+      transition: left 120ms linear;
+    }
+    .ticks {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
       display: flex;
-      align-items: baseline;
-      justify-content: flex-end;
-      gap: var(--space-3);
-      margin: 0;
-      padding: var(--space-4) var(--space-5);
-      border-radius: var(--radius-sm);
-      background-color: var(--display-bg);
-      background-image: var(--display-reflection);
-      box-shadow: var(--display-inset);
-      font-family: var(--font-mono);
-    }
-    .big .value {
-      font-size: clamp(2.5rem, 9vw, 5.5rem);
-      font-weight: var(--weight-regular);
-      letter-spacing: 0.04em;
-      color: var(--display-text);
-      text-shadow: var(--display-glow);
-      font-variant-numeric: tabular-nums;
-    }
-    .big .unit {
-      font-size: var(--text-xl);
-      color: var(--display-text-dim);
-    }
-    .history {
-      height: 12rem;
+      justify-content: space-between;
+      padding-top: 3px;
+      font-size: clamp(8px, 1.6cqh, 11px);
+      color: var(--oled-dim);
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -97,16 +151,24 @@ export class FrequencyAnalyzerPage {
   protected readonly frequency = signal<number | null>(null);
   protected readonly level = signal<number | null>(null);
   protected readonly stability = signal<number | null>(null);
-  protected readonly frequencyText = computed(() =>
-    this.frequency() === null ? '–' : this.frequency()!.toFixed(1),
-  );
-  protected readonly noteText = computed(() => {
-    const note = frequencyToNote(this.frequency() ?? 0);
-    return note ? `${note.name} ${note.cents >= 0 ? '+' : ''}${note.cents} ct` : '–';
+  /** Frequency split for the display: whole hertz, then the dimmed decimal. */
+  protected readonly whole = computed(() => {
+    const f = this.frequency();
+    return f === null ? '–' : `${Math.trunc(f)}.`;
+  });
+  protected readonly fraction = computed(() => {
+    const f = this.frequency();
+    return f === null ? '' : f.toFixed(1).split('.')[1];
+  });
+  protected readonly note = computed(() => frequencyToNote(this.frequency() ?? 0));
+  protected readonly centsText = computed(() => {
+    const n = this.note();
+    return n ? `${n.cents >= 0 ? '+' : '−'}${Math.abs(n.cents)}` : '–';
   });
   private lastUpdate = -Infinity;
 
   constructor() {
+    attachPanel({ capture: this.session });
     this.session.addConsumer((frame) => {
       this.analyzer.process(frame.samples, frame.sampleRate);
       const t = frame.timestamp;

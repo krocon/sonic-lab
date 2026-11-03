@@ -30,22 +30,17 @@ function toPercent(db: number): number {
       display: flex;
       align-items: center;
       gap: var(--space-3);
-      padding: var(--space-2) var(--space-3);
-      border-radius: var(--radius-sm);
-      background-color: var(--display-bg);
-      background-image: var(--display-reflection);
-      box-shadow: var(--display-inset);
     }
     .track {
       position: relative;
       flex: 1;
-      height: 0.7rem;
-      /* LCD bar graph: dark segments, the top of the scale in red */
+      height: 0.6rem;
+      /* OLED bar graph: green, amber at the top of the scale, red near full scale */
       background: linear-gradient(
         90deg,
-        var(--display-text) 0 75%,
-        var(--display-value) 75% 90%,
-        var(--display-mark) 90%
+        var(--oled-ok) 0 75%,
+        var(--oled-hot) 75% 90%,
+        var(--oled-bad) 90%
       );
       mask: repeating-linear-gradient(90deg, #000 0 5px, transparent 5px 7px);
     }
@@ -53,9 +48,9 @@ function toPercent(db: number): number {
       position: absolute;
       inset: 0 0 0 auto;
       width: 100%;
-      /* unlit segments stay faintly visible, as on a real LCD */
-      background: var(--display-bg);
-      opacity: 0.82;
+      /* unlit segments stay faintly visible */
+      background: var(--oled-bg);
+      opacity: 0.85;
     }
     .hold {
       position: absolute;
@@ -63,18 +58,17 @@ function toPercent(db: number): number {
       bottom: 0;
       width: 3px;
       left: 0;
-      background: var(--display-mark);
+      background: var(--oled-fg);
     }
     .value {
-      min-width: 5rem;
-      font-family: var(--font-mono);
+      min-width: 4.5rem;
       font-size: var(--text-sm);
-      color: var(--display-value);
-      text-shadow: var(--display-glow);
+      font-variant-numeric: tabular-nums;
+      color: var(--oled-fg);
       text-align: right;
     }
     .value.clip {
-      color: var(--led-red);
+      color: var(--oled-bad);
     }
   `,
   host: {

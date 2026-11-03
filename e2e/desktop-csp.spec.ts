@@ -59,9 +59,9 @@ test('the production build renders with component styles under the desktop CSP',
 
   await page.goto('http://desktop.test/#/morse-decoder');
   await expect(page.getByRole('heading', { name: 'Morse Decoder', level: 1 })).toBeVisible();
-  // component styles: the shell is a CSS grid, the nav icons are 20 px SVGs without fill
-  await expect(page.locator('app-shell')).toHaveCSS('display', 'grid');
-  await expect(page.locator('nav app-icon svg').first()).toHaveCSS('fill', 'none');
+  // component styles: the device is a CSS grid, the control panel a flex column
+  await expect(page.locator('.device')).toHaveCSS('display', 'grid');
+  await expect(page.locator('app-control-panel')).toHaveCSS('flex-direction', 'column');
   // global stylesheet active (not stuck on media="print")
   await expect(page.locator('body')).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
   const blocked = await page.evaluate(
