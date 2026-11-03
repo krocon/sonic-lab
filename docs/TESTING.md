@@ -48,8 +48,9 @@ run because instrumentation makes it ~10× slower.
 - **Real recordings (golden files):** no recordings with a known transcript are in the repository
   yet. Contributions welcome: short (< 30 s), self-recorded or public-domain WAVs plus the
   expected text under `test-data/`, with the licence noted next to the file.
-- **Firefox E2E** could not be launched in the local development sandbox (browser process start
-  fails); it runs in CI. WebKit runs locally (29 tests incl. axe, 2 workers stable); the fake
+- **Firefox E2E** could not be launched in the local development sandbox; it runs green in CI
+  (the job starts a PulseAudio null sink – runners have no sound card, and Firefox's Web Audio needs
+  an output device). WebKit runs locally (29 tests incl. axe, 2 workers stable); the fake
   microphone patches `MediaDevices.prototype` because WebKit may return a fresh `MediaDevices`
   object, and the axe checks run with reduced motion so no colour is measured mid-transition.
 - **Live microphone test** with a real speaker/microphone is manual.

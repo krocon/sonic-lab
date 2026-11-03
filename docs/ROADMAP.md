@@ -22,7 +22,8 @@ Work orders live in [`prompts/`](../prompts/README.md); all of 00–12 have been
   and Linux (no machines available so far) – see the table in [PRIVACY.md](PRIVACY.md).
 - Morse and DTMF decoding with **real recordings** (golden files) – the measured numbers come from
   synthetic, impaired signals.
-- The CI and release workflows on GitHub (they have not run yet).
+- The release workflow (`release.yml`) – it runs on the first `v*` tag. CI (`ci.yml`) is green on
+  GitHub: frontend, signal suite, E2E in Chromium/Firefox/WebKit, Rust on Linux/macOS/Windows.
 
 ## Ideas
 
