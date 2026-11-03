@@ -19,7 +19,7 @@ const UPDATE_SECONDS = 0.1;
   providers: [provideAudioCapture({ demo: demoAnalysisSignal })],
   template: `
     <div class="module-page">
-      <header>
+      <header class="module-head">
         <p class="eyebrow">Analyze</p>
         <h1>Frequency Analyzer</h1>
       </header>

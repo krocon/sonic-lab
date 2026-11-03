@@ -1,89 +1,82 @@
 <a class="skip-link" href="#main">Skip to content</a>
 
-<header class="topbar">
-  <a class="brand" routerLink="/" aria-label="AudioLab overview">
-    <span class="brand-mark"><app-icon name="logo" [size]="22" /></span>
+<div class="ear ear-left" aria-hidden="true"><span class="handle"></span></div>
+
+<div class="console">
+  <header class="nameplate">
+    <span class="brand-mark"><app-icon name="logo" [size]="20" /></span>
     <span class="brand-text">
       <span class="brand-name">Audio<span>Lab</span></span>
-      <span class="brand-model">Signal analyzer · local</span>
+      <span class="brand-model">Signal analyzer</span>
     </span>
-  </a>
+  </header>
 
-  <div class="topbar-end">
-    <span class="badge" data-tone="accent" title="All processing happens on this device">
-      <app-icon name="lock" [size]="14" /> Local only
-    </span>
-    <button
-      type="button"
-      class="icon-btn"
-      (click)="theme.cycle()"
-      [attr.aria-label]="themeLabel()"
-      [title]="themeLabel()"
-    >
-      <app-icon [name]="themeIcon()" />
-    </button>
-  </div>
-</header>
-
-<nav class="sidebar" aria-label="Analysis modules">
-  <a
-    class="nav-link"
-    routerLink="/"
-    routerLinkActive="active"
-    [routerLinkActiveOptions]="{ exact: true }"
-    ariaCurrentWhenActive="page"
-  >
-    <app-icon name="overview" />
-    <span>Overview</span>
-  </a>
-
-  @for (group of groups; track group.id) {
-    <p class="nav-group eyebrow">{{ group.label }}</p>
-    @for (module of group.modules; track module.id) {
-      <a
-        class="nav-link"
-        [routerLink]="['/', module.path]"
-        routerLinkActive="active"
-        ariaCurrentWhenActive="page"
-      >
-        <app-icon [name]="module.icon" />
-        <span>{{ module.title }}</span>
-        @if (module.status === 'planned') {
-          <span class="nav-hint">soon</span>
+  <nav class="modes" aria-label="Analysis modules">
+    @for (group of groups; track group.id) {
+      <div class="mode-group" role="group" [attr.aria-label]="group.label">
+        <p class="bracket" [style.grid-column]="'span ' + group.modules.length" aria-hidden="true">
+          <span>{{ group.label }}</span>
+        </p>
+        @for (module of group.modules; track module.id) {
+          <a
+            class="mode-key"
+            [routerLink]="['/', module.path]"
+            routerLinkActive="active"
+            ariaCurrentWhenActive="page"
+            [title]="module.title"
+          >
+            <span class="mode-led" aria-hidden="true"></span>
+            <app-icon [name]="module.icon" [size]="18" />
+            <span class="mode-legend" aria-hidden="true">{{ module.key }}</span>
+            <span class="visually-hidden">{{ module.title }}</span>
+          </a>
         }
-      </a>
+      </div>
     }
-  }
-</nav>
+  </nav>
+
+  <footer class="statusbar" aria-label="Status">
+    <p class="silkscreen indicators-title" aria-hidden="true">Indicators</p>
+    @if (platformInfo.value(); as info) {
+      <span class="status-item">
+        <span class="led on" aria-hidden="true"></span>
+        <span
+          >{{ info.label }}
+          @if (info.appVersion) {
+            <span class="muted">v{{ info.appVersion }}</span>
+          }
+        </span>
+      </span>
+      <span class="status-item" [class.warn]="!info.secureContext || !info.mediaDevicesAvailable">
+        <span class="led" aria-hidden="true"></span>
+        <span>
+          @if (!info.secureContext) {
+            Insecure context – microphone needs HTTPS or localhost
+          } @else if (!info.mediaDevicesAvailable) {
+            Microphone API unavailable
+          } @else {
+            Microphone API available
+          }
+        </span>
+      </span>
+    } @else {
+      <span class="status-item muted">Detecting platform…</span>
+    }
+    <span class="status-item" [class.live]="capture.microphoneOpen()">
+      <span class="led mic" aria-hidden="true"></span>
+      <span>{{ capture.microphoneOpen() ? 'Microphone on' : 'Microphone off' }}</span>
+    </span>
+    <span class="status-item" title="All processing happens on this device">
+      <span class="led on" aria-hidden="true"></span>
+      <span>Local only</span>
+    </span>
+  </footer>
+
+  <div class="grille" aria-hidden="true"></div>
+</div>
 
 <main id="main" class="workspace" tabindex="-1">
   <router-outlet />
 </main>
 
-<footer class="statusbar" aria-label="Status">
-  @if (platformInfo.value(); as info) {
-    <span class="status-item">
-      <span class="led on" aria-hidden="true"></span>
-      {{ info.label }}
-      @if (info.appVersion) {
-        <span class="muted">v{{ info.appVersion }}</span>
-      }
-    </span>
-    <span class="status-item" [class.warn]="!info.secureContext || !info.mediaDevicesAvailable">
-      <span class="led" aria-hidden="true"></span>
-      @if (!info.secureContext) {
-        Insecure context – microphone needs HTTPS or localhost
-      } @else if (!info.mediaDevicesAvailable) {
-        Microphone API unavailable
-      } @else {
-        Microphone API available
-      }
-    </span>
-  } @else {
-    <span class="status-item muted">Detecting platform…</span>
-  }
-  <span class="status-item status-end" [class.live]="capture.microphoneOpen()">
-    <span class="led mic" aria-hidden="true"></span>
-    {{ capture.microphoneOpen() ? 'Microphone on' : 'Microphone off' }}
-  </span>
-</footer>
+<div class="ear ear-right" aria-hidden="true"><span class="handle"></span></div>

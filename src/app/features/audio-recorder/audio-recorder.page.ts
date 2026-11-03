@@ -15,6 +15,7 @@ import { CaptureSession } from '../../core/capture/capture-session';
 import { StatusMessage } from '../../core/status/status-message';
 import { FileExportAdapter } from '../../platform/file-export';
 import { CaptureControls } from '../../shared/capture/capture-controls';
+import { KeyOption, KeySelector } from '../../shared/controls/key-selector';
 import { Icon } from '../../shared/icon/icon';
 import { StatusBanner } from '../../shared/status/status-banner';
 import { LevelMeterBar } from '../../shared/visualization/level-meter-bar';
@@ -25,10 +26,15 @@ export const playbackContext = { create: (): AudioContext => new AudioContext() 
 
 const MAX_MINUTES = 10;
 
+const FORMATS: readonly KeyOption<WavFormat>[] = [
+  { value: 'pcm16', label: 'WAV 16-bit PCM' },
+  { value: 'float32', label: 'WAV 32-bit float' },
+];
+
 /** Records the input into memory; exports WAV only when asked to. */
 @Component({
   selector: 'app-audio-recorder-page',
-  imports: [CaptureControls, Icon, StatusBanner, LevelMeterBar, WaveformCanvas],
+  imports: [CaptureControls, Icon, KeySelector, StatusBanner, LevelMeterBar, WaveformCanvas],
   providers: [provideAudioCapture()],
   templateUrl: './audio-recorder.page.html',
   styles: `
@@ -53,18 +59,28 @@ const MAX_MINUTES = 10;
       font-variant-numeric: tabular-nums;
     }
     .rec {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--text-xs);
       color: var(--color-danger);
       font-weight: var(--weight-bold);
-      letter-spacing: 0.08em;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
     }
-    .note {
-      margin: 0;
-      font-size: var(--text-xs);
-      color: var(--color-text-subtle);
+    .rec::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--led-red);
+      box-shadow: 0 0 8px var(--led-red);
+    }
+    .btn-rec {
+      min-width: 9rem;
     }
     .format {
-      min-width: 14rem;
+      min-width: 16rem;
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -81,6 +97,7 @@ export class AudioRecorderPage {
   protected readonly nearlyFull = signal(false);
   protected readonly playing = signal(false);
   protected readonly format = signal<WavFormat>('pcm16');
+  protected readonly formats = FORMATS;
   protected readonly status = signal<StatusMessage | null>(null);
   protected readonly maxMinutes = MAX_MINUTES;
   protected readonly time = computed(() => {
@@ -174,10 +191,6 @@ export class AudioRecorderPage {
     this.seconds.set(0);
     this.hasRecording.set(false);
     this.status.set({ tone: 'neutral', text: 'Recording discarded.' });
-  }
-
-  protected setFormat(event: Event): void {
-    this.format.set((event.target as HTMLSelectElement).value === 'float32' ? 'float32' : 'pcm16');
   }
 
   private async stopPlayback(): Promise<void> {

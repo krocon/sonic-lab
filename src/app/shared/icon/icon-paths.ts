@@ -4,7 +4,6 @@
  */
 export const ICON_PATHS = {
   logo: ['M3 12h2.5l2-6 3 12 3-9 2 5 1.5-2H21'],
-  overview: ['M4 4h7v7H4z', 'M13 4h7v4h-7z', 'M13 10h7v10h-7z', 'M4 13h7v7H4z'],
   morse: ['M3 12h2', 'M8 12h6', 'M17 12h1', 'M21 12h0', 'M3 7h18', 'M3 17h18'],
   keypad: [
     'M6 5h0',
@@ -29,20 +28,6 @@ export const ICON_PATHS = {
   stop: ['M6 6h12v12H6z'],
   reset: ['M4 12a8 8 0 1 0 2.3-5.6', 'M4 4v4h4'],
   copy: ['M9 9h11v11H9z', 'M5 15H4V4h11v1'],
-  sun: [
-    'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z',
-    'M12 2v2',
-    'M12 20v2',
-    'M2 12h2',
-    'M20 12h2',
-    'M4.9 4.9l1.4 1.4',
-    'M17.7 17.7l1.4 1.4',
-    'M4.9 19.1l1.4-1.4',
-    'M17.7 6.3l1.4-1.4',
-  ],
-  moon: ['M20 14.5A8 8 0 1 1 9.5 4 6.5 6.5 0 0 0 20 14.5z'],
-  system: ['M3 5h18v12H3z', 'M8 21h8', 'M12 17v4'],
-  lock: ['M6 11h12v9H6z', 'M8 11V8a4 4 0 0 1 8 0v3'],
   desktop: ['M3 4h18v13H3z', 'M8 21h8', 'M12 17v4'],
   globe: [
     'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z',
@@ -50,7 +35,6 @@ export const ICON_PATHS = {
     'M12 3c3 3 3 15 0 18',
     'M12 3c-3 3-3 15 0 18',
   ],
-  arrow: ['M5 12h14', 'M13 6l6 6-6 6'],
 } as const satisfies Record<string, readonly string[]>;
 
 export type IconName = keyof typeof ICON_PATHS;

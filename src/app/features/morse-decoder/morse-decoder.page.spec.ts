@@ -81,22 +81,38 @@ describe('MorseDecoderPage', () => {
     const fixture = TestBed.createComponent(MorseDecoderPage);
     const el: HTMLElement = fixture.nativeElement;
     await fixture.whenStable();
-    const selects = el.querySelectorAll('select');
-    const mode = Array.from(selects).find((s) =>
-      s.querySelector('option[value="manual"]'),
-    ) as HTMLSelectElement;
-    mode.value = 'manual';
-    mode.dispatchEvent(new Event('change'));
+    const radio = (label: string) =>
+      Array.from(el.querySelectorAll<HTMLButtonElement>('[role="radio"]')).find(
+        (r) => r.textContent?.trim() === label,
+      );
+    radio('Fixed')?.click();
+    radio('High')?.click();
     await fixture.whenStable();
-    const slider = el.querySelector('input[type="range"]') as HTMLInputElement;
-    slider.value = '650';
-    slider.dispatchEvent(new Event('input'));
-    await fixture.whenStable();
-    expect(el.textContent).toContain('650 Hz');
+    expect(radio('Fixed')?.getAttribute('aria-checked')).toBe('true');
+    const knob = Array.from(el.querySelectorAll<HTMLElement>('[role="slider"]')).find(
+      (k) =>
+        document.getElementById(k.getAttribute('aria-labelledby') ?? '')?.textContent ===
+        'Frequency',
+    ) as HTMLElement;
+    for (let i = 0; i < 2; i++) {
+      knob.dispatchEvent(new KeyboardEvent('keydown', { key: 'PageDown', bubbles: true }));
+      await fixture.whenStable();
+    }
+    expect(el.textContent).toContain('500 Hz');
     expect(JSON.parse(localStorage.getItem('audiolab.morse') ?? '{}').data).toMatchObject({
       frequencyMode: 'manual',
-      frequency: 650,
+      frequency: 500,
+      sensitivity: 'high',
     });
+  });
+
+  it('ignores Space on a knob', async () => {
+    const fixture = TestBed.createComponent(MorseDecoderPage);
+    await fixture.whenStable();
+    const knob = fixture.nativeElement.querySelector('[role="slider"]') as HTMLElement;
+    knob.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+    await fixture.whenStable();
+    expect(source.startCalls).toBe(0);
   });
 
   it('starts/stops with Space and resets with Ctrl+K', async () => {

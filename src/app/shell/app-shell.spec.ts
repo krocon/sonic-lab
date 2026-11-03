@@ -19,13 +19,17 @@ describe('AppShell', () => {
     });
   });
 
-  it('lists every analysis module in the navigation', async () => {
+  it('has a mode key for every analysis module, named after the module', async () => {
     const fixture = TestBed.createComponent(AppShell);
     await fixture.whenStable();
-    const nav: HTMLElement = fixture.nativeElement.querySelector('nav');
-    for (const m of ANALYSIS_MODULES) {
-      expect(nav.textContent).toContain(m.title);
-    }
+    const keys = Array.from(
+      fixture.nativeElement.querySelectorAll('nav a.mode-key'),
+    ) as HTMLAnchorElement[];
+    expect(keys.length).toBe(ANALYSIS_MODULES.length);
+    ANALYSIS_MODULES.forEach((m, i) => {
+      expect(keys[i]?.querySelector('.visually-hidden')?.textContent).toBe(m.title);
+      expect(keys[i]?.querySelector('.mode-legend')?.textContent).toBe(m.key);
+    });
   });
 
   it('shows the platform and microphone status', async () => {
@@ -36,5 +40,6 @@ describe('AppShell', () => {
     expect(status.textContent).toContain('Test runtime');
     expect(status.textContent).toContain('Microphone API available');
     expect(status.textContent).toContain('Microphone off');
+    expect(status.textContent).toContain('Local only');
   });
 });

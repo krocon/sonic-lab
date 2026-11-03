@@ -10,9 +10,9 @@ All notable changes to this project are documented here. The format follows
 
 - Project foundation: Angular 22 (standalone, zoneless, signals, strict TypeScript) and
   Tauri 2 desktop shell from one codebase.
-- App shell with module navigation, overview page, placeholder pages for planned modules and a
-  layout preview of the Morse decoder workspace.
-- Design tokens (CSS custom properties) with light and dark theme, theme toggle.
+- App shell with module navigation, placeholder pages for planned modules and a layout preview
+  of the Morse decoder workspace.
+- Design tokens (CSS custom properties).
 - Platform adapter (browser / Tauri) and status bar showing runtime, secure context and
   microphone API availability.
 - Tauri command `platform_info`, least-privilege capability (`core:default` only), CSP, macOS
@@ -75,9 +75,17 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
-- New skeuomorphic "radio front panel" look: brushed graphite/aluminium chassis, screwed-on
-  modules, glass displays with phosphor/amber readouts, hardware keys with LEDs, faders, LED level
-  ladders, rotary knobs (tone generator) and an analog VU meter (signal monitor).
+- The window is now the front panel of an SDR transceiver: black chassis with rack handles, a
+  console with nameplate, a keypad of mode keys with LEDs (replaces the sidebar navigation) and
+  indicator LEDs (replaces the status bar), raised sections separated by grooves that fill the
+  window, glass displays with phosphor/amber readouts, LED level ladders and an analog VU meter.
+- Hardware controls everywhere: latching key selectors (ARIA radio groups) replace drop-downs
+  and the peak-hold checkbox; machined rotary knobs with a lit scale arc replace all sliders
+  (Morse decoder, Morse encoder, tone generator); the tone generator has a tuning dial and a
+  frequency display.
+- Dark only: the light (aluminium) finish and the theme toggle are gone; the UI ignores the
+  system theme.
+- No overview page: the app opens in the Morse decoder; unknown paths lead there too.
 
 ### Fixed
 

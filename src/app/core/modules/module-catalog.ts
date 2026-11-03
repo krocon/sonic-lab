@@ -1,7 +1,7 @@
 import { AnalysisModule, ModuleGroup } from './analysis-module';
 
 /**
- * Single source of truth for navigation, overview and routing.
+ * Single source of truth for the mode keys and routing.
  * Adding a module = one entry here + a route (see docs/ARCHITECTURE.md).
  */
 export const ANALYSIS_MODULES: readonly AnalysisModule[] = [
@@ -9,6 +9,7 @@ export const ANALYSIS_MODULES: readonly AnalysisModule[] = [
     id: 'morse-decoder',
     path: 'morse-decoder',
     title: 'Morse Decoder',
+    key: 'Morse',
     summary: 'Detects acoustic Morse code and translates it into plain text.',
     group: 'decode',
     icon: 'morse',
@@ -19,6 +20,7 @@ export const ANALYSIS_MODULES: readonly AnalysisModule[] = [
     id: 'dtmf-decoder',
     path: 'dtmf-decoder',
     title: 'DTMF Decoder',
+    key: 'DTMF',
     summary: 'Recognises telephone keypad tones (Goertzel).',
     group: 'decode',
     icon: 'keypad',
@@ -29,6 +31,7 @@ export const ANALYSIS_MODULES: readonly AnalysisModule[] = [
     id: 'frequency-analyzer',
     path: 'frequency-analyzer',
     title: 'Frequency Analyzer',
+    key: 'Freq',
     summary: 'Shows the dominant frequency and its stability over time.',
     group: 'analyze',
     icon: 'frequency',
@@ -39,6 +42,7 @@ export const ANALYSIS_MODULES: readonly AnalysisModule[] = [
     id: 'spectrum-analyzer',
     path: 'spectrum-analyzer',
     title: 'Spectrum Analyzer',
+    key: 'Spectrum',
     summary: 'FFT-based spectrum and spectrogram display.',
     group: 'analyze',
     icon: 'spectrum',
@@ -49,6 +53,7 @@ export const ANALYSIS_MODULES: readonly AnalysisModule[] = [
     id: 'signal-monitor',
     path: 'signal-monitor',
     title: 'Signal Monitor',
+    key: 'Monitor',
     summary: 'Level, frequency and their history at a glance.',
     group: 'analyze',
     icon: 'monitor',
@@ -59,6 +64,7 @@ export const ANALYSIS_MODULES: readonly AnalysisModule[] = [
     id: 'morse-encoder',
     path: 'morse-encoder',
     title: 'Morse Encoder',
+    key: 'Morse',
     summary: 'Turns text into Morse code and audible tones.',
     group: 'generate',
     icon: 'encode',
@@ -69,6 +75,7 @@ export const ANALYSIS_MODULES: readonly AnalysisModule[] = [
     id: 'tone-generator',
     path: 'tone-generator',
     title: 'Tone Generator',
+    key: 'Tone',
     summary: 'Sine, square, sawtooth and noise test signals.',
     group: 'generate',
     icon: 'tone',
@@ -79,6 +86,7 @@ export const ANALYSIS_MODULES: readonly AnalysisModule[] = [
     id: 'audio-recorder',
     path: 'audio-recorder',
     title: 'Audio Recorder',
+    key: 'Rec',
     summary: 'Records audio locally and exports it on request.',
     group: 'generate',
     icon: 'record',

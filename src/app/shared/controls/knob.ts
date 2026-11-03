@@ -1,24 +1,32 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import { KnobScale, fromPosition, nudge, toAngle, toPosition } from './knob-math';
+import { KNOB_SWEEP, KnobScale, fromPosition, nudge, toAngle, toPosition } from './knob-math';
 
 let nextId = 0;
-const TICKS = Array.from({ length: 21 }, (_, i) => -135 + i * 13.5);
+const TICKS = Array.from({ length: 11 }, (_, i) => -KNOB_SWEEP / 2 + (i * KNOB_SWEEP) / 10);
+/** Radius of the scale arc in the 100 × 100 scale box; its circumference drives the dash array. */
+const ARC_RADIUS = 41;
+const ARC_LENGTH = 2 * Math.PI * ARC_RADIUS;
+const SWEEP_LENGTH = (ARC_LENGTH * KNOB_SWEEP) / 360;
 /** Pixels of vertical drag for the full travel (Shift: fine adjustment ×4). */
 const DRAG_TRAVEL = 220;
 
+export type KnobVariant = 'knob' | 'dial';
+
 /**
- * Rotary knob – a knurled control with a scale ring, operated by dragging (up = more), the mouse
- * wheel or the keyboard (arrows, Page Up/Down, Home/End). Exposed to assistive technology as a
- * slider with value text.
+ * Rotary control: a machined knob (or a large tuning dial with a finger dimple) inside a lit scale
+ * arc, operated by dragging (up = more), the mouse wheel or the keyboard (arrows, Page Up/Down,
+ * Home/End); double-click restores the default. Exposed to assistive technology as a slider with
+ * value text.
  */
 @Component({
   selector: 'app-knob',
   template: `
+    <span class="label" [id]="labelId">{{ label() }}</span>
     <div
       class="knob"
+      [class.dial]="variant() === 'dial'"
       role="slider"
       tabindex="0"
-      [attr.aria-label]="label()"
       [attr.aria-valuemin]="min()"
       [attr.aria-valuemax]="max()"
       [attr.aria-valuenow]="value()"
@@ -30,101 +38,200 @@ const DRAG_TRAVEL = 220;
       (keydown)="onKey($event)"
       (dblclick)="reset()"
     >
-      <svg class="ring" viewBox="-50 -50 100 100" aria-hidden="true">
+      <svg class="scale" viewBox="-50 -50 100 100" aria-hidden="true">
         @for (t of ticks; track t) {
           <line
             [attr.transform]="'rotate(' + t + ')'"
             x1="0"
-            y1="-47"
+            y1="-49.5"
             x2="0"
-            [attr.y2]="t === -135 || t === 0 || t === 135 ? -40 : -43"
-            [class.lit]="t <= angle()"
+            [attr.y2]="$first || $last ? -44 : -46"
+            [class.lit]="t <= angle() + 0.01"
           />
         }
+        <!-- the arc starts at the minimum (−135° from 12 o'clock = 135° in SVG terms) -->
+        <g transform="rotate(135)">
+          <circle class="track" [attr.r]="arcRadius" [attr.stroke-dasharray]="track" />
+          <circle class="arc" [attr.r]="arcRadius" [attr.stroke-dasharray]="arc()" />
+        </g>
       </svg>
-      <div class="cap" [style.transform]="'rotate(' + angle() + 'deg)'">
-        <span class="pointer"></span>
+      <div class="body">
+        <div class="rotor" [style.transform]="rotation()"></div>
+        <div class="cap"></div>
+        <div class="index" [style.transform]="rotation()"><span class="pointer"></span></div>
       </div>
     </div>
-    <span class="label" [id]="labelId">{{ label() }}</span>
     <span class="value">{{ text() }}</span>
   `,
   styles: `
     :host {
       display: inline-grid;
       justify-items: center;
-      gap: var(--space-1);
+      align-content: start;
+      gap: 2px;
       user-select: none;
+      -webkit-user-select: none;
+    }
+    .label {
+      font-size: var(--text-2xs);
+      font-weight: var(--weight-bold);
+      letter-spacing: var(--tracking-caps);
+      text-transform: uppercase;
+      white-space: nowrap;
+      color: var(--silkscreen);
+      text-shadow: var(--silkscreen-shadow);
     }
     .knob {
-      --size: 72px;
+      --size: 64px;
       position: relative;
-      width: calc(var(--size) + 22px);
-      height: calc(var(--size) + 22px);
+      width: calc(var(--size) * 1.4);
+      height: calc(var(--size) * 1.4);
       border-radius: 50%;
       cursor: ns-resize;
       touch-action: none;
     }
     .knob:focus-visible {
-      outline-offset: 0;
+      outline-offset: -2px;
     }
-    .ring {
+
+    /* scale: tick marks and an arc that lights up to the current value */
+    .scale {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
+      overflow: visible;
     }
-    .ring line {
-      stroke: var(--color-text-subtle);
-      stroke-width: 2;
+    .scale line {
+      stroke: #5d646d;
+      stroke-width: 1.6;
       stroke-linecap: round;
     }
-    .ring line.lit {
+    .scale line.lit {
+      stroke: var(--silkscreen);
+    }
+    .scale circle {
+      fill: none;
+      stroke-width: 2.6;
+      stroke-linecap: round;
+    }
+    .track {
+      stroke: #050607;
+    }
+    .arc {
       stroke: var(--color-accent);
+      filter: drop-shadow(0 0 2px rgb(255 182 39 / 80%));
+    }
+
+    /* knob body: knurled skirt (turns), machined cap (light stays put), index (turns) */
+    .body {
+      position: absolute;
+      inset: calc(var(--size) * 0.2);
+      border-radius: 50%;
+      box-shadow:
+        0 calc(var(--size) * 0.07) calc(var(--size) * 0.14) rgb(0 0 0 / 75%),
+        0 0 0 1px #000;
+    }
+    .rotor,
+    .cap,
+    .index {
+      position: absolute;
+      border-radius: 50%;
+    }
+    .rotor {
+      inset: 0;
+      background:
+        radial-gradient(circle at 50% 8%, rgb(255 255 255 / 22%), transparent 55%),
+        repeating-conic-gradient(#08090a 0deg 4deg, #4a5058 5deg 6deg, #08090a 7deg 10deg);
     }
     .cap {
-      position: absolute;
-      inset: 11px;
-      border-radius: 50%;
-      /* knurled rim + brushed top */
+      inset: 13%;
       background:
-        radial-gradient(circle at 50% 38%, #6b727b 0%, #3a3f45 52%, #23272b 64%, transparent 65%),
-        repeating-conic-gradient(#14171a 0deg 5deg, #4d535b 5deg 10deg);
+        radial-gradient(circle at 50% 28%, rgb(255 255 255 / 14%), transparent 58%),
+        conic-gradient(
+          from 15deg,
+          #16181b,
+          #4b5159 12%,
+          #191b1f 25%,
+          #3c4148 38%,
+          #141619 50%,
+          #4b5159 62%,
+          #191b1f 75%,
+          #3c4148 88%,
+          #16181b
+        );
       box-shadow:
-        0 4px 8px rgb(0 0 0 / 60%),
-        0 1px 0 rgb(255 255 255 / 18%) inset,
-        0 0 0 1px #0b0c0e;
+        inset 0 1px 1px rgb(255 255 255 / 28%),
+        inset 0 -2px 4px rgb(0 0 0 / 70%),
+        0 0 0 1px rgb(0 0 0 / 90%),
+        0 2px 4px rgb(0 0 0 / 60%);
+    }
+    .index {
+      inset: 0;
+      pointer-events: none;
     }
     .pointer {
       position: absolute;
       left: 50%;
-      top: 9%;
-      width: 4px;
-      height: 22%;
-      margin-left: -2px;
+      top: 15%;
+      width: 3px;
+      height: 25%;
+      margin-left: -1.5px;
       border-radius: 2px;
+      background: #f1f3f5;
+      box-shadow: 0 0 3px rgb(255 255 255 / 45%);
+    }
+
+    /* tuning dial: big, fine knurl, flat face with a finger dimple */
+    .dial .rotor {
+      background:
+        radial-gradient(circle at 50% 8%, rgb(255 255 255 / 20%), transparent 55%),
+        repeating-conic-gradient(#08090a 0deg 1.5deg, #3d434a 2deg 2.5deg, #08090a 3deg 4deg);
+    }
+    .dial .cap {
+      inset: 7%;
+      background:
+        radial-gradient(circle at 50% 22%, rgb(255 255 255 / 11%), transparent 60%),
+        radial-gradient(circle, #202328 0 60%, #16181b 100%);
+    }
+    .dial .pointer {
+      top: 15%;
+      width: 24%;
+      height: 24%;
+      margin-left: -12%;
+      border-radius: 50%;
+      background: radial-gradient(circle at 50% 30%, #07080a, #24272c);
+      box-shadow:
+        inset 0 3px 5px rgb(0 0 0 / 90%),
+        0 1px 0 rgb(255 255 255 / 12%);
+    }
+    .dial .index::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 3%;
+      width: 4px;
+      height: 4px;
+      margin-left: -2px;
+      border-radius: 50%;
       background: var(--color-accent-strong);
       box-shadow: 0 0 4px var(--color-accent);
     }
-    .label {
-      font-size: var(--text-xs);
-      font-weight: var(--weight-bold);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--color-text-subtle);
-      text-shadow: var(--silkscreen-shadow);
-    }
+
     .value {
-      min-width: 6.5rem;
+      min-width: 5.5rem;
+      margin-top: 2px;
       padding: 1px var(--space-2);
       border-radius: var(--radius-sm);
       background-color: var(--display-bg);
       box-shadow: var(--display-inset);
       font-family: var(--font-mono);
-      font-size: var(--text-sm);
+      font-size: var(--text-xs);
       color: var(--display-amber);
       text-shadow: var(--display-glow-amber);
       text-align: center;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -137,13 +244,19 @@ export class Knob {
   readonly log = input(false);
   readonly label = input.required<string>();
   readonly unit = input('');
+  /** Custom value text (display and screen readers); default: value and unit. */
+  readonly format = input<((value: number) => string) | null>(null);
   /** Value restored on double-click. */
   readonly defaultValue = input<number | null>(null);
-  readonly size = input(72);
+  /** Diameter of the knob body in pixels; the scale adds 40 %. */
+  readonly size = input(64);
+  readonly variant = input<KnobVariant>('knob');
   readonly valueChange = output<number>();
 
   protected readonly labelId = `knob-label-${nextId++}`;
   protected readonly ticks = TICKS;
+  protected readonly arcRadius = ARC_RADIUS;
+  protected readonly track = `${SWEEP_LENGTH} ${ARC_LENGTH}`;
   private readonly scale = computed<KnobScale>(() => ({
     min: this.min(),
     max: this.max(),
@@ -151,9 +264,15 @@ export class Knob {
     log: this.log(),
   }));
   protected readonly angle = computed(() => toAngle(this.value(), this.scale()));
-  protected readonly text = computed(
-    () => `${this.value()}${this.unit() ? ' ' + this.unit() : ''}`,
+  protected readonly rotation = computed(() => `rotate(${this.angle()}deg)`);
+  protected readonly arc = computed(
+    () => `${toPosition(this.value(), this.scale()) * SWEEP_LENGTH} ${ARC_LENGTH}`,
   );
+  protected readonly text = computed(() => {
+    const format = this.format();
+    if (format) return format(this.value());
+    return `${this.value()}${this.unit() ? ' ' + this.unit() : ''}`;
+  });
 
   protected onPointerDown(event: PointerEvent): void {
     const el = event.currentTarget as HTMLElement;

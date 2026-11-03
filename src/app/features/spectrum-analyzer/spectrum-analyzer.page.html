@@ -1,5 +1,5 @@
 <div class="module-page">
-  <header>
+  <header class="module-head">
     <p class="eyebrow">Analyze</p>
     <h1>Spectrum Analyzer</h1>
   </header>
@@ -40,53 +40,44 @@
 
     <section class="panel" aria-labelledby="settings-title">
       <h2 id="settings-title">Settings</h2>
-      <label class="form-field">
-        <span>FFT size</span>
-        <select (change)="update({ size: +value($event) })">
-          @for (s of sizes; track s) {
-            <option [value]="s" [selected]="s === settings().size">{{ s }}</option>
-          }
-        </select>
-      </label>
-      <label class="form-field">
-        <span>Window</span>
-        <select
-          (change)="
-            update({ window: value($event) === 'blackman-harris' ? 'blackman-harris' : 'hann' })
-          "
+      <app-key-selector
+        label="FFT size"
+        [options]="sizes"
+        [columns]="3"
+        [value]="settings().size"
+        (valueChange)="update({ size: $event })"
+      />
+      <app-key-selector
+        label="Window"
+        [options]="windows"
+        [value]="settings().window"
+        (valueChange)="update({ window: $event })"
+      />
+      <app-key-selector
+        label="Frequency axis"
+        [options]="axes"
+        [value]="settings().log"
+        (valueChange)="update({ log: $event })"
+      />
+      <app-key-selector
+        label="Averaging"
+        [options]="averagings"
+        [value]="settings().averaging"
+        (valueChange)="update({ averaging: $event })"
+      />
+      <div class="hold">
+        <button
+          type="button"
+          class="btn"
+          [attr.aria-pressed]="settings().peakHold"
+          (click)="update({ peakHold: !settings().peakHold })"
         >
-          <option value="hann" [selected]="settings().window === 'hann'">Hann</option>
-          <option value="blackman-harris" [selected]="settings().window === 'blackman-harris'">
-            Blackman-Harris
-          </option>
-        </select>
-      </label>
-      <label class="form-field">
-        <span>Frequency axis</span>
-        <select (change)="update({ log: value($event) === 'log' })">
-          <option value="log" [selected]="settings().log">Logarithmic</option>
-          <option value="linear" [selected]="!settings().log">Linear</option>
-        </select>
-      </label>
-      <label class="form-field">
-        <span>Averaging</span>
-        <select (change)="update({ averaging: asAveraging(value($event)) })">
-          @for (a of ['off', 'low', 'medium', 'high']; track a) {
-            <option [value]="a" [selected]="a === settings().averaging">{{ a }}</option>
-          }
-        </select>
-      </label>
-      <label class="form-field">
-        <span>Peak hold</span>
-        <input
-          type="checkbox"
-          [checked]="settings().peakHold"
-          (change)="update({ peakHold: checked($event) })"
-        />
-      </label>
-      <button type="button" class="btn" (click)="resetPeaks()" [disabled]="!settings().peakHold">
-        Reset peaks
-      </button>
+          Peak hold
+        </button>
+        <button type="button" class="btn" (click)="resetPeaks()" [disabled]="!settings().peakHold">
+          Reset peaks
+        </button>
+      </div>
     </section>
   </div>
 </div>

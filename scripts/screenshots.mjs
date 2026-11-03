@@ -26,19 +26,18 @@ await new Promise((r) => server.listen(0, '127.0.0.1', r));
 const base = `http://127.0.0.1:${server.address().port}`;
 
 const shots = [
-  { name: 'morse-decoder', path: '/#/morse-decoder', demo: true, wait: 9000, scheme: 'dark' },
-  { name: 'spectrum-analyzer', path: '/#/spectrum-analyzer', demo: true, wait: 5000, scheme: 'dark' },
-  { name: 'dtmf-decoder', path: '/#/dtmf-decoder', demo: true, wait: 4700, scheme: 'light' },
-  { name: 'signal-monitor', path: '/#/signal-monitor', demo: true, wait: 3000, scheme: 'dark' },
-  { name: 'tone-generator', path: '/#/tone-generator', demo: false, wait: 500, scheme: 'dark' },
-  { name: 'morse-encoder', path: '/#/morse-encoder', demo: false, wait: 500, scheme: 'light' },
-  { name: 'overview', path: '/', demo: false, wait: 500, scheme: 'light' },
+  { name: 'morse-decoder', path: '/#/morse-decoder', demo: true, wait: 9000 },
+  { name: 'spectrum-analyzer', path: '/#/spectrum-analyzer', demo: true, wait: 5000 },
+  { name: 'dtmf-decoder', path: '/#/dtmf-decoder', demo: true, wait: 4700 },
+  { name: 'signal-monitor', path: '/#/signal-monitor', demo: true, wait: 3000 },
+  { name: 'tone-generator', path: '/#/tone-generator', demo: false, wait: 500 },
+  { name: 'morse-encoder', path: '/#/morse-encoder', demo: false, wait: 500 },
 ];
 
 const browser = await chromium.launch();
 try {
   for (const s of shots) {
-    const page = await browser.newPage({ colorScheme: s.scheme, viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
+    const page = await browser.newPage({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
     await page.goto(base + s.path);
     if (s.demo) {
       await page.getByLabel('Audio input').selectOption({ label: 'Demo signal (synthetic, no microphone)' });

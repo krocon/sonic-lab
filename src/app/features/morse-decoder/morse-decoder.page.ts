@@ -5,13 +5,26 @@ import { provideAudioCapture } from '../../core/capture/audio-capture.providers'
 import { CaptureSession } from '../../core/capture/capture-session';
 import { StatusMessage } from '../../core/status/status-message';
 import { CaptureControls } from '../../shared/capture/capture-controls';
+import { KeyOption, KeySelector } from '../../shared/controls/key-selector';
+import { Knob } from '../../shared/controls/knob';
 import { Icon } from '../../shared/icon/icon';
 import { StatusBanner } from '../../shared/status/status-banner';
 import { KeyingTimelineCanvas } from '../../shared/visualization/keying-timeline-canvas';
 import { LevelMeterBar } from '../../shared/visualization/level-meter-bar';
 import { WaveformCanvas } from '../../shared/visualization/waveform-canvas';
 import { MorseSession } from './morse-session';
-import { FREQUENCY_RANGE, SENSITIVITIES, Sensitivity } from './morse-settings';
+import { FREQUENCY_RANGE, MorseSettings, Sensitivity } from './morse-settings';
+
+const MODES: readonly KeyOption<MorseSettings['frequencyMode']>[] = [
+  { value: 'auto', label: 'Auto' },
+  { value: 'manual', label: 'Fixed' },
+];
+
+const SENSITIVITY_KEYS: readonly KeyOption<Sensitivity>[] = [
+  { value: 'low', label: 'Low' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'high', label: 'High' },
+];
 
 /** Morse decoder workspace: capture, live signal, detection settings and decoded output. */
 @Component({
@@ -19,6 +32,8 @@ import { FREQUENCY_RANGE, SENSITIVITIES, Sensitivity } from './morse-settings';
   imports: [
     Icon,
     CaptureControls,
+    KeySelector,
+    Knob,
     WaveformCanvas,
     LevelMeterBar,
     KeyingTimelineCanvas,
@@ -37,7 +52,8 @@ export class MorseDecoderPage {
   protected readonly scope = new RingBuffer(65536);
   protected readonly meter = new LevelMeter();
   protected readonly range = FREQUENCY_RANGE;
-  protected readonly sensitivities = SENSITIVITIES;
+  protected readonly modes = MODES;
+  protected readonly sensitivities = SENSITIVITY_KEYS;
   protected readonly copyStatus = signal<StatusMessage | null>(null);
 
   protected readonly wpmLabel = computed(() => {
@@ -62,21 +78,20 @@ export class MorseDecoderPage {
     });
   }
 
-  protected setMode(mode: string): void {
-    this.morse.updateSettings({ frequencyMode: mode === 'manual' ? 'manual' : 'auto' });
+  protected setMode(mode: MorseSettings['frequencyMode']): void {
+    this.morse.updateSettings({ frequencyMode: mode });
   }
 
-  protected setFrequency(value: string): void {
-    this.morse.updateSettings({ frequency: Number(value) });
+  protected setFrequency(frequency: number): void {
+    this.morse.updateSettings({ frequency });
   }
 
-  protected setInitialWpm(value: string): void {
-    this.morse.updateSettings({ initialWpm: Number(value) });
+  protected setInitialWpm(initialWpm: number): void {
+    this.morse.updateSettings({ initialWpm });
   }
 
-  protected setSensitivity(value: string): void {
-    if ((SENSITIVITIES as readonly string[]).includes(value))
-      this.morse.updateSettings({ sensitivity: value as Sensitivity });
+  protected setSensitivity(sensitivity: Sensitivity): void {
+    this.morse.updateSettings({ sensitivity });
   }
 
   protected async copy(): Promise<void> {
@@ -97,7 +112,7 @@ export class MorseDecoderPage {
   protected onKey(event: KeyboardEvent): void {
     const target = event.target as HTMLElement | null;
     const interactive = target?.closest(
-      'input, select, textarea, button, a, summary, [contenteditable]',
+      'input, select, textarea, button, a, [role="slider"], [contenteditable]',
     );
     if (event.key === ' ' && !interactive && !event.ctrlKey && !event.metaKey && !event.altKey) {
       event.preventDefault();

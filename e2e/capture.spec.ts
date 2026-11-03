@@ -43,7 +43,7 @@ test.describe('audio capture', () => {
     await page.goto('/#/morse-decoder');
     await page.getByRole('button', { name: 'Start' }).click();
     await expect(statusBar(page)).toContainText('Microphone on');
-    await page.getByRole('link', { name: 'Overview', exact: true }).click();
+    await page.getByRole('link', { name: 'Tone Generator' }).click();
     await expect(statusBar(page)).toContainText('Microphone off');
     await expect.poll(async () => (await fakeMicStats(page)).stopped).toBe(1);
   });

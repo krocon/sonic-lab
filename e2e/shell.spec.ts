@@ -1,21 +1,23 @@
 import { expect, test } from '@playwright/test';
 
-test('overview lists the modules and links to the Morse decoder', async ({ page }) => {
+test('opens in the Morse decoder – there is no start page', async ({ page }) => {
   await page.goto('/');
-  await expect(page).toHaveTitle('AudioLab');
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('on your device');
-
-  await page.getByRole('link', { name: 'Open Morse Decoder' }).click();
   await expect(page).toHaveURL(/#\/morse-decoder$/);
+  await expect(page).toHaveTitle('Morse Decoder · AudioLab');
   await expect(page.getByRole('heading', { name: 'Morse Decoder', level: 1 })).toBeVisible();
 });
 
-test('navigation marks the active module', async ({ page }) => {
-  await page.goto('/#/tone-generator');
+test('mode keys switch modules and mark the active one', async ({ page }) => {
+  await page.goto('/#/morse-decoder');
   const nav = page.getByRole('navigation', { name: 'Analysis modules' });
-  await expect(nav.getByRole('link', { name: /Tone Generator/ })).toHaveAttribute(
+  await nav.getByRole('link', { name: 'Tone Generator' }).click();
+  await expect(page).toHaveURL(/#\/tone-generator$/);
+  await expect(nav.getByRole('link', { name: 'Tone Generator' })).toHaveAttribute(
     'aria-current',
     'page',
+  );
+  await expect(nav.getByRole('link', { name: 'Morse Decoder' })).not.toHaveAttribute(
+    'aria-current',
   );
   await expect(page.getByRole('heading', { name: 'Tone Generator', level: 1 })).toBeVisible();
 });
@@ -39,12 +41,9 @@ test('does not request the microphone on load', async ({ page }) => {
   );
 });
 
-test('theme toggle cycles system → light → dark', async ({ page }) => {
-  await page.goto('/');
-  const html = page.locator('html');
-  const toggle = page.getByRole('button', { name: /Theme:/ });
-  await toggle.click();
-  await expect(html).toHaveAttribute('data-theme', 'light');
-  await toggle.click();
-  await expect(html).toHaveAttribute('data-theme', 'dark');
+test('stays dark when the system prefers a light theme', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.goto('/#/morse-decoder');
+  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(13, 14, 16)');
+  await expect(page.locator('html')).toHaveCSS('color-scheme', 'dark');
 });

@@ -14,12 +14,8 @@ const placeholderRoutes: Routes = ANALYSIS_MODULES.filter((m) => m.status === 'p
 );
 
 export const routes: Routes = [
-  {
-    path: '',
-    pathMatch: 'full',
-    title: 'AudioLab',
-    loadComponent: () => import('./features/overview/overview.page').then((c) => c.OverviewPage),
-  },
+  // like a radio, the app opens in a mode – there is no start page
+  { path: '', pathMatch: 'full', redirectTo: 'morse-decoder' },
   {
     path: 'morse-decoder',
     title: 'Morse Decoder · AudioLab',

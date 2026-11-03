@@ -61,19 +61,20 @@ let nextId = 0;
       display: flex;
       flex-wrap: wrap;
       align-items: flex-end;
-      gap: var(--space-4);
+      gap: var(--space-2) var(--space-4);
     }
     .device {
       display: grid;
       gap: var(--space-1);
-      flex: 1 1 16rem;
+      flex: 1 1 15rem;
+      max-width: 24rem;
     }
     .label {
-      font-size: var(--text-xs);
+      font-size: var(--text-2xs);
       font-weight: var(--weight-bold);
-      letter-spacing: 0.06em;
+      letter-spacing: var(--tracking-caps);
       text-transform: uppercase;
-      color: var(--color-text-subtle);
+      color: var(--silkscreen);
       text-shadow: var(--silkscreen-shadow);
     }
     .buttons {
@@ -86,7 +87,7 @@ let nextId = 0;
     .state {
       display: grid;
       gap: var(--space-1);
-      flex: 1 1 14rem;
+      flex: 1 1 12rem;
       align-self: center;
     }
   `,

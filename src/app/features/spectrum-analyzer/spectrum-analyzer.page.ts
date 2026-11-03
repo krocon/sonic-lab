@@ -6,12 +6,32 @@ import { CaptureSession } from '../../core/capture/capture-session';
 import { demoAnalysisSignal } from '../../core/capture/demo-signal';
 import { SettingsStore, isRecord, read } from '../../core/settings/settings-store';
 import { CaptureControls } from '../../shared/capture/capture-controls';
+import { KeyOption, KeySelector } from '../../shared/controls/key-selector';
 import { SpectrogramCanvas } from '../../shared/visualization/spectrogram-canvas';
 import { SpectrumCanvas } from '../../shared/visualization/spectrum-canvas';
 
 export const FFT_SIZES = [1024, 2048, 4096, 8192, 16384] as const;
 const AVERAGING = { off: 0, low: 0.5, medium: 0.75, high: 0.9 } as const;
 type Averaging = keyof typeof AVERAGING;
+
+const SIZE_KEYS: readonly KeyOption<number>[] = FFT_SIZES.map((s) => ({
+  value: s,
+  label: String(s),
+}));
+const WINDOW_KEYS: readonly KeyOption<WindowKind>[] = [
+  { value: 'hann', label: 'Hann' },
+  { value: 'blackman-harris', label: 'Blackman-Harris' },
+];
+const AXIS_KEYS: readonly KeyOption<boolean>[] = [
+  { value: true, label: 'Log' },
+  { value: false, label: 'Linear' },
+];
+const AVERAGING_KEYS: readonly KeyOption<Averaging>[] = [
+  { value: 'off', label: 'Off' },
+  { value: 'low', label: 'Low' },
+  { value: 'medium', label: 'Med' },
+  { value: 'high', label: 'High' },
+];
 
 interface SpectrumSettings {
   readonly size: number;
@@ -48,14 +68,23 @@ const store = () =>
 /** FFT spectrum and spectrogram of the live input. */
 @Component({
   selector: 'app-spectrum-analyzer-page',
-  imports: [CaptureControls, SpectrumCanvas, SpectrogramCanvas],
+  imports: [CaptureControls, KeySelector, SpectrumCanvas, SpectrogramCanvas],
   providers: [provideAudioCapture({ demo: demoAnalysisSignal })],
   templateUrl: './spectrum-analyzer.page.html',
   styles: `
     .layout {
       display: grid;
       grid-template-columns: minmax(0, 1fr) 16rem;
-      gap: var(--space-4);
+      gap: var(--groove);
+    }
+    .hold {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+    .hold .btn {
+      flex: 1;
+      padding: 0.25rem var(--space-2) 0;
     }
     .spectrum {
       height: 18rem;
@@ -80,7 +109,10 @@ export class SpectrumAnalyzerPage {
   protected readonly settings = signal(this.settingsStore.load());
   protected readonly analyzer = signal(this.create(this.settings()));
   protected readonly peak = signal<Peak | null>(null);
-  protected readonly sizes = FFT_SIZES;
+  protected readonly sizes = SIZE_KEYS;
+  protected readonly windows = WINDOW_KEYS;
+  protected readonly axes = AXIS_KEYS;
+  protected readonly averagings = AVERAGING_KEYS;
   private lastPeakVersion = 0;
 
   constructor() {
@@ -111,18 +143,6 @@ export class SpectrumAnalyzerPage {
 
   protected resetPeaks(): void {
     this.analyzer().resetPeaks();
-  }
-
-  protected value(event: Event): string {
-    return (event.target as HTMLSelectElement).value;
-  }
-
-  protected checked(event: Event): boolean {
-    return (event.target as HTMLInputElement).checked;
-  }
-
-  protected asAveraging(v: string): Averaging {
-    return v in AVERAGING ? (v as Averaging) : 'medium';
   }
 
   private create(s: SpectrumSettings): SpectrumAnalyzer {

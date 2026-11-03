@@ -1,5 +1,5 @@
 <div class="module-page">
-  <header>
+  <header class="module-head">
     <p class="eyebrow">Generate</p>
     <h1>Tone Generator</h1>
   </header>
@@ -7,26 +7,32 @@
   <div class="layout">
     <section class="panel" aria-labelledby="signal-title">
       <h2 id="signal-title">Signal</h2>
-      <label class="form-field">
-        <span>Waveform</span>
-        <select (change)="update({ waveform: waveform($event) })">
-          @for (w of waveforms; track w.id) {
-            <option [value]="w.id" [selected]="w.id === settings().waveform">{{ w.label }}</option>
-          }
-        </select>
-      </label>
+      <div class="vfo" aria-hidden="true">
+        <span class="vfo-mode">{{ waveformLabel() }}</span>
+        <span class="vfo-main">{{ readout().main }}</span>
+        <span class="vfo-sub">{{ readout().sub }}</span>
+        <span class="vfo-out" [class.on]="playing()">Out</span>
+      </div>
+      <app-key-selector
+        label="Waveform"
+        [options]="waveforms"
+        [columns]="5"
+        [value]="settings().waveform"
+        (valueChange)="update({ waveform: $event })"
+      />
       @if (has('frequency')) {
-        <div class="knobs">
+        <div class="knob-row">
           <app-knob
             [label]="
               has('sweep') ? 'Start frequency' : has('frequency2') ? 'Frequency 1' : 'Frequency'
             "
             unit="Hz"
+            variant="dial"
             [min]="20"
             [max]="20000"
             [log]="true"
             [defaultValue]="1000"
-            [size]="96"
+            [size]="128"
             [value]="settings().frequency"
             (valueChange)="update({ frequency: $event })"
           />
@@ -34,56 +40,52 @@
             <app-knob
               [label]="has('sweep') ? 'End frequency' : 'Frequency 2'"
               unit="Hz"
+              variant="dial"
               [min]="20"
               [max]="20000"
               [log]="true"
               [defaultValue]="4000"
-              [size]="96"
+              [size]="128"
               [value]="settings().frequency2"
               (valueChange)="update({ frequency2: $event })"
             />
           }
-        </div>
-      }
-      @if (has('sweep')) {
-        <label class="form-field">
-          <span>Sweep duration</span>
-          <span class="form-value">{{ settings().sweepSeconds }} s</span>
-          <input
-            type="range"
-            min="1"
-            max="60"
-            step="1"
-            [value]="settings().sweepSeconds"
-            (input)="update({ sweepSeconds: num($event) })"
-          />
-        </label>
-      }
-      @if (has('dtmf')) {
-        <div class="keys" role="group" aria-label="DTMF key">
-          @for (k of dtmfKeys; track k) {
-            <button
-              type="button"
-              class="btn"
-              [attr.aria-pressed]="settings().dtmfKey === k"
-              (click)="update({ dtmfKey: k })"
-            >
-              {{ k }}
-            </button>
+          @if (has('sweep')) {
+            <app-knob
+              label="Sweep duration"
+              unit="s"
+              [min]="1"
+              [max]="60"
+              [defaultValue]="10"
+              [size]="56"
+              [value]="settings().sweepSeconds"
+              (valueChange)="update({ sweepSeconds: $event })"
+            />
           }
         </div>
+      }
+      @if (has('dtmf')) {
+        <app-key-selector
+          class="keys"
+          label="DTMF key"
+          [options]="dtmfKeys"
+          [columns]="4"
+          [value]="settings().dtmfKey"
+          (valueChange)="update({ dtmfKey: $event })"
+        />
       }
     </section>
 
     <section class="panel" aria-labelledby="output-title">
       <h2 id="output-title">Output</h2>
-      <div class="knobs">
+      <div class="knob-row">
         <app-knob
           label="Level (peak)"
           unit="dBFS"
           [min]="minLevel"
           [max]="maxLevel"
           [defaultValue]="-20"
+          [size]="56"
           [value]="settings().levelDb"
           (valueChange)="update({ levelDb: $event })"
         />
@@ -93,6 +95,8 @@
           [max]="1"
           [step]="0.05"
           [defaultValue]="0"
+          [format]="balanceText"
+          [size]="56"
           [value]="settings().balance"
           (valueChange)="update({ balance: $event })"
         />
@@ -104,7 +108,7 @@
       <div class="play">
         <button
           type="button"
-          class="btn"
+          class="btn btn-play"
           [class.btn-primary]="!playing()"
           (click)="toggle()"
           [attr.aria-pressed]="playing()"
@@ -113,7 +117,7 @@
           {{ playing() ? 'Stop' : 'Play' }}
         </button>
         @if (playing()) {
-          <span class="playing-badge" role="status">● Playing</span>
+          <span class="playing-badge" role="status">Playing</span>
         }
       </div>
       @if (status(); as s) {

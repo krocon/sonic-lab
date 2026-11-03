@@ -74,6 +74,30 @@ describe('Knob', () => {
   });
 });
 
+@Component({
+  imports: [Knob],
+  template: `<app-knob
+    label="Volume"
+    [max]="0.8"
+    [step]="0.01"
+    [format]="percent"
+    [value]="0.3"
+  />`,
+})
+class FormattedHost {
+  readonly percent = (v: number) => `${Math.round(v * 100)} %`;
+}
+
+describe('Knob value text', () => {
+  it('uses a custom format for the display and screen readers', async () => {
+    const fixture = TestBed.createComponent(FormattedHost);
+    await fixture.whenStable();
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('[role="slider"]')?.getAttribute('aria-valuetext')).toBe('30 %');
+    expect(el.querySelector('.value')?.textContent).toBe('30 %');
+  });
+});
+
 describe('meterAngle', () => {
   it('spans −50° … +50° and spreads the top of the scale', async () => {
     const { meterAngle } = await import('../visualization/analog-meter');

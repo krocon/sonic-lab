@@ -11,6 +11,7 @@ import { KeyedTonePlayer, MAX_VOLUME } from '../../audio/output/keyed-tone-playe
 import { StatusMessage } from '../../core/status/status-message';
 import { MorseToken } from '../../decoders/morse/morse-alphabet';
 import { scheduleMorse } from '../../decoders/morse/morse-timing';
+import { Knob } from '../../shared/controls/knob';
 import { Icon } from '../../shared/icon/icon';
 import { StatusBanner } from '../../shared/status/status-banner';
 import { animationLoop } from '../../shared/visualization/animation-loop';
@@ -24,7 +25,7 @@ export const createAudioContext = {
 /** Text → Morse code with live preview and audible playback. */
 @Component({
   selector: 'app-morse-encoder-page',
-  imports: [Icon, StatusBanner],
+  imports: [Icon, Knob, StatusBanner],
   templateUrl: './morse-encoder.page.html',
   styleUrl: './morse-encoder.page.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -34,6 +35,10 @@ export class MorseEncoderPage {
   private readonly player = new KeyedTonePlayer(() => createAudioContext.create());
   protected readonly settings = signal<EncoderSettings>(this.store.load());
   protected readonly maxVolume = MAX_VOLUME;
+  protected readonly percent = (v: number) => `${Math.round(v * 100)} %`;
+  /** Farnsworth spacing is off while it equals the character speed. */
+  protected readonly farnsworthText = (v: number) =>
+    v >= this.settings().wpm ? 'off' : `${v} WPM`;
   protected readonly playing = signal(false);
   /** Index of the token currently sounding, or -1. */
   protected readonly current = signal(-1);
@@ -125,10 +130,6 @@ export class MorseEncoderPage {
         hint: 'Select the code and copy it manually.',
       });
     }
-  }
-
-  protected num(event: Event): number {
-    return Number((event.target as HTMLInputElement).value);
   }
 
   protected text(event: Event): string {

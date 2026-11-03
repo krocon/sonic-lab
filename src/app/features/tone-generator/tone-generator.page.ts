@@ -3,6 +3,7 @@ import {
   Component,
   DOCUMENT,
   DestroyRef,
+  computed,
   inject,
   signal,
 } from '@angular/core';
@@ -16,6 +17,7 @@ import {
 import { SettingsStore, isRecord, read } from '../../core/settings/settings-store';
 import { StatusMessage } from '../../core/status/status-message';
 import { DTMF_KEYS, dtmfFrequencies, isDtmfKey } from '../../decoders/dtmf/dtmf-tones';
+import { KeyOption, KeySelector } from '../../shared/controls/key-selector';
 import { Knob } from '../../shared/controls/knob';
 import { Icon } from '../../shared/icon/icon';
 import { StatusBanner } from '../../shared/status/status-banner';
@@ -25,18 +27,23 @@ export const generatorContext = {
   create: (): AudioContext => new AudioContext({ latencyHint: 'interactive' }),
 };
 
-const WAVEFORMS: readonly { id: GeneratorWaveform; label: string }[] = [
-  { id: 'sine', label: 'Sine' },
-  { id: 'square', label: 'Square' },
-  { id: 'triangle', label: 'Triangle' },
-  { id: 'sawtooth', label: 'Sawtooth' },
-  { id: 'white-noise', label: 'White noise' },
-  { id: 'pink-noise', label: 'Pink noise' },
-  { id: 'sweep-linear', label: 'Sweep (linear)' },
-  { id: 'sweep-log', label: 'Sweep (logarithmic)' },
-  { id: 'two-tone', label: 'Two tones' },
-  { id: 'dtmf', label: 'DTMF key' },
+const WAVEFORMS: readonly KeyOption<GeneratorWaveform>[] = [
+  { value: 'sine', label: 'Sine' },
+  { value: 'square', label: 'Square' },
+  { value: 'triangle', label: 'Triangle' },
+  { value: 'sawtooth', label: 'Sawtooth' },
+  { value: 'white-noise', label: 'White noise' },
+  { value: 'pink-noise', label: 'Pink noise' },
+  { value: 'sweep-linear', label: 'Sweep lin' },
+  { value: 'sweep-log', label: 'Sweep log' },
+  { value: 'two-tone', label: 'Two tones' },
+  { value: 'dtmf', label: 'DTMF' },
 ];
+
+/** Hz with thin-space thousands groups, like a frequency display. */
+function hz(f: number): string {
+  return String(Math.round(f)).replace(/\B(?=(\d{3})+(?!\d))/g, '\u2009');
+}
 
 interface GeneratorUiSettings {
   readonly waveform: GeneratorWaveform;
@@ -69,7 +76,7 @@ const store = () =>
             waveform: read.oneOf(
               raw,
               'waveform',
-              WAVEFORMS.map((w) => w.id),
+              WAVEFORMS.map((w) => w.value),
               'sine',
             ),
             frequency: read.number(raw, 'frequency', 1000, 20, 20000),
@@ -87,20 +94,74 @@ const store = () =>
 /** Test signals: tones, noise, sweeps, two-tone and DTMF. */
 @Component({
   selector: 'app-tone-generator-page',
-  imports: [Icon, Knob, StatusBanner],
+  imports: [Icon, KeySelector, Knob, StatusBanner],
   templateUrl: './tone-generator.page.html',
   styles: `
     .layout {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      gap: var(--space-4);
+      grid-template-columns: minmax(0, 1fr) 16rem;
+      gap: var(--groove);
     }
-    .knobs {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-around;
-      gap: var(--space-5);
-      padding: var(--space-3) 0;
+    /* main display, like the frequency readout of a transceiver */
+    .vfo {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-areas: 'mode main out' 'mode sub out';
+      align-items: center;
+      column-gap: var(--space-4);
+      padding: var(--space-2) var(--space-4);
+      border-radius: var(--radius-sm);
+      background-color: var(--display-bg);
+      background-image: var(--display-reflection);
+      box-shadow: var(--display-inset);
+      font-family: var(--font-mono);
+    }
+    .vfo-mode,
+    .vfo-out {
+      padding: 1px var(--space-2);
+      border: 1px solid currentColor;
+      border-radius: 2px;
+      font-size: var(--text-2xs);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .vfo-mode {
+      grid-area: mode;
+      color: var(--display-cyan);
+    }
+    .vfo-main {
+      grid-area: main;
+      justify-self: end;
+      font-size: clamp(1.75rem, 4vw, 2.75rem);
+      line-height: 1.1;
+      color: var(--display-text);
+      text-shadow: 0 0 10px rgb(109 255 160 / 55%);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .vfo-sub {
+      grid-area: sub;
+      justify-self: end;
+      min-height: 1.2em;
+      font-size: var(--text-xs);
+      color: var(--display-text-dim);
+    }
+    .vfo-out {
+      grid-area: out;
+      color: var(--display-text-dim);
+      opacity: 0.6;
+    }
+    .vfo-out.on {
+      color: var(--display-mark);
+      opacity: 1;
+      text-shadow: 0 0 6px rgb(255 90 74 / 60%);
+    }
+    .knob-row {
+      justify-content: space-evenly;
+      padding-top: var(--space-1);
+    }
+    .keys {
+      max-width: 15rem;
     }
     .play {
       display: flex;
@@ -108,28 +169,26 @@ const store = () =>
       align-items: center;
       gap: var(--space-3);
     }
+    .playing-badge::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--led-red);
+      box-shadow: 0 0 8px var(--led-red);
+    }
     .playing-badge {
       display: inline-flex;
       align-items: center;
       gap: var(--space-2);
+      font-size: var(--text-xs);
       color: var(--color-danger);
       font-weight: var(--weight-bold);
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
-    .keys {
-      display: grid;
-      grid-template-columns: repeat(4, 2.5rem);
-      gap: var(--space-1);
-    }
-    .keys .btn {
-      min-height: 2.5rem;
-      padding: 0;
-    }
-    .note {
-      margin: 0;
-      font-size: var(--text-xs);
-      color: var(--color-text-subtle);
+    .btn-play {
+      min-width: 7rem;
     }
     @media (max-width: 860px) {
       .layout {
@@ -143,12 +202,39 @@ export class ToneGeneratorPage {
   private readonly settingsStore = store();
   private readonly generator = new ToneGenerator(() => generatorContext.create());
   protected readonly waveforms = WAVEFORMS;
-  protected readonly dtmfKeys = DTMF_KEYS.flat();
+  protected readonly dtmfKeys: readonly KeyOption<string>[] = DTMF_KEYS.flat().map((k) => ({
+    value: k,
+    label: k,
+  }));
   protected readonly settings = signal(this.settingsStore.load());
   protected readonly playing = signal(false);
   protected readonly status = signal<StatusMessage | null>(null);
   protected readonly minLevel = MIN_LEVEL_DB;
   protected readonly maxLevel = MAX_LEVEL_DB;
+  protected readonly balanceText = (b: number) =>
+    b === 0 ? 'center' : `${Math.round(Math.abs(b) * 100)} % ${b < 0 ? 'L' : 'R'}`;
+  protected readonly waveformLabel = computed(
+    () => WAVEFORMS.find((w) => w.value === this.settings().waveform)?.label ?? '',
+  );
+  /** What the main display shows for the current waveform. */
+  protected readonly readout = computed(() => {
+    const s = this.settings();
+    const level = `${s.levelDb} dBFS`;
+    if (s.waveform === 'dtmf') {
+      const key = isDtmfKey(s.dtmfKey) ? s.dtmfKey : '5';
+      const { row, column } = dtmfFrequencies(key);
+      return { main: `KEY ${key}`, sub: `${row} + ${column} Hz · ${level}` };
+    }
+    if (s.waveform.includes('noise')) return { main: 'NOISE', sub: level };
+    if (s.waveform.startsWith('sweep'))
+      return {
+        main: `${hz(s.frequency)} Hz`,
+        sub: `→ ${hz(s.frequency2)} Hz in ${s.sweepSeconds} s · ${level}`,
+      };
+    if (s.waveform === 'two-tone')
+      return { main: `${hz(s.frequency)} Hz`, sub: `+ ${hz(s.frequency2)} Hz · ${level}` };
+    return { main: `${hz(s.frequency)} Hz`, sub: level };
+  });
   /** Start/stop/restart run one after another – a Stop during a restart must win. */
   private queue: Promise<void> = Promise.resolve();
 
@@ -192,15 +278,6 @@ export class ToneGeneratorPage {
   private enqueue(task: () => Promise<void>): Promise<void> {
     this.queue = this.queue.then(task, task);
     return this.queue;
-  }
-
-  protected num(event: Event): number {
-    return Number((event.target as HTMLInputElement).value);
-  }
-
-  protected waveform(event: Event): GeneratorWaveform {
-    const v = (event.target as HTMLSelectElement).value;
-    return WAVEFORMS.find((w) => w.id === v)?.id ?? 'sine';
   }
 
   private async start(): Promise<void> {

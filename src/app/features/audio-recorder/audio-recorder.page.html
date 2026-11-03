@@ -1,5 +1,5 @@
 <div class="module-page">
-  <header>
+  <header class="module-head">
     <p class="eyebrow">Record</p>
     <h1>Audio Recorder</h1>
   </header>
@@ -11,14 +11,14 @@
     <app-level-meter-bar [meter]="meter" [active]="session.running()" />
     <div class="row">
       @if (!recording()) {
-        <button type="button" class="btn btn-primary" (click)="startRecording()">
+        <button type="button" class="btn btn-primary btn-rec" (click)="startRecording()">
           <app-icon name="record" [size]="16" /> Record
         </button>
       } @else {
-        <button type="button" class="btn" (click)="stopRecording()">
+        <button type="button" class="btn btn-danger live btn-rec" (click)="stopRecording()">
           <app-icon name="stop" [size]="16" /> Stop recording
         </button>
-        <span class="rec" role="status">● Recording</span>
+        <span class="rec" role="status">Recording</span>
       }
       <span class="time" aria-label="Recorded time">{{ time() }}</span>
     </div>
@@ -30,6 +30,9 @@
         }"
       />
     }
+    @if (status(); as s) {
+      <app-status-banner [message]="s" />
+    }
     <p class="note">
       Recordings stay in memory only (max. {{ maxMinutes }} min) and are gone when you leave this
       page – unless you export them.
@@ -40,23 +43,25 @@
     <section class="panel" aria-labelledby="result-title">
       <h2 id="result-title">Recording</h2>
       <div class="row">
-        <button type="button" class="btn" (click)="togglePlayback()">
+        <button
+          type="button"
+          class="btn"
+          [attr.aria-pressed]="playing()"
+          (click)="togglePlayback()"
+        >
           <app-icon [name]="playing() ? 'stop' : 'play'" [size]="16" />
           {{ playing() ? 'Stop playback' : 'Play' }}
         </button>
-        <label class="form-field format">
-          <span>Format</span>
-          <select (change)="setFormat($event)">
-            <option value="pcm16" [selected]="format() === 'pcm16'">WAV, 16-bit PCM</option>
-            <option value="float32" [selected]="format() === 'float32'">WAV, 32-bit float</option>
-          </select>
-        </label>
+        <app-key-selector
+          class="format"
+          label="Format"
+          [options]="formats"
+          [value]="format()"
+          (valueChange)="format.set($event)"
+        />
         <button type="button" class="btn btn-primary" (click)="export()">Export…</button>
         <button type="button" class="btn" (click)="discard()">Discard</button>
       </div>
     </section>
-  }
-  @if (status(); as s) {
-    <app-status-banner [message]="s" />
   }
 </div>

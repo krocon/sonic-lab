@@ -16,6 +16,8 @@ export interface AnalysisModule {
   /** Route path below the app root (no leading slash). */
   readonly path: string;
   readonly title: string;
+  /** Short legend printed on the module's mode key. */
+  readonly key: string;
   readonly summary: string;
   readonly group: ModuleGroup;
   readonly icon: IconName;

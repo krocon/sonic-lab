@@ -25,16 +25,17 @@ macOS, Windows and Linux.
 
 Every input-based module has a **Demo signal** input, so you can try it without a microphone.
 
-The interface is styled like the front panel of a piece of radio equipment – screwed-on modules,
-dark glass displays with phosphor and amber readouts, hardware keys with indicator LEDs, faders,
-rotary knobs and a moving-coil meter – in a graphite or an aluminium finish (follows the system
-theme, switchable in the top bar).
+The window is the front panel of an SDR transceiver: rack handles, a keypad of mode keys with
+indicator LEDs instead of a menu, glass displays with phosphor and amber readouts, latching
+hardware keys instead of drop-downs, machined rotary knobs and a tuning dial instead of sliders,
+and a moving-coil meter. It is always dark – like real hardware – whatever the system theme.
+There is no start page: the app opens in the Morse decoder, and a mode key switches modules.
 
 | Signal monitor                                                      | Tone generator                                                      |
 | ------------------------------------------------------------------- | ------------------------------------------------------------------- |
 | ![Signal monitor with analog meter](docs/images/signal-monitor.png) | ![Tone generator with rotary knobs](docs/images/tone-generator.png) |
 
-| Spectrum analyzer                                                        | DTMF decoder (aluminium finish)                           |
+| Spectrum analyzer                                                        | DTMF decoder                                              |
 | ------------------------------------------------------------------------ | --------------------------------------------------------- |
 | ![Spectrum analyzer with spectrogram](docs/images/spectrum-analyzer.png) | ![DTMF decoder with keypad](docs/images/dtmf-decoder.png) |
 
@@ -42,7 +43,7 @@ theme, switchable in the top bar).
 
 - Audio is processed locally and never uploaded; there is no backend and no telemetry.
 - The microphone opens only after you press **Start** and is released when you stop, leave the
-  view or close the app. The status bar shows whether a microphone is open.
+  view or close the app. An indicator LED on the front panel shows whether a microphone is open.
 - Nothing is stored or exported unless you explicitly ask for it.
 - The desktop app allows the microphone and nothing else (camera, location, … are denied).
 

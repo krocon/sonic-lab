@@ -11,7 +11,7 @@ AudioLab is designed so that audio never leaves your device.
 - **Microphone on user action only.** Access is requested only after you press **Start**. The
   stream is stopped when you press **Stop**, leave the view, close or hide the page
   (`pagehide`), close the window or quit the app. If the device disappears, capture stops and a
-  message explains what happened. The status bar shows "Microphone on" whenever a real
+  message explains what happened. The indicator panel shows "Microphone on" whenever a real
   microphone is open (the synthetic demo input never opens the microphone).
 - **No browser voice processing.** Echo cancellation, noise suppression and automatic gain are
   switched off – not for privacy, but so that the signal is analysed as it arrives.
@@ -23,13 +23,15 @@ AudioLab is designed so that audio never leaves your device.
   dialog opened by the Rust command `export_file`, which writes exactly to the chosen path. The
   webview itself has no file-system or dialog permission.
 - **Local preferences.** The only persisted data are UI preferences in the browser's
-  `localStorage`: theme (`audiolab.theme`) and the chosen input device id (`audiolab.capture`).
+  `localStorage`: the chosen input device id (`audiolab.capture`) and module settings
+  (`audiolab.morse`, `audiolab.encoder` incl. the text to encode, `audiolab.spectrum`,
+  `audiolab.generator`).
 
 ## Web: secure context
 
 Browsers expose `getUserMedia` only in a secure context: `https://…` or `http://localhost`.
-A deployed web build must therefore be served over HTTPS. AudioLab shows a warning in the status
-bar when it runs in an insecure context.
+A deployed web build must therefore be served over HTTPS. AudioLab shows a warning among the
+indicator LEDs when it runs in an insecure context.
 
 ## Desktop permissions
 

@@ -1,12 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { findModule } from '../../core/modules/module-catalog';
 import { Icon } from '../../shared/icon/icon';
 
 /** Shown for modules that are on the roadmap but not implemented yet. */
 @Component({
   selector: 'app-module-placeholder-page',
-  imports: [RouterLink, Icon],
+  imports: [Icon],
   template: `
     @if (module(); as m) {
       <section class="panel placeholder" aria-labelledby="placeholder-title">
@@ -19,15 +18,14 @@ import { Icon } from '../../shared/icon/icon';
           <code>prompts/{{ m.prompt }}</code
           >.
         </p>
-        <a class="btn" routerLink="/">Back to overview</a>
       </section>
     }
   `,
   styles: `
+    /* the workspace makes the host a full-height flex column */
     :host {
-      display: grid;
-      place-items: center;
-      min-height: 100%;
+      align-items: center;
+      justify-content: center;
       padding: var(--space-5);
     }
     .placeholder {

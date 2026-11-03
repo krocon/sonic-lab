@@ -50,11 +50,13 @@ test.describe('Morse decoder', () => {
 
   test('remembers detection settings', async ({ page }) => {
     await page.goto('/#/morse-decoder');
-    await page.getByLabel('Tone frequency').selectOption('manual');
-    await page.getByLabel('Sensitivity').selectOption('high');
+    const mode = page.getByRole('radiogroup', { name: 'Tone frequency' });
+    const sensitivity = page.getByRole('radiogroup', { name: 'Sensitivity' });
+    await mode.getByRole('radio', { name: 'Fixed' }).click();
+    await sensitivity.getByRole('radio', { name: 'High' }).click();
     await page.reload();
-    await expect(page.getByLabel('Tone frequency')).toHaveValue('manual');
+    await expect(mode.getByRole('radio', { name: 'Fixed' })).toBeChecked();
     await expect(page.getByRole('slider', { name: /^Frequency/ })).toBeVisible();
-    await expect(page.getByLabel('Sensitivity')).toHaveValue('high');
+    await expect(sensitivity.getByRole('radio', { name: 'High' })).toBeChecked();
   });
 });

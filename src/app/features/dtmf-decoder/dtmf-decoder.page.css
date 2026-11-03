@@ -1,7 +1,7 @@
 .layout {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  gap: var(--space-4);
+  gap: var(--groove);
 }
 
 .digits-panel {
@@ -24,6 +24,7 @@
   display: grid;
   place-items: center;
   height: 3.5rem;
+  margin-bottom: 3px;
   border-radius: var(--radius-md);
   border: var(--border-width) solid var(--key-edge);
   background: var(--key-face);
@@ -31,10 +32,7 @@
   font-size: var(--text-xl);
   font-weight: var(--weight-bold);
   color: var(--key-text);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 22%),
-    inset 0 -2px 0 rgb(0 0 0 / 22%),
-    0 2px 3px rgb(0 0 0 / 45%);
+  box-shadow: var(--key-shadow);
 }
 
 /* LED in each key */
@@ -47,13 +45,14 @@
   height: 7px;
   border-radius: 50%;
   background: var(--led-off);
-  box-shadow: inset 0 1px 1px rgb(0 0 0 / 60%);
+  box-shadow: var(--led-off-shadow);
 }
 
 .key.active {
   background: var(--key-face-pressed);
-  transform: translateY(1px);
-  box-shadow: inset 0 2px 4px rgb(0 0 0 / 45%);
+  color: var(--color-accent-strong);
+  transform: translateY(2px);
+  box-shadow: var(--key-shadow-pressed);
 }
 
 .key.active::after {
@@ -66,6 +65,11 @@
   grid-template-columns: repeat(8, 1fr);
   gap: var(--space-2);
   height: 12rem;
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  background-color: var(--display-bg);
+  background-image: var(--display-reflection);
+  box-shadow: var(--display-inset);
 }
 
 .bar-col {
@@ -73,16 +77,15 @@
   grid-template-rows: 1fr auto;
   gap: var(--space-1);
   font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--color-text-subtle);
+  font-size: var(--text-2xs);
+  color: var(--display-label);
   text-align: center;
 }
 
 .bar {
   position: relative;
-  border-radius: var(--radius-sm);
-  background-color: var(--display-bg);
-  box-shadow: var(--display-inset);
+  border-radius: 2px;
+  background: rgb(255 255 255 / 3%);
   overflow: hidden;
 }
 
@@ -101,12 +104,6 @@
 .fill.col {
   background: var(--display-amber);
   box-shadow: 0 0 8px var(--display-amber);
-}
-
-.hint {
-  margin: 0;
-  font-size: var(--text-xs);
-  color: var(--color-text-subtle);
 }
 
 .digits-head {

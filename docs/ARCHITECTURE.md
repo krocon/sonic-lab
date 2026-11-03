@@ -11,7 +11,7 @@ hosts the window and exposes a small, explicit command surface.
 │ Presentation   src/app/shell, src/app/features/*, shared/     │  Angular components, signals,
 │                                                              │  Canvas/SVG visualisations
 ├──────────────────────────────────────────────────────────────┤
-│ Application    src/app/core/*                                 │  module catalog, theme, capture
+│ Application    src/app/core/*                                 │  module catalog, capture
 │                                                              │  session, settings (Angular DI)
 ├───────────────────────────────┬──────────────────────────────┤
 │ Audio   src/app/audio/*       │ Decoders  src/app/decoders/* │  framework-free TypeScript
@@ -34,13 +34,12 @@ or `@tauri-apps/*`; `eslint.config.js` fails the lint otherwise. Features never 
 src/
 ├── app/
 │   ├── app.ts, app.config.ts, app.routes.ts
-│   ├── shell/               app frame: top bar, navigation, outlet, status bar
+│   ├── shell/               front panel: rack handles, nameplate, mode keys, indicators, outlet
 │   ├── core/
 │   │   ├── modules/         AnalysisModule type + module catalog (single source of truth)
 │   │   ├── capture/         CaptureSession, capture providers, demo signals, microphone activity
 │   │   ├── settings/        SettingsStore (versioned JSON in localStorage, never throws)
-│   │   ├── status/          StatusMessage + mapping of audio states/errors to user text
-│   │   └── theme/           ThemeService (system / light / dark)
+│   │   └── status/          StatusMessage + mapping of audio states/errors to user text
 │   ├── audio/               framework-free
 │   │   ├── microphone/      BrowserMicrophoneSource (getUserMedia → AudioWorklet), error mapping
 │   │   ├── synthetic/       SyntheticAudioSource (demo input, tests)
@@ -53,10 +52,11 @@ src/
 │   │   ├── morse/           alphabet, timing/synthesis, tone/keying/timing stages, decoder
 │   │   └── dtmf/            tones/keys, DtmfDecoder
 │   ├── platform/            PlatformAdapter, FileExportAdapter (browser / Tauri)
-│   ├── features/            one folder per page: overview, morse-decoder, morse-encoder,
+│   ├── features/            one folder per page: morse-decoder, morse-encoder,
 │   │                        dtmf-decoder, frequency-analyzer, spectrum-analyzer,
 │   │                        signal-monitor, tone-generator, audio-recorder, module-placeholder
-│   └── shared/              icons, capture controls, status banner, canvas visualisations
+│   └── shared/              icons, controls (knob, key selector), capture controls, status
+│                            banner, canvas visualisations
 ├── worklets/                AudioWorklet processors (TypeScript, bundled by scripts/build-worklets.mjs)
 ├── testing/                 fakes and impaired-signal generators for tests (not in the app build)
 └── styles/                  tokens.css (design tokens), base.css (elements, shared page styles)
@@ -205,15 +205,35 @@ dependency, no capability). On the web, `FileExportAdapter` uses the File System
 download link. Recording uses the app's own WAV encoder (16-bit PCM or 32-bit float), not
 `MediaRecorder`, whose formats differ per browser.
 
-### ADR-012 – Skeuomorphic "front panel" design
+### ADR-012 – SDR front-panel design, dark only
 
-The UI imitates radio equipment: modules with screws, dark glass displays (`.lcd`, display
-tokens `--display-*` – dark in both finishes), hardware keys with LEDs (`.btn`, `aria-pressed`
-lights the LED), faders (styled `input[type=range]`), rotary knobs (`shared/controls/knob.ts`,
-ARIA slider, drag/wheel/keyboard, optional log scale) and a VU meter
-(`shared/visualization/analog-meter.ts`, decorative, `aria-hidden`). Everything is CSS custom
-properties, gradients and inline SVG – no images, fonts or UI libraries. Two finishes: graphite
-(dark) and aluminium (light). Contrast is verified by the axe E2E checks in both finishes.
+The window imitates the front panel of an SDR transceiver instead of a web page. The shell is a
+chassis with rack handles (decorative, `aria-hidden`), a console with the nameplate, a keypad of
+mode keys and the indicator LEDs (platform, microphone API, microphone, local only), and the
+workspace of the selected module. There is no overview page: `/` redirects to the Morse decoder.
+Mode keys are router links with a short legend from the module catalog (`AnalysisModule.key`)
+and the full module name as their accessible name.
+
+Controls are hardware, not form widgets:
+
+- **Keys** (`.btn`): plastic keycaps with a skirt and an indicator LED; `aria-pressed` latches
+  the key down and lights the LED (green; red for recording).
+- **Key selectors** (`shared/controls/key-selector.ts`): one-of-many choices as joined keys or a
+  keypad, an ARIA radio group with roving tab stop and arrow keys. They replace `<select>` for
+  every fixed set of options; only the input-device list (dynamic) stays a drop-down.
+- **Knobs** (`shared/controls/knob.ts`): knurled skirt and index turn, the light on the machined
+  cap stays put, a scale arc lights up to the value; `variant="dial"` is a large tuning dial with
+  a finger dimple. ARIA slider, drag/wheel/keyboard, optional log scale and value format. They
+  replace every `input[type=range]`.
+- **Displays** (`.lcd`, `--display-*` tokens): dark glass with a black frame and phosphor/amber
+  readouts; the VU meter (`shared/visualization/analog-meter.ts`) is decorative and
+  `aria-hidden`.
+
+Sections are raised parts of the plate separated by dark grooves (`--groove`); module pages fill
+the workspace height. Everything is CSS custom properties, gradients and inline SVG – no images,
+fonts or UI libraries. There is a single dark finish (`color-scheme: dark`), independent of
+`prefers-color-scheme`, like real equipment; this replaced the graphite/aluminium themes and the
+theme toggle. Contrast is verified by the axe E2E checks on every module.
 
 ### ADR-006 – Tooling versions
 

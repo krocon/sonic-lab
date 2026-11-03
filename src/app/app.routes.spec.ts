@@ -9,7 +9,8 @@ describe('routes', () => {
     }
   });
 
-  it('falls back to the overview for unknown paths', () => {
+  it('opens the Morse decoder at the root and for unknown paths', () => {
+    expect(routes[0]).toEqual({ path: '', pathMatch: 'full', redirectTo: 'morse-decoder' });
     expect(routes.at(-1)).toEqual({ path: '**', redirectTo: '' });
   });
 });

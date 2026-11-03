@@ -35,10 +35,12 @@ describe('analyzer pages', () => {
   it('spectrum analyzer reports the peak and persists settings', async () => {
     const { el, fixture } = await runWithTone(SpectrumAnalyzerPage, 1000);
     expect(el.textContent).toMatch(/(999|1000)\.\d Hz/);
-    const size = el.querySelector('select:has(option[value="8192"])') as HTMLSelectElement;
-    size.value = '8192';
-    size.dispatchEvent(new Event('change'));
+    const size = Array.from(el.querySelectorAll<HTMLButtonElement>('[role="radio"]')).find(
+      (r) => r.textContent?.trim() === '8192',
+    ) as HTMLButtonElement;
+    size.click();
     await fixture.whenStable();
+    expect(size.getAttribute('aria-checked')).toBe('true');
     expect(JSON.parse(localStorage.getItem('audiolab.spectrum') ?? '{}').data.size).toBe(8192);
   });
 

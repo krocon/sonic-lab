@@ -4,8 +4,8 @@ Work orders live in [`prompts/`](../prompts/README.md); all of 00–12 have been
 
 ## Done
 
-- **Foundation:** Angular 22 + Tauri 2 from one codebase, design tokens, light/dark theme,
-  navigation, platform adapters, status bar (00, 01).
+- **Foundation:** Angular 22 + Tauri 2 from one codebase, design tokens, front-panel shell with
+  mode keys, platform adapters, indicator LEDs (00, 01).
 - **Audio:** microphone capture via AudioWorklet, device handling, waveform and level meter,
   synthetic/demo inputs (02).
 - **Morse decoder** with robustness work and measured CER per scenario (03, 04).

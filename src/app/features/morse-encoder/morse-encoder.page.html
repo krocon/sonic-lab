@@ -1,127 +1,127 @@
-<header class="page-head">
-  <p class="eyebrow">Generate</p>
-  <h1>Morse Encoder</h1>
-</header>
+<div class="module-page">
+  <header class="module-head">
+    <p class="eyebrow">Generate</p>
+    <h1>Morse Encoder</h1>
+  </header>
 
-<div class="grid">
-  <section class="panel input" aria-labelledby="input-title">
-    <h2 id="input-title">Text</h2>
-    <label class="visually-hidden" for="encoder-text">Text to encode</label>
-    <textarea
-      id="encoder-text"
-      rows="4"
-      maxlength="2000"
-      spellcheck="false"
-      [value]="settings().text"
-      (input)="update({ text: text($event) })"
-    ></textarea>
-    <p class="hint">
-      Letters, digits, punctuation and prosigns like <code>&lt;SK&gt;</code> or
-      <code>&lt;AR&gt;</code>.
-    </p>
-    @if (unsupported()) {
-      <p class="warning" role="status">Not encodable, skipped: {{ unsupported() }}</p>
-    }
+  <div class="grid">
+    <section class="panel input" aria-labelledby="input-title">
+      <h2 id="input-title">Text</h2>
+      <label class="visually-hidden" for="encoder-text">Text to encode</label>
+      <textarea
+        id="encoder-text"
+        rows="4"
+        maxlength="2000"
+        spellcheck="false"
+        [value]="settings().text"
+        (input)="update({ text: text($event) })"
+      ></textarea>
+      <p class="note">
+        Letters, digits, punctuation and prosigns like <code>&lt;SK&gt;</code> or
+        <code>&lt;AR&gt;</code>.
+      </p>
+      @if (unsupported()) {
+        <p class="warning" role="status">Not encodable, skipped: {{ unsupported() }}</p>
+      }
 
-    <div class="actions">
-      <button
-        type="button"
-        class="btn"
-        [class.btn-primary]="!playing()"
-        (click)="play()"
-        [disabled]="!code()"
-      >
-        <app-icon [name]="playing() ? 'stop' : 'play'" [size]="16" />
-        {{ playing() ? 'Stop' : 'Play' }}
-      </button>
-      <button type="button" class="btn" (click)="copy()" [disabled]="!code()">
-        <app-icon name="copy" [size]="16" /> Copy code
-      </button>
-      <span class="meta">{{ duration().toFixed(1) }} s</span>
-    </div>
-    @if (status(); as s) {
-      <app-status-banner [message]="s" />
-    }
-  </section>
+      <div class="actions">
+        <button
+          type="button"
+          class="btn"
+          [class.btn-primary]="!playing()"
+          [attr.aria-pressed]="playing()"
+          (click)="play()"
+          [disabled]="!code()"
+        >
+          <app-icon [name]="playing() ? 'stop' : 'play'" [size]="16" />
+          {{ playing() ? 'Stop' : 'Play' }}
+        </button>
+        <button type="button" class="btn" (click)="copy()" [disabled]="!code()">
+          <app-icon name="copy" [size]="16" /> Copy code
+        </button>
+        <span class="duration" title="Duration">{{ duration().toFixed(1) }} s</span>
+      </div>
+      @if (status(); as s) {
+        <app-status-banner [message]="s" />
+      }
+    </section>
 
-  <section class="panel settings" aria-labelledby="settings-title">
-    <h2 id="settings-title">Sound</h2>
-    <label class="field">
-      <span class="label">Speed</span>
-      <span class="value">{{ settings().wpm }} WPM</span>
-      <input
-        type="range"
-        min="5"
-        max="50"
-        step="1"
-        [value]="settings().wpm"
-        (input)="update({ wpm: num($event) })"
-      />
-    </label>
-    <label class="field">
-      <span class="label">Farnsworth spacing</span>
-      <span class="value">{{
-        settings().farnsworthWpm === settings().wpm ? 'off' : settings().farnsworthWpm + ' WPM'
-      }}</span>
-      <input
-        type="range"
-        min="3"
-        [max]="settings().wpm"
-        step="1"
-        [value]="settings().farnsworthWpm"
-        (input)="update({ farnsworthWpm: num($event) })"
-      />
-    </label>
-    <label class="field">
-      <span class="label">Tone</span>
-      <span class="value">{{ settings().frequency }} Hz</span>
-      <input
-        type="range"
-        min="300"
-        max="1500"
-        step="10"
-        [value]="settings().frequency"
-        (input)="update({ frequency: num($event) })"
-      />
-    </label>
-    <label class="field">
-      <span class="label">Volume</span>
-      <span class="value">{{ (settings().volume * 100).toFixed(0) }} %</span>
-      <input
-        type="range"
-        min="0"
-        [max]="maxVolume"
-        step="0.01"
-        [value]="settings().volume"
-        (input)="update({ volume: num($event) })"
-      />
-    </label>
-  </section>
+    <section class="panel settings" aria-labelledby="settings-title">
+      <h2 id="settings-title">Sound</h2>
+      <div class="knobs">
+        <app-knob
+          label="Speed"
+          unit="WPM"
+          [min]="5"
+          [max]="50"
+          [defaultValue]="20"
+          [size]="52"
+          [value]="settings().wpm"
+          (valueChange)="update({ wpm: $event })"
+        />
+        <app-knob
+          label="Farnsworth"
+          [min]="3"
+          [max]="settings().wpm"
+          [defaultValue]="settings().wpm"
+          [format]="farnsworthText"
+          [size]="52"
+          [value]="settings().farnsworthWpm"
+          (valueChange)="update({ farnsworthWpm: $event })"
+        />
+        <app-knob
+          label="Tone"
+          unit="Hz"
+          [min]="300"
+          [max]="1500"
+          [step]="10"
+          [defaultValue]="700"
+          [size]="52"
+          [value]="settings().frequency"
+          (valueChange)="update({ frequency: $event })"
+        />
+        <app-knob
+          label="Volume"
+          [min]="0"
+          [max]="maxVolume"
+          [step]="0.01"
+          [defaultValue]="0.3"
+          [format]="percent"
+          [size]="52"
+          [value]="settings().volume"
+          (valueChange)="update({ volume: $event })"
+        />
+      </div>
+      <p class="note">
+        Farnsworth stretches the gaps between characters for learning; turn it fully right for off.
+      </p>
+    </section>
 
-  <section class="panel preview" aria-labelledby="preview-title">
-    <h2 id="preview-title">Morse</h2>
-    <ol class="tokens" aria-label="Characters and their Morse code">
-      @for (t of tokens(); track $index) {
-        @switch (t.kind) {
-          @case ('char') {
-            <li class="token" [class.active]="current() === $index">
-              <span class="char">{{ t.text }}</span
-              ><span class="code">{{ t.code }}</span>
-            </li>
-          }
-          @case ('word-gap') {
-            <li class="gap" aria-hidden="true"></li>
-          }
-          @case ('unsupported') {
-            <li class="token unsupported" title="Not encodable">
-              <span class="char">{{ t.text }}</span
-              ><span class="code">?</span>
-            </li>
+    <section class="panel preview" aria-labelledby="preview-title">
+      <h2 id="preview-title">Morse</h2>
+      <ol class="tokens" aria-label="Characters and their Morse code">
+        @for (t of tokens(); track $index) {
+          @switch (t.kind) {
+            @case ('char') {
+              <li class="token" [class.active]="current() === $index">
+                <span class="char">{{ t.text }}</span
+                ><span class="code">{{ t.code }}</span>
+              </li>
+            }
+            @case ('word-gap') {
+              <li class="gap" aria-hidden="true"></li>
+            }
+            @case ('unsupported') {
+              <li class="token unsupported" title="Not encodable">
+                <span class="char">{{ t.text }}</span
+                ><span class="code">?</span>
+              </li>
+            }
           }
         }
-      }
-    </ol>
-    <p class="label">Code</p>
-    <output class="code-line">{{ code() }}</output>
-  </section>
+      </ol>
+      <p class="label">Code</p>
+      <output class="code-line">{{ code() }}</output>
+    </section>
+  </div>
 </div>

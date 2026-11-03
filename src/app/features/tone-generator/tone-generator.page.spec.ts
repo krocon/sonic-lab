@@ -11,22 +11,23 @@ describe('ToneGeneratorPage', () => {
     const fixture = TestBed.createComponent(ToneGeneratorPage);
     const el: HTMLElement = fixture.nativeElement;
     await fixture.whenStable();
+    const key = (label: string) =>
+      Array.from(el.querySelectorAll<HTMLButtonElement>('[role="radio"]')).find(
+        (r) => r.textContent?.trim() === label,
+      );
     expect(el.textContent).toContain('Frequency');
-    const select = el.querySelector('select') as HTMLSelectElement;
-    select.value = 'dtmf';
-    select.dispatchEvent(new Event('change'));
+    expect(el.querySelector('.vfo-main')?.textContent).toBe('1\u2009000 Hz');
+    key('DTMF')?.click();
     await fixture.whenStable();
     expect(el.querySelectorAll('.keys button').length).toBe(16);
-    (Array.from(el.querySelectorAll('.keys button')) as HTMLButtonElement[])
-      .find((b) => b.textContent?.trim() === '#')
-      ?.click();
+    key('#')?.click();
     await fixture.whenStable();
+    expect(el.querySelector('.vfo-main')?.textContent).toBe('KEY #');
     expect(JSON.parse(localStorage.getItem('audiolab.generator') ?? '{}').data).toMatchObject({
       waveform: 'dtmf',
       dtmfKey: '#',
     });
-    select.value = 'sweep-log';
-    select.dispatchEvent(new Event('change'));
+    key('Sweep log')?.click();
     await fixture.whenStable();
     expect(el.textContent).toContain('End frequency');
     expect(el.textContent).toContain('Sweep duration');

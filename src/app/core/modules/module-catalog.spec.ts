@@ -17,6 +17,13 @@ describe('module catalog', () => {
     expect(total).toBe(ANALYSIS_MODULES.length);
   });
 
+  it('gives every module a short legend that fits its mode key', () => {
+    for (const m of ANALYSIS_MODULES) {
+      expect(m.key.length).toBeGreaterThan(0);
+      expect(m.key.length).toBeLessThanOrEqual(8);
+    }
+  });
+
   it('references an existing follow-up prompt file name', () => {
     for (const m of ANALYSIS_MODULES) {
       expect(m.prompt).toMatch(/^\d{2}-[a-z-]+\.md$/);

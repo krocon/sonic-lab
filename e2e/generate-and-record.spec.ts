@@ -7,10 +7,11 @@ test('tone generator plays, changes waveform while playing and stops', async ({ 
   await page.goto('/#/tone-generator');
   await page.getByRole('button', { name: 'Play' }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Playing' })).toBeVisible();
-  await page.getByLabel('Waveform').selectOption('pink-noise');
+  await page.getByRole('radio', { name: 'Pink noise' }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Playing' })).toBeVisible();
-  await page.getByLabel('Waveform').selectOption('dtmf');
-  await page.getByRole('button', { name: '#' }).click();
+  await page.getByRole('radio', { name: 'DTMF' }).click();
+  await page.getByRole('radio', { name: '#' }).click();
+  await expect(page.getByRole('radio', { name: '#' })).toBeChecked();
   await page.getByRole('button', { name: 'Stop' }).click();
   await expect(page.getByRole('button', { name: 'Play' })).toBeVisible();
   expect(errors).toEqual([]);
@@ -29,7 +30,7 @@ test('records the microphone and exports a WAV download', async ({ page }) => {
   await page.getByRole('button', { name: 'Stop recording' }).click();
   await expect(page.locator('footer.statusbar')).toContainText('Microphone off');
 
-  await page.getByLabel('Format').selectOption('float32');
+  await page.getByRole('radio', { name: 'WAV 32-bit float' }).click();
   const [download] = await Promise.all([
     page.waitForEvent('download'),
     page.getByRole('button', { name: 'Export…' }).click(),
