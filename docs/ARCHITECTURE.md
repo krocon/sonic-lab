@@ -34,7 +34,7 @@ or `@tauri-apps/*`; `eslint.config.js` fails the lint otherwise. Features never 
 src/
 ├── app/
 │   ├── app.ts, app.config.ts, app.routes.ts
-│   ├── shell/               front panel: rack handles, nameplate, mode keys, indicators, outlet
+│   ├── shell/               front panel: nameplate, mode keys, indicators, outlet
 │   ├── core/
 │   │   ├── modules/         AnalysisModule type + module catalog (single source of truth)
 │   │   ├── capture/         CaptureSession, capture providers, demo signals, microphone activity
@@ -208,11 +208,11 @@ download link. Recording uses the app's own WAV encoder (16-bit PCM or 32-bit fl
 ### ADR-012 – SDR front-panel design, dark only
 
 The window imitates the front panel of an SDR transceiver instead of a web page. The shell is a
-chassis with rack handles (decorative, `aria-hidden`), a console with the nameplate, a keypad of
-mode keys and the indicator LEDs (platform, microphone API, microphone, local only), and the
-workspace of the selected module. There is no overview page: `/` redirects to the Morse decoder.
-Mode keys are router links with a short legend from the module catalog (`AnalysisModule.key`)
-and the full module name as their accessible name.
+chassis with a console holding the nameplate, a keypad of mode keys and the indicator LEDs
+(platform, microphone API, microphone, local only), and the workspace of the selected module.
+There is no overview page: `/` redirects to the Morse decoder. Mode keys are router links with a
+short legend from the module catalog (`AnalysisModule.key`) and the full module name as their
+accessible name.
 
 Controls are hardware, not form widgets:
 

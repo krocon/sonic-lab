@@ -6,8 +6,8 @@ import { PlatformAdapter } from '../platform/platform-adapter';
 import { Icon } from '../shared/icon/icon';
 
 /**
- * Application frame, drawn as the front panel of a radio: rack handles, a console with the
- * nameplate, the mode keys and the indicator LEDs, and the workspace of the selected module.
+ * Application frame, drawn as the front panel of a radio: a console with the nameplate, the mode
+ * keys and the indicator LEDs, and the workspace of the selected module.
  */
 @Component({
   selector: 'app-shell',

@@ -25,7 +25,7 @@ macOS, Windows and Linux.
 
 Every input-based module has a **Demo signal** input, so you can try it without a microphone.
 
-The window is the front panel of an SDR transceiver: rack handles, a keypad of mode keys with
+The window is the front panel of an SDR transceiver: a black chassis, a keypad of mode keys with
 indicator LEDs instead of a menu, glass displays with phosphor and amber readouts, latching
 hardware keys instead of drop-downs, machined rotary knobs and a tuning dial instead of sliders,
 and a moving-coil meter. It is always dark – like real hardware – whatever the system theme.

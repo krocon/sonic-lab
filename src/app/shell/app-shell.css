@@ -1,93 +1,8 @@
 :host {
-  /* columns in DOM order: handle, console, workspace, handle */
   display: grid;
-  grid-template-columns: var(--ear-width) var(--console-width) minmax(0, 1fr) var(--ear-width);
+  grid-template-columns: var(--console-width) minmax(0, 1fr);
   height: 100dvh;
   overflow: hidden;
-}
-
-/* ── Rack ears with carrying handles ────────────────────────────────────────────────────── */
-.ear {
-  position: relative;
-  background:
-    linear-gradient(90deg, rgb(255 255 255 / 4%), transparent 30%, rgb(0 0 0 / 35%)), var(--chassis);
-}
-
-.ear-left {
-  box-shadow: inset -1px 0 0 rgb(0 0 0 / 80%);
-}
-
-.ear-right {
-  box-shadow: inset 1px 0 0 rgb(255 255 255 / 5%);
-}
-
-/* slotted mounting holes */
-.ear::before,
-.ear::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  width: 9px;
-  height: 15px;
-  margin-left: -4.5px;
-  border-radius: 5px;
-  background: #000;
-  box-shadow:
-    inset 0 2px 3px rgb(0 0 0 / 90%),
-    0 1px 0 rgb(255 255 255 / 9%);
-}
-
-.ear::before {
-  top: 0.75rem;
-}
-
-.ear::after {
-  bottom: 0.75rem;
-}
-
-/* a chromed tube standing off the plate on two feet */
-.handle {
-  position: absolute;
-  top: 3.5rem;
-  bottom: 3.5rem;
-  left: 50%;
-  width: 11px;
-  margin-left: -5.5px;
-  border-radius: 6px;
-  background: linear-gradient(
-    90deg,
-    #08090a 0%,
-    #3a3f45 20%,
-    #a7adb4 44%,
-    #5a6067 62%,
-    #1a1c1f 86%,
-    #08090a 100%
-  );
-  box-shadow:
-    0 0 0 1px #000,
-    4px 7px 9px rgb(0 0 0 / 75%);
-}
-
-.handle::before,
-.handle::after {
-  content: '';
-  position: absolute;
-  left: -4px;
-  right: -4px;
-  height: 1.1rem;
-  border-radius: 3px;
-  background: linear-gradient(90deg, #111316, #3c4147 45%, #15171a);
-  box-shadow:
-    0 0 0 1px #000,
-    0 3px 5px rgb(0 0 0 / 60%);
-}
-
-.handle::before {
-  top: -0.35rem;
-}
-
-.handle::after {
-  bottom: -0.35rem;
 }
 
 /* ── Console: nameplate, mode keys, indicators ──────────────────────────────────────────── */
@@ -348,14 +263,13 @@
   outline: none;
 }
 
-/* Narrow windows: no handles, the console becomes a strip above the workspace. */
+/* Narrow windows: the console becomes a strip above the workspace. */
 @media (max-width: 820px) {
   :host {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr);
   }
 
-  .ear,
   .grille,
   .brand-model,
   .indicators-title {

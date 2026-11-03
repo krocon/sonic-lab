@@ -1,8 +1,8 @@
 /*
  * AudioLab design tokens – "SDR transceiver".
  *
- * The window is the front panel of a piece of radio equipment: a black anodized chassis with rack
- * handles, raised sections separated by dark grooves, glass displays with phosphor/amber readouts,
+ * The window is the front panel of a piece of radio equipment: a black anodized chassis, raised
+ * sections separated by dark grooves, glass displays with phosphor/amber readouts,
  * plastic keycaps with indicator LEDs and machined rotary knobs. There is one finish only – dark –
  * independent of the system theme, like real hardware.
  */
@@ -46,7 +46,6 @@
   --easing: cubic-bezier(0.2, 0, 0, 1);
 
   /* Layout */
-  --ear-width: 1.75rem;
   --console-width: 16rem;
   --groove: 0.5rem;
   --content-max: 104rem;
