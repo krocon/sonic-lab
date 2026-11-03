@@ -18,7 +18,7 @@ desktop app for macOS, Windows and Linux.
 | Module             | Status    |
 | ------------------ | --------- |
 | Morse Decoder      | Available |
-| DTMF Decoder       | Planned   |
+| DTMF Decoder       | Available |
 | Frequency Analyzer | Available |
 | Spectrum Analyzer  | Available |
 | Signal Monitor     | Available |

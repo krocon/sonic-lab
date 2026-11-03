@@ -54,6 +54,12 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/signal-monitor/signal-monitor.page').then((c) => c.SignalMonitorPage),
   },
+  {
+    path: 'dtmf-decoder',
+    title: 'DTMF Decoder · AudioLab',
+    loadComponent: () =>
+      import('./features/dtmf-decoder/dtmf-decoder.page').then((c) => c.DtmfDecoderPage),
+  },
   ...placeholderRoutes,
   { path: '**', redirectTo: '' },
 ];

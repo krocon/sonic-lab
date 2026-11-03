@@ -1,0 +1,71 @@
+<div class="module-page">
+  <header>
+    <p class="eyebrow">Decode</p>
+    <h1>DTMF Decoder</h1>
+  </header>
+
+  <section class="panel" aria-label="Capture controls">
+    <app-capture-controls>
+      <button type="button" class="btn" (click)="reset()" [disabled]="!digits()">
+        <app-icon name="reset" [size]="16" /> Reset
+      </button>
+    </app-capture-controls>
+  </section>
+
+  <div class="layout">
+    <section class="panel" aria-labelledby="keypad-title">
+      <h2 id="keypad-title">Keypad</h2>
+      <div class="keypad" role="grid" aria-label="Detected key">
+        @for (row of keys; track $index) {
+          <div role="row" class="keypad-row">
+            @for (key of row; track key) {
+              <span
+                role="gridcell"
+                class="key"
+                [class.active]="pressed() === key"
+                [attr.aria-selected]="pressed() === key"
+                >{{ key }}</span
+              >
+            }
+          </div>
+        }
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="levels-title">
+      <h2 id="levels-title">Tone levels</h2>
+      <div class="bars" aria-hidden="true">
+        @for (f of rowFreqs; track f; let i = $index) {
+          <div class="bar-col">
+            <div class="bar">
+              <div class="fill row" [style.height.%]="bar(rowLevels()[i] ?? -100)"></div>
+            </div>
+            <span>{{ f }}</span>
+          </div>
+        }
+        @for (f of colFreqs; track f; let i = $index) {
+          <div class="bar-col">
+            <div class="bar">
+              <div class="fill col" [style.height.%]="bar(colLevels()[i] ?? -100)"></div>
+            </div>
+            <span>{{ f }}</span>
+          </div>
+        }
+      </div>
+      <p class="hint">Row tones (left) and column tones (right), −60 … 0 dBFS.</p>
+    </section>
+
+    <section class="panel digits-panel" aria-labelledby="digits-title">
+      <header class="digits-head">
+        <h2 id="digits-title">Digits</h2>
+        <button type="button" class="btn" (click)="copy()" [disabled]="!digits()">
+          <app-icon name="copy" [size]="16" /> Copy
+        </button>
+      </header>
+      <output class="digits" aria-live="polite">{{ digits() || '–' }}</output>
+      @if (status(); as s) {
+        <app-status-banner [message]="s" />
+      }
+    </section>
+  </div>
+</div>

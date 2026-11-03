@@ -22,7 +22,7 @@ export const ANALYSIS_MODULES: readonly AnalysisModule[] = [
     summary: 'Recognises telephone keypad tones (Goertzel).',
     group: 'decode',
     icon: 'keypad',
-    status: 'planned',
+    status: 'available',
     prompt: '07-dtmf-decoder.md',
   },
   {

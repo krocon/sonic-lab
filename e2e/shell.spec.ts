@@ -11,13 +11,13 @@ test('overview lists the modules and links to the Morse decoder', async ({ page 
 });
 
 test('navigation marks the active module and shows planned modules', async ({ page }) => {
-  await page.goto('/#/dtmf-decoder');
+  await page.goto('/#/tone-generator');
   const nav = page.getByRole('navigation', { name: 'Analysis modules' });
-  await expect(nav.getByRole('link', { name: /DTMF Decoder/ })).toHaveAttribute(
+  await expect(nav.getByRole('link', { name: /Tone Generator/ })).toHaveAttribute(
     'aria-current',
     'page',
   );
-  await expect(page.getByText('prompts/07-dtmf-decoder.md')).toBeVisible();
+  await expect(page.getByText('prompts/08-tone-generator-and-recorder.md')).toBeVisible();
 });
 
 test('does not request the microphone on load', async ({ page }) => {

@@ -128,3 +128,23 @@ describe('frequencyToNote', () => {
     expect(frequencyToNote(0)).toBeNull();
   });
 });
+
+describe('goertzel', () => {
+  it('equals the FFT magnitude at a bin frequency', async () => {
+    const { goertzel } = await import('./goertzel');
+    const n = 1024;
+    const rate = 8000;
+    const x = render(
+      mix(tone({ frequency: 697, amplitude: 0.4 }), tone({ frequency: 1209, amplitude: 0.2 })),
+      n / rate,
+      rate,
+    );
+    const re = Float64Array.from(x);
+    const im = new Float64Array(n);
+    new FFT(n).transform(re, im);
+    for (const bin of [89, 155, 300]) {
+      const fftAmp = (2 * Math.hypot(re[bin] ?? 0, im[bin] ?? 0)) / n;
+      expect(goertzel(x, (bin * rate) / n, rate)).toBeCloseTo(fftAmp, 9);
+    }
+  });
+});

@@ -105,6 +105,28 @@ few milliseconds (test limit 25 ms for slow CI machines).
 What did not help (kept out): a per-bin whitening of the auto-frequency search, a median
 noise floor, a longer smoothing window (0.5 unit) and a faster signal release while key-up.
 
+## DTMF decoding (implemented)
+
+`src/app/decoders/dtmf/dtmf-decoder.ts`, keypad UI in `features/dtmf-decoder`.
+
+1. 4th-order Butterworth low-pass (3.2 kHz, flat across 697–1633 Hz) and decimation to ≈ 8 kHz
+   (factor ⌊rate / 8000⌋ – works for 8, 16, 44.1, 48 kHz and others).
+2. Every 10 ms a 30 ms Hann window (three staggered accumulator sets) feeds a Goertzel bank: each of
+   the 8 DTMF tones on a grid from −4 % to +4 % in 1 % steps; the actual frequency is the
+   parabolic peak of the grid (dB).
+3. A window is a key when: one row and one column tone exceed the other tones of their group _at
+   their nominal frequency_ by 8 dB; both frequency errors ≤ 2.5 % (ITU: accept ±1.5 %, reject
+   ±3.5 %); twist ≤ 8 dB normal / ≤ 4 dB reverse; the two tones hold ≥ 60 % of the window energy
+   (rejects speech, music, noise, chords); level ≥ −45 dBFS.
+4. Debounce: key-down when three windows of the same key reach ≥ 60 % of the press's peak level
+   (≈ 40 ms plateau – 20 ms blips are rejected), key-up after two invalid windows; repeated keys
+   need a pause ≥ 40 ms.
+
+Tests (`dtmf-decoder.spec.ts`): all 16 keys at 8/16/44.1/48 kHz; 50 ms tone / 50 ms pause
+sequences; repeated keys; ±1.5 % accepted, ±3.5 % rejected; twist limits; 15 dB SNR; no detections
+from single tones, sweeps, white noise, chords or a speech-like harmonic signal. `goertzel()` is
+checked against the FFT.
+
 ## Spectrum and frequency analysis
 
 `src/app/audio/dsp/`:

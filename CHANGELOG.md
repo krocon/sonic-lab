@@ -56,6 +56,10 @@ All notable changes to this project are documented here. The format follows
   spectrogram) and signal monitor (RMS/peak, clipping warning, dominant frequency, 30 s history);
   own FFT with tests; analysis demo input (gliding tone).
 
+- DTMF decoder: decimation with a Butterworth anti-alias filter, windowed Goertzel bank with
+  frequency estimation, ITU-style validation (frequency tolerance, twist, group separation, tone
+  energy ratio), debounced key events; keypad UI with tone levels, copy and reset; DTMF demo input.
+
 ### Fixed
 
 - Insufficient colour contrast of secondary text and the light accent colour (WCAG AA).
