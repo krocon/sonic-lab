@@ -32,7 +32,7 @@ export const ANALYSIS_MODULES: readonly AnalysisModule[] = [
     summary: 'Shows the dominant frequency and its stability over time.',
     group: 'analyze',
     icon: 'frequency',
-    status: 'planned',
+    status: 'available',
     prompt: '06-frequency-and-spectrum-analyzer.md',
   },
   {
@@ -42,7 +42,7 @@ export const ANALYSIS_MODULES: readonly AnalysisModule[] = [
     summary: 'FFT-based spectrum and spectrogram display.',
     group: 'analyze',
     icon: 'spectrum',
-    status: 'planned',
+    status: 'available',
     prompt: '06-frequency-and-spectrum-analyzer.md',
   },
   {
@@ -52,7 +52,7 @@ export const ANALYSIS_MODULES: readonly AnalysisModule[] = [
     summary: 'Level, frequency and their history at a glance.',
     group: 'analyze',
     icon: 'monitor',
-    status: 'planned',
+    status: 'available',
     prompt: '06-frequency-and-spectrum-analyzer.md',
   },
   {

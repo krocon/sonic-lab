@@ -150,3 +150,89 @@ samp {
     animation-duration: 0ms !important;
   }
 }
+
+/* Workspace pages (analysis modules) */
+.module-page {
+  display: grid;
+  gap: var(--space-4);
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: var(--space-5);
+}
+
+.module-page > header h1 {
+  font-size: var(--text-xl);
+}
+
+.module-page .panel {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.module-page h2 {
+  font-size: var(--text-md);
+}
+
+.form-field {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-text-subtle);
+}
+
+.form-field > select,
+.form-field > input {
+  grid-column: 1 / -1;
+}
+
+.form-field > select {
+  min-height: 2.25rem;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-md);
+  border: var(--border-width) solid var(--color-border-strong);
+  background: var(--color-surface-raised);
+  font-size: var(--text-sm);
+  color: var(--color-text);
+}
+
+.form-field > input[type='range'],
+.form-field > input[type='checkbox'] {
+  accent-color: var(--color-accent);
+}
+
+.form-value {
+  font-family: var(--font-mono);
+  color: var(--color-text-muted);
+}
+
+.readouts {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+}
+
+.readout {
+  display: grid;
+  gap: 2px;
+}
+
+.readout dt {
+  font-size: var(--text-xs);
+  color: var(--color-text-subtle);
+}
+
+.readout dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+}
+
+.chart {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-surface-sunken);
+}

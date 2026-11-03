@@ -37,8 +37,10 @@ macOS cannot obtain the OS microphone permission and hang in `getUserMedia`.
 ## Coverage
 
 Thresholds (global): statements 85 %, branches 75 %, functions 80 %, lines 88 %. Measured on
-2026-11-03: lines 91.5 % overall, `audio/` 94 %, `decoders/` 95.5 %. Canvas drawing code is only
-exercised by E2E tests (jsdom has no canvas). The robustness suite is excluded from the coverage
+2026-11-03: lines 91.5 % overall, `audio/` 94 %, `decoders/` 95.5 %. Canvas drawing components
+(`src/app/shared/visualization/*-canvas.ts`) are excluded from unit coverage because jsdom has no
+canvas; they are exercised by the E2E tests (pixels of the waveform are checked, spectrum and
+spectrogram are rendered). The robustness suite is excluded from the coverage
 run because instrumentation makes it ~10× slower.
 
 ## Known gaps

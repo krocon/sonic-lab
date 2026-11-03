@@ -105,6 +105,32 @@ few milliseconds (test limit 25 ms for slow CI machines).
 What did not help (kept out): a per-bin whitening of the auto-frequency search, a median
 noise floor, a longer smoothing window (0.5 unit) and a faster signal release while key-up.
 
+## Spectrum and frequency analysis
+
+`src/app/audio/dsp/`:
+
+- `FFT` – in-place radix-2 complex FFT, precomputed twiddles and bit reversal, no allocations per
+  transform (4096 points ≪ 1 ms). Verified against a direct DFT and Parseval's theorem.
+- `makeWindow` – Hann (sidelobes −31 dB, 1.5 bins noise bandwidth) and 4-term Blackman-Harris
+  (−92 dB, 2 bins); amplitudes are divided by the coherent gain, so a full-scale sine reads 0 dBFS.
+- `SpectrumAnalyzer` – streaming frames with overlap (75 % in the UI), exponential power averaging,
+  peak hold; `db`/`peakHold` arrays are reused and read by the canvases on animation frames.
+- `findPeak` / `findPeaks` – strongest bin(s), refined by parabolic interpolation of the dB values
+  (error < 1 Hz from 50 Hz to 20 kHz at 4096 points, 48 kHz – tested).
+- `frequencyToNote` – equal temperament, A4 = 440 Hz, cents.
+
+**Own FFT instead of `AnalyserNode`:** the analyser node hides window, scaling and smoothing
+details, differs between browsers and cannot be unit-tested without a browser. The own FFT runs on
+the frames the app already receives, so analysis is identical in tests, web and desktop.
+
+**Resolution vs. latency:** bin width = sample rate / FFT size (4096 @ 48 kHz → 11.7 Hz bins,
+85 ms window; 16384 → 2.9 Hz, 341 ms). The frequency analyzer uses 8192 points with interpolation;
+the spectrum analyzer lets you choose 1024–16384.
+
+Views: `SpectrumCanvas` (log/linear axis, dB grid, peak marker), `SpectrogramCanvas` (scrolling
+waterfall via self-blit + one `ImageData` column, theme-independent colour map), `HistoryCanvas`
+(trend line of a `TimeSeries`).
+
 ## Synthesis and playback (Morse encoder)
 
 - `scheduleMorse()` (`decoders/morse/morse-timing.ts`) turns text into key-down intervals: PARIS

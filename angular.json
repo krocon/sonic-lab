@@ -77,7 +77,7 @@
           "builder": "@angular/build:unit-test",
           "options": {
             "coverageInclude": ["src/app/**/*.ts"],
-            "coverageExclude": ["src/app/**/*.spec.ts"],
+            "coverageExclude": ["src/app/**/*.spec.ts", "src/app/shared/visualization/*-canvas.ts"],
             "coverageReporters": ["text-summary", "html", "lcov"]
           },
           "configurations": {

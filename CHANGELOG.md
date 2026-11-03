@@ -51,6 +51,11 @@ All notable changes to this project are documented here. The format follows
   scheduled on the audio clock (ramped, click-free), Farnsworth spacing, tone and volume, current
   character highlighted, copy code; shared synthesis for encoder, demo and tests; round-trip tests.
 
+- Frequency analyzer (dominant frequency, note and cents, stability, 10 s history), spectrum
+  analyzer (FFT 1024–16384, Hann/Blackman-Harris, log/linear axis, averaging, peak hold,
+  spectrogram) and signal monitor (RMS/peak, clipping warning, dominant frequency, 30 s history);
+  own FFT with tests; analysis demo input (gliding tone).
+
 ### Fixed
 
 - Insufficient colour contrast of secondary text and the light accent colour (WCAG AA).

@@ -32,6 +32,28 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/morse-encoder/morse-encoder.page').then((c) => c.MorseEncoderPage),
   },
+  {
+    path: 'frequency-analyzer',
+    title: 'Frequency Analyzer · AudioLab',
+    loadComponent: () =>
+      import('./features/frequency-analyzer/frequency-analyzer.page').then(
+        (c) => c.FrequencyAnalyzerPage,
+      ),
+  },
+  {
+    path: 'spectrum-analyzer',
+    title: 'Spectrum Analyzer · AudioLab',
+    loadComponent: () =>
+      import('./features/spectrum-analyzer/spectrum-analyzer.page').then(
+        (c) => c.SpectrumAnalyzerPage,
+      ),
+  },
+  {
+    path: 'signal-monitor',
+    title: 'Signal Monitor · AudioLab',
+    loadComponent: () =>
+      import('./features/signal-monitor/signal-monitor.page').then((c) => c.SignalMonitorPage),
+  },
   ...placeholderRoutes,
   { path: '**', redirectTo: '' },
 ];

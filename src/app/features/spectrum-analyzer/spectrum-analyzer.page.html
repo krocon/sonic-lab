@@ -1,0 +1,92 @@
+<div class="module-page">
+  <header>
+    <p class="eyebrow">Analyze</p>
+    <h1>Spectrum Analyzer</h1>
+  </header>
+
+  <section class="panel" aria-label="Capture controls"><app-capture-controls /></section>
+
+  <div class="layout">
+    <section class="panel" aria-labelledby="spectrum-title">
+      <h2 id="spectrum-title">Spectrum</h2>
+      <dl class="readouts">
+        <div class="readout">
+          <dt>Peak</dt>
+          <dd>{{ peak() ? peak()!.frequency.toFixed(1) + ' Hz' : '–' }}</dd>
+        </div>
+        <div class="readout">
+          <dt>Level</dt>
+          <dd>{{ peak() ? peak()!.db.toFixed(1) + ' dBFS' : '–' }}</dd>
+        </div>
+        <div class="readout">
+          <dt>Resolution</dt>
+          <dd class="small">{{ resolution() }}</dd>
+        </div>
+      </dl>
+      <app-spectrum-canvas
+        class="chart spectrum"
+        [analyzer]="analyzer()"
+        [log]="settings().log"
+        [peakHold]="settings().peakHold"
+        [marker]="peak()"
+      />
+      <h2>Spectrogram</h2>
+      <app-spectrogram-canvas
+        class="chart spectrogram"
+        [analyzer]="analyzer()"
+        [log]="settings().log"
+      />
+    </section>
+
+    <section class="panel" aria-labelledby="settings-title">
+      <h2 id="settings-title">Settings</h2>
+      <label class="form-field">
+        <span>FFT size</span>
+        <select (change)="update({ size: +value($event) })">
+          @for (s of sizes; track s) {
+            <option [value]="s" [selected]="s === settings().size">{{ s }}</option>
+          }
+        </select>
+      </label>
+      <label class="form-field">
+        <span>Window</span>
+        <select
+          (change)="
+            update({ window: value($event) === 'blackman-harris' ? 'blackman-harris' : 'hann' })
+          "
+        >
+          <option value="hann" [selected]="settings().window === 'hann'">Hann</option>
+          <option value="blackman-harris" [selected]="settings().window === 'blackman-harris'">
+            Blackman-Harris
+          </option>
+        </select>
+      </label>
+      <label class="form-field">
+        <span>Frequency axis</span>
+        <select (change)="update({ log: value($event) === 'log' })">
+          <option value="log" [selected]="settings().log">Logarithmic</option>
+          <option value="linear" [selected]="!settings().log">Linear</option>
+        </select>
+      </label>
+      <label class="form-field">
+        <span>Averaging</span>
+        <select (change)="update({ averaging: asAveraging(value($event)) })">
+          @for (a of ['off', 'low', 'medium', 'high']; track a) {
+            <option [value]="a" [selected]="a === settings().averaging">{{ a }}</option>
+          }
+        </select>
+      </label>
+      <label class="form-field">
+        <span>Peak hold</span>
+        <input
+          type="checkbox"
+          [checked]="settings().peakHold"
+          (change)="update({ peakHold: checked($event) })"
+        />
+      </label>
+      <button type="button" class="btn" (click)="resetPeaks()" [disabled]="!settings().peakHold">
+        Reset peaks
+      </button>
+    </section>
+  </div>
+</div>

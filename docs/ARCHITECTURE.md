@@ -172,6 +172,10 @@ allow-list (microphone only) keeps behaviour equal and minimal. Window geometry 
 Rust instead of `tauri-plugin-window-state`, which would need an extra capability and stores more
 than needed.
 
+### ADR-010 – Own FFT instead of AnalyserNode
+
+See docs/AUDIO-PIPELINE.md: deterministic, testable without a browser, identical on all engines.
+
 ### ADR-006 – Tooling versions
 
 Angular CLI defaults (Vitest through `@angular/build:unit-test`, TypeScript ~6.0) are kept

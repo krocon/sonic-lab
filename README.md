@@ -19,9 +19,9 @@ desktop app for macOS, Windows and Linux.
 | ------------------ | --------- |
 | Morse Decoder      | Available |
 | DTMF Decoder       | Planned   |
-| Frequency Analyzer | Planned   |
-| Spectrum Analyzer  | Planned   |
-| Signal Monitor     | Planned   |
+| Frequency Analyzer | Available |
+| Spectrum Analyzer  | Available |
+| Signal Monitor     | Available |
 | Morse Encoder      | Available |
 | Tone Generator     | Planned   |
 | Audio Recorder     | Planned   |
