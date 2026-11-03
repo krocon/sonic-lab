@@ -36,9 +36,25 @@ module.exports = defineConfig([
         {
           patterns: [
             {
-              group: ['@angular/*', '@tauri-apps/*', 'rxjs', 'rxjs/*'],
+              group: ['@angular/*', '@tauri-apps/*', 'rxjs', 'rxjs/*', '**/platform/*', '**/core/*'],
               message:
                 'Audio and decoder code must stay framework-free (see docs/ARCHITECTURE.md). Wrap it in a service in core/ or a feature instead.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/app/features/**/*.ts', 'src/app/shell/**/*.ts', 'src/app/shared/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@tauri-apps/*'],
+              message: 'Use an adapter from src/app/platform instead of Tauri APIs in the UI.',
             },
           ],
         },

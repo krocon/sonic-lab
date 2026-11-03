@@ -21,3 +21,6 @@ All notable changes to this project are documented here. The format follows
   `pnpm check`.
 - Documentation and the follow-up prompt roadmap in `prompts/`.
 - MIT license.
+- Architecture contracts: `AudioFrame`, `AudioSource` (state union, error kinds),
+  `SignalDecoder`, `CaptureSession`, `SettingsStore`, status messages and status banner;
+  stricter layer-boundary lint rules.

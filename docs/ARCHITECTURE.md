@@ -37,24 +37,26 @@ src/
 │   ├── shell/               app frame: top bar, navigation, outlet, status bar
 │   ├── core/
 │   │   ├── modules/         AnalysisModule type + module catalog (single source of truth)
+│   │   ├── capture/         CaptureSession (use case: run an AudioSource, feed consumers)
+│   │   ├── settings/        SettingsStore (versioned JSON in localStorage, never throws)
+│   │   ├── status/          StatusMessage + mapping of audio states/errors to user text
 │   │   └── theme/           ThemeService (system / light / dark)
+│   ├── audio/               framework-free: AudioFrame, AudioSource (+ implementations, DSP)
+│   ├── decoders/            framework-free: SignalDecoder (+ Morse, DTMF, …)
 │   ├── platform/            PlatformAdapter + browser/Tauri implementations
-│   ├── features/
-│   │   ├── overview/
-│   │   ├── morse-decoder/   layout preview (audio arrives with prompts/02)
-│   │   └── module-placeholder/
-│   └── shared/icon/         inline SVG icon set
+│   ├── features/            one folder per page (overview, morse-decoder, …)
+│   └── shared/              icon set, status banner, visualisations
+├── testing/                 fakes and signal generators for tests (not in the app build)
 ├── styles/                  tokens.css (design tokens), base.css
 e2e/                         Playwright tests
 src-tauri/                   Tauri 2 crate (audiolab_lib), capabilities, icons, plists
 prompts/                     development roadmap as work orders
 ```
 
-Planned (see prompts 01–08): `src/app/audio/` (AudioSource, microphone, worklet, DSP,
-synthetic source), `src/app/decoders/` (SignalDecoder, morse, dtmf), `src/app/core/capture/`,
-`src/app/core/settings/`, `src/testing/` (fakes and signal generators).
+## Key contracts
 
-## Key contracts (planned in prompts/01)
+Defined in `src/app/audio/audio-source.ts`, `src/app/audio/audio-frame.ts` and
+`src/app/decoders/signal-decoder.ts`:
 
 ```ts
 interface AudioFrame {
@@ -62,23 +64,39 @@ interface AudioFrame {
   sampleRate: number;
   timestamp: number;
 }
+type AudioSourceState =
+  | { status: 'idle' }
+  | { status: 'requesting-permission' }
+  | { status: 'running'; deviceId?: string; sampleRate: number }
+  | { status: 'stopped' }
+  | { status: 'error'; error: AudioSourceError };
 interface AudioSource {
+  readonly state: AudioSourceState;
   listDevices(): Promise<AudioInputDevice[]>;
   start(deviceId?: string): Promise<void>;
   stop(): Promise<void>;
   subscribe(listener: (frame: AudioFrame) => void): () => void;
+  onStateChange(listener: (state: AudioSourceState) => void): () => void;
 }
-interface SignalDecoder<TConfig, TResult> {
+interface SignalDecoder<TConfig, TResult extends DecoderEvent> {
   readonly id: string;
   readonly name: string;
-  configure(config: TConfig): void;
+  configure(config: Partial<TConfig>): void;
   process(frame: AudioFrame): TResult[];
   reset(): void;
 }
 ```
 
-Data flow: microphone → AudioWorklet (blocks via transferable buffers) → ring buffer →
-decoders and visualisations (outside change detection) → condensed results → signals → UI.
+### Data flow
+
+```text
+AudioSource ──frames──▶ CaptureSession ──▶ consumers (decoders, ring buffers)   no signals
+     │                        │                         │
+     └──state──▶ state signal ┘          condensed results (text, level, WPM) ──▶ signals ──▶ UI
+```
+
+`CaptureSession` is provided per feature page, so leaving the page destroys it and stops the
+source. The concrete source is injected via the `AUDIO_SOURCE` token.
 
 ## Adding a module
 
@@ -127,6 +145,17 @@ Tauri asset protocol without server rewrites.
 Change detection runs only when signals change. Audio frames never flow through signals; only
 condensed results (state, levels, decoded text) do. This keeps high-rate processing off the
 change-detection path.
+
+### ADR-007 – Frame ownership and buffer reuse
+
+`AudioFrame.samples` is valid only during the listener call; sources reuse buffers. Consumers
+that need data later copy it (or write it into a ring buffer). This avoids per-frame
+allocations and GC pauses in the audio path.
+
+### ADR-008 – Enforced layer boundaries
+
+ESLint `no-restricted-imports`: `audio/` and `decoders/` may not import Angular, RxJS, Tauri,
+`core/` or `platform/`; features, shell and shared UI may not import `@tauri-apps/*`.
 
 ### ADR-006 – Tooling versions
 
