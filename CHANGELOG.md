@@ -1,0 +1,23 @@
+# Changelog
+
+All notable changes to this project are documented here. The format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
+[Semantic Versioning](https://semver.org/).
+
+## [Unreleased]
+
+### Added
+
+- Project foundation: Angular 22 (standalone, zoneless, signals, strict TypeScript) and
+  Tauri 2 desktop shell from one codebase.
+- App shell with module navigation, overview page, placeholder pages for planned modules and a
+  layout preview of the Morse decoder workspace.
+- Design tokens (CSS custom properties) with light and dark theme, theme toggle.
+- Platform adapter (browser / Tauri) and status bar showing runtime, secure context and
+  microphone API availability.
+- Tauri command `platform_info`, least-privilege capability (`core:default` only), CSP, macOS
+  microphone usage description and audio-input entitlement.
+- Tooling: ESLint (incl. layer-boundary rule), Prettier, Vitest, Playwright, Rust fmt/clippy/test,
+  `pnpm check`.
+- Documentation and the follow-up prompt roadmap in `prompts/`.
+- MIT license.

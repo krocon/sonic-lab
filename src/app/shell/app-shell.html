@@ -1,0 +1,83 @@
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <a class="brand" routerLink="/" aria-label="AudioLab overview">
+    <span class="brand-mark"><app-icon name="logo" [size]="22" /></span>
+    <span class="brand-name">Audio<span>Lab</span></span>
+  </a>
+
+  <div class="topbar-end">
+    <span class="badge" data-tone="accent" title="All processing happens on this device">
+      <app-icon name="lock" [size]="14" /> Local only
+    </span>
+    <button
+      type="button"
+      class="icon-btn"
+      (click)="theme.cycle()"
+      [attr.aria-label]="themeLabel()"
+      [title]="themeLabel()"
+    >
+      <app-icon [name]="themeIcon()" />
+    </button>
+  </div>
+</header>
+
+<nav class="sidebar" aria-label="Analysis modules">
+  <a
+    class="nav-link"
+    routerLink="/"
+    routerLinkActive="active"
+    [routerLinkActiveOptions]="{ exact: true }"
+    ariaCurrentWhenActive="page"
+  >
+    <app-icon name="overview" />
+    <span>Overview</span>
+  </a>
+
+  @for (group of groups; track group.id) {
+    <p class="nav-group eyebrow">{{ group.label }}</p>
+    @for (module of group.modules; track module.id) {
+      <a
+        class="nav-link"
+        [routerLink]="['/', module.path]"
+        routerLinkActive="active"
+        ariaCurrentWhenActive="page"
+      >
+        <app-icon [name]="module.icon" />
+        <span>{{ module.title }}</span>
+        @if (module.status === 'planned') {
+          <span class="nav-hint">soon</span>
+        }
+      </a>
+    }
+  }
+</nav>
+
+<main id="main" class="workspace" tabindex="-1">
+  <router-outlet />
+</main>
+
+<footer class="statusbar" aria-label="Status">
+  @if (platformInfo.value(); as info) {
+    <span class="status-item">
+      <app-icon [name]="info.kind === 'desktop' ? 'desktop' : 'globe'" [size]="14" />
+      {{ info.label }}
+      @if (info.appVersion) {
+        <span class="muted">v{{ info.appVersion }}</span>
+      }
+    </span>
+    <span class="status-item" [class.warn]="!info.secureContext || !info.mediaDevicesAvailable">
+      <span class="dot" aria-hidden="true"></span>
+      @if (!info.secureContext) {
+        Insecure context – microphone needs HTTPS or localhost
+      } @else if (!info.mediaDevicesAvailable) {
+        Microphone API unavailable
+      } @else {
+        Microphone API available
+      }
+    </span>
+  } @else {
+    <span class="status-item muted">Detecting platform…</span>
+  }
+  <span class="status-item status-end"> <app-icon name="mic" [size]="14" /> Microphone off </span>
+</footer>

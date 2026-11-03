@@ -1,0 +1,33 @@
+<section class="hero">
+  <p class="eyebrow">Local audio signal analyzer</p>
+  <h1>Listen, see and decode – on your device.</h1>
+  <p class="lead">
+    AudioLab captures audio from your microphone, visualises it in real time and decodes signals
+    such as Morse code. Nothing is uploaded: there is no server, no cloud and no telemetry.
+  </p>
+  <a class="btn btn-primary" routerLink="/morse-decoder">
+    Open Morse Decoder <app-icon name="arrow" [size]="18" />
+  </a>
+</section>
+
+@for (group of groups; track group.id) {
+  <section class="group" [attr.aria-labelledby]="'group-' + group.id">
+    <h2 class="eyebrow" [id]="'group-' + group.id">{{ group.label }}</h2>
+    <ul class="cards">
+      @for (module of group.modules; track module.id) {
+        <li>
+          <a class="card panel" [routerLink]="['/', module.path]">
+            <span class="card-icon"><app-icon [name]="module.icon" [size]="22" /></span>
+            <span class="card-body">
+              <span class="card-title">{{ module.title }}</span>
+              <span class="card-text">{{ module.summary }}</span>
+            </span>
+            <span class="badge" [attr.data-tone]="module.status === 'planned' ? null : 'accent'">
+              {{ statusLabel[module.status] }}
+            </span>
+          </a>
+        </li>
+      }
+    </ul>
+  </section>
+}

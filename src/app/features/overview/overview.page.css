@@ -1,0 +1,86 @@
+:host {
+  display: block;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-5);
+}
+
+.hero {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: start;
+  max-width: 46rem;
+  margin-bottom: var(--space-7);
+}
+
+.hero h1 {
+  font-size: var(--text-2xl);
+  letter-spacing: -0.02em;
+}
+
+.lead {
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.group {
+  margin-bottom: var(--space-6);
+}
+
+.group h2 {
+  margin-bottom: var(--space-3);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: 1fr auto;
+  gap: var(--space-2) var(--space-3);
+  height: 100%;
+  padding: var(--space-4);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color var(--duration-fast) var(--easing);
+}
+
+.card:hover {
+  border-color: var(--color-accent);
+}
+
+.card-icon {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-md);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.card-body {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.card-title {
+  font-weight: var(--weight-bold);
+}
+
+.card-text {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.card .badge {
+  grid-column: 2;
+  justify-self: start;
+}

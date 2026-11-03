@@ -1,0 +1,83 @@
+<header class="page-head">
+  <div>
+    <p class="eyebrow">Decode</p>
+    <h1>Morse Decoder</h1>
+  </div>
+  <span class="badge" data-tone="warning">Layout preview – audio not connected yet</span>
+</header>
+
+<section class="controls panel" aria-label="Capture controls">
+  <label class="field device">
+    <span class="label">Audio input</span>
+    <select disabled>
+      <option>Microphone access not requested</option>
+    </select>
+  </label>
+  <div class="control-buttons">
+    <button type="button" class="btn btn-primary" disabled>
+      <app-icon name="play" [size]="16" /> Start
+    </button>
+    <button type="button" class="btn" disabled><app-icon name="reset" [size]="16" /> Reset</button>
+  </div>
+  <p class="capture-state" role="status">
+    <span class="dot" aria-hidden="true"></span> Idle – microphone is off
+  </p>
+</section>
+
+<div class="grid">
+  <section class="panel signal" aria-labelledby="signal-title">
+    <header class="panel-head">
+      <h2 id="signal-title">Signal</h2>
+      <span class="meta">Waveform · level</span>
+    </header>
+    <div class="scope" aria-hidden="true">
+      <svg viewBox="0 0 400 120" preserveAspectRatio="none">
+        <line x1="0" y1="60" x2="400" y2="60" />
+      </svg>
+    </div>
+    <p class="empty">The live waveform appears here once capture is running.</p>
+
+    <header class="panel-head sub">
+      <h3>Tone / gap timeline</h3>
+      <span class="meta">key-down · key-up</span>
+    </header>
+    <div class="timeline" aria-hidden="true"></div>
+  </section>
+
+  <section class="panel settings" aria-labelledby="settings-title">
+    <header class="panel-head">
+      <h2 id="settings-title">Detection</h2>
+    </header>
+    <label class="field">
+      <span class="label">Tone frequency</span>
+      <span class="value">auto · 400–1200 Hz</span>
+      <input type="range" min="200" max="2000" value="700" disabled />
+    </label>
+    <label class="field">
+      <span class="label">Threshold</span>
+      <span class="value">adaptive</span>
+      <input type="range" min="0" max="100" value="50" disabled />
+    </label>
+    <label class="field">
+      <span class="label">Sensitivity</span>
+      <span class="value">medium</span>
+      <input type="range" min="0" max="100" value="50" disabled />
+    </label>
+  </section>
+
+  <section class="panel results" aria-labelledby="results-title">
+    <header class="panel-head">
+      <h2 id="results-title">Decoded</h2>
+      <div class="stats">
+        <span class="stat"><span class="label">Speed</span><strong>– WPM</strong></span>
+        <button type="button" class="btn" disabled>
+          <app-icon name="copy" [size]="16" /> Copy
+        </button>
+      </div>
+    </header>
+    <p class="label">Morse</p>
+    <output class="morse">· · · – – – · · ·</output>
+    <p class="label">Text</p>
+    <output class="text">Decoded text will appear here.</output>
+  </section>
+</div>

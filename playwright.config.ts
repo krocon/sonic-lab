@@ -1,0 +1,24 @@
+import { defineConfig, devices } from '@playwright/test';
+
+/**
+ * End-to-end tests against the web build served by the Angular dev server.
+ * Microphone scenarios use Chromium's fake media devices (see prompts/10-testing-and-quality.md).
+ */
+export default defineConfig({
+  testDir: './e2e',
+  fullyParallel: true,
+  forbidOnly: !!process.env['CI'],
+  retries: process.env['CI'] ? 1 : 0,
+  reporter: process.env['CI'] ? 'github' : 'list',
+  use: {
+    baseURL: 'http://localhost:1420',
+    trace: 'on-first-retry',
+  },
+  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  webServer: {
+    command: 'pnpm start',
+    url: 'http://localhost:1420',
+    reuseExistingServer: !process.env['CI'],
+    timeout: 120_000,
+  },
+});

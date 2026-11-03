@@ -1,0 +1,33 @@
+[package]
+name = "audiolab"
+version = "0.1.0"
+description = "AudioLab – local, privacy-first audio signal analyzer (Tauri 2 + Angular)"
+authors = ["krocon"]
+license = "MIT"
+edition = "2024"
+rust-version = "1.85"
+
+[lib]
+# Distinct lib name avoids the bin/lib name clash on Windows (cargo issue #8519).
+name = "audiolab_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.7.4", features = [] }
+
+[dependencies]
+# No Tauri plugins on purpose: audio is captured by the WebView (getUserMedia), so the
+# desktop shell needs no file-system, shell or HTTP access yet (docs/PRIVACY.md).
+tauri = { version = "2.12.5", features = [] }
+serde = { version = "1.0", features = ["derive"] }
+
+[dev-dependencies]
+# Already in the dependency tree through Tauri; only used by tests.
+serde_json = "1.0"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true
