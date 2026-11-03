@@ -36,7 +36,8 @@ export async function installFakeMicrophone(
       w.__fakeMic.calls++;
       if (opts.failWith) throw new DOMException('fake failure', opts.failWith);
       const ctx = new AudioContext();
-      await ctx.resume();
+      // never wait forever: without an audio device some engines keep resume() pending
+      await Promise.race([ctx.resume(), new Promise((r) => setTimeout(r, 1000))]);
       const osc = ctx.createOscillator();
       osc.frequency.value = opts.frequency ?? 700;
       const gain = ctx.createGain();

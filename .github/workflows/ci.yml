@@ -60,6 +60,14 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
+      # runners have no sound card; Firefox needs a sound server for Web Audio to run
+      - name: Virtual audio device (PulseAudio null sink)
+        if: matrix.browser == 'firefox'
+        run: |
+          sudo apt-get install -y pulseaudio
+          pulseaudio --start --exit-idle-time=-1
+          pactl load-module module-null-sink sink_name=virtual
+          pactl set-default-sink virtual
       - run: pnpm exec playwright test --project=${{ matrix.browser }}
         env:
           CI: 'true'
