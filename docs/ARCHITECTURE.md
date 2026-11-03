@@ -115,8 +115,10 @@ source. The concrete source is injected via the `AUDIO_SOURCE` token.
   validated against connected monitors).
 - Linux: WebKitGTK media streams are enabled via `PlatformWebview::inner()` (webkit2gtk 2.0.2,
   already in the tree).
-- Commands: `platform_info` (OS, arch, app version).
-- Capability `default`: `core:default` only. No plugins.
+- Commands: `platform_info` (OS, arch, app version), `export_file` (raw bytes + suggested name →
+  native save dialog → write; returns the path or `null` when cancelled).
+- Capability `default`: `core:default` only. The dialog plugin is registered for use from Rust;
+  no plugin permission is granted to the webview.
 - CSP: `script-src 'self'` (no eval, no inline scripts; the AudioWorklet is a same-origin file),
   `connect-src` limited to Tauri IPC, `media-src`/`worker-src` for audio and worklets.
 - macOS: `Info.plist` (microphone usage description) and `Entitlements.plist`
@@ -175,6 +177,15 @@ than needed.
 ### ADR-010 – Own FFT instead of AnalyserNode
 
 See docs/AUDIO-PIPELINE.md: deterministic, testable without a browser, identical on all engines.
+
+### ADR-011 – Export through one Rust command
+
+Saving needs a native dialog and a file write. Granting the webview `dialog:allow-save` plus a
+scoped `fs` write would let compromised page code write wherever the user once clicked; instead
+`export_file` opens the dialog itself and writes only there (`tauri-plugin-dialog` 2.8 as a Rust
+dependency, no capability). On the web, `FileExportAdapter` uses the File System Access API or a
+download link. Recording uses the app's own WAV encoder (16-bit PCM or 32-bit float), not
+`MediaRecorder`, whose formats differ per browser.
 
 ### ADR-006 – Tooling versions
 

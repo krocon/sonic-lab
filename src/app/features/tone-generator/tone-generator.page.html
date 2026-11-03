@@ -1,0 +1,132 @@
+<div class="module-page">
+  <header>
+    <p class="eyebrow">Generate</p>
+    <h1>Tone Generator</h1>
+  </header>
+
+  <div class="layout">
+    <section class="panel" aria-labelledby="signal-title">
+      <h2 id="signal-title">Signal</h2>
+      <label class="form-field">
+        <span>Waveform</span>
+        <select (change)="update({ waveform: waveform($event) })">
+          @for (w of waveforms; track w.id) {
+            <option [value]="w.id" [selected]="w.id === settings().waveform">{{ w.label }}</option>
+          }
+        </select>
+      </label>
+      @if (has('frequency')) {
+        <label class="form-field">
+          <span>{{
+            has('sweep') ? 'Start frequency' : has('frequency2') ? 'Frequency 1' : 'Frequency'
+          }}</span>
+          <span class="form-value">{{ settings().frequency }} Hz</span>
+          <input
+            type="range"
+            min="0"
+            max="1000"
+            [value]="toSlider(settings().frequency)"
+            (input)="update({ frequency: slider($event) })"
+          />
+        </label>
+      }
+      @if (has('frequency2')) {
+        <label class="form-field">
+          <span>{{ has('sweep') ? 'End frequency' : 'Frequency 2' }}</span>
+          <span class="form-value">{{ settings().frequency2 }} Hz</span>
+          <input
+            type="range"
+            min="0"
+            max="1000"
+            [value]="toSlider(settings().frequency2)"
+            (input)="update({ frequency2: slider($event) })"
+          />
+        </label>
+      }
+      @if (has('sweep')) {
+        <label class="form-field">
+          <span>Sweep duration</span>
+          <span class="form-value">{{ settings().sweepSeconds }} s</span>
+          <input
+            type="range"
+            min="1"
+            max="60"
+            step="1"
+            [value]="settings().sweepSeconds"
+            (input)="update({ sweepSeconds: num($event) })"
+          />
+        </label>
+      }
+      @if (has('dtmf')) {
+        <div class="keys" role="group" aria-label="DTMF key">
+          @for (k of dtmfKeys; track k) {
+            <button
+              type="button"
+              class="btn"
+              [attr.aria-pressed]="settings().dtmfKey === k"
+              (click)="update({ dtmfKey: k })"
+            >
+              {{ k }}
+            </button>
+          }
+        </div>
+      }
+    </section>
+
+    <section class="panel" aria-labelledby="output-title">
+      <h2 id="output-title">Output</h2>
+      <label class="form-field">
+        <span>Level (peak)</span>
+        <span class="form-value">{{ settings().levelDb }} dBFS</span>
+        <input
+          type="range"
+          [min]="minLevel"
+          [max]="maxLevel"
+          step="1"
+          [value]="settings().levelDb"
+          (input)="update({ levelDb: num($event) })"
+        />
+      </label>
+      <label class="form-field">
+        <span>Balance</span>
+        <span class="form-value">{{
+          settings().balance === 0
+            ? 'centre'
+            : settings().balance < 0
+              ? 'left ' + (-settings().balance * 100).toFixed(0) + ' %'
+              : 'right ' + (settings().balance * 100).toFixed(0) + ' %'
+        }}</span>
+        <input
+          type="range"
+          min="-1"
+          max="1"
+          step="0.05"
+          [value]="settings().balance"
+          (input)="update({ balance: num($event) })"
+        />
+      </label>
+      <p class="note">
+        Level is capped at {{ maxLevel }} dBFS. Start quietly – test signals can be loud on
+        headphones.
+      </p>
+      <div class="play">
+        <button
+          type="button"
+          class="btn"
+          [class.btn-primary]="!playing()"
+          (click)="toggle()"
+          [attr.aria-pressed]="playing()"
+        >
+          <app-icon [name]="playing() ? 'stop' : 'play'" [size]="16" />
+          {{ playing() ? 'Stop' : 'Play' }}
+        </button>
+        @if (playing()) {
+          <span class="playing-badge" role="status">● Playing</span>
+        }
+      </div>
+      @if (status(); as s) {
+        <app-status-banner [message]="s" />
+      }
+    </section>
+  </div>
+</div>

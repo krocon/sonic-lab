@@ -6,10 +6,12 @@
 //! - [`platform`]     – read-only host information for the status bar (command `platform_info`)
 //! - [`permissions`]  – web permission policy: microphone yes, everything else no
 //! - [`window_state`] – remembers window position/size (no plugin, no extra capability)
+//! - [`export`]       – user-initiated file export through the native save dialog
 //!
 //! New native features (file export, …) must be added as explicit commands behind a frontend
 //! adapter (`src/app/platform/`), never as broad plugins.
 
+pub mod export;
 pub mod permissions;
 pub mod platform;
 pub mod window_state;
@@ -25,7 +27,12 @@ const MAIN: &str = "main";
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![platform::platform_info])
+        // dialog plugin is used from Rust only (export); the webview gets no dialog permission
+        .plugin(tauri_plugin_dialog::init())
+        .invoke_handler(tauri::generate_handler![
+            platform::platform_info,
+            export::export_file
+        ])
         .setup(|app| {
             create_main_window(app)?;
             Ok(())

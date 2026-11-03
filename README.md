@@ -23,8 +23,8 @@ desktop app for macOS, Windows and Linux.
 | Spectrum Analyzer  | Available |
 | Signal Monitor     | Available |
 | Morse Encoder      | Available |
-| Tone Generator     | Planned   |
-| Audio Recorder     | Planned   |
+| Tone Generator     | Available |
+| Audio Recorder     | Available |
 
 **Morse decoder:** microphone or demo input, live waveform, level meter and key-down timeline,
 automatic or fixed tone frequency, adaptive threshold and speed (WPM) detection, decoded Morse and

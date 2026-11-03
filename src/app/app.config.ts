@@ -1,6 +1,7 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter, withComponentInputBinding, withHashLocation } from '@angular/router';
 import { routes } from './app.routes';
+import { provideFileExport } from './platform/file-export';
 import { providePlatformAdapter } from './platform/platform-adapter.provider';
 
 export const appConfig: ApplicationConfig = {
@@ -10,5 +11,6 @@ export const appConfig: ApplicationConfig = {
     // asset protocol without server-side rewrites (docs/ARCHITECTURE.md, ADR-004).
     provideRouter(routes, withComponentInputBinding(), withHashLocation()),
     providePlatformAdapter(),
+    provideFileExport(),
   ],
 };

@@ -60,6 +60,18 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/dtmf-decoder/dtmf-decoder.page').then((c) => c.DtmfDecoderPage),
   },
+  {
+    path: 'tone-generator',
+    title: 'Tone Generator · AudioLab',
+    loadComponent: () =>
+      import('./features/tone-generator/tone-generator.page').then((c) => c.ToneGeneratorPage),
+  },
+  {
+    path: 'audio-recorder',
+    title: 'Audio Recorder · AudioLab',
+    loadComponent: () =>
+      import('./features/audio-recorder/audio-recorder.page').then((c) => c.AudioRecorderPage),
+  },
   ...placeholderRoutes,
   { path: '**', redirectTo: '' },
 ];

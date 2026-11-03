@@ -153,6 +153,18 @@ Views: `SpectrumCanvas` (log/linear axis, dB grid, peak marker), `SpectrogramCan
 waterfall via self-blit + one `ImageData` column, theme-independent colour map), `HistoryCanvas`
 (trend line of a `TimeSeries`).
 
+## Tone generator and recorder
+
+- `ToneGenerator` (`audio/output/tone-generator.ts`): sine/square/triangle/sawtooth oscillators,
+  white/pink noise from a looping 2 s seeded buffer, linear/logarithmic sweeps (audio-clock
+  automation), two-tone and DTMF (two oscillators at half level each) → gain (20 ms fade in/out,
+  level capped at −3 dBFS) → stereo panner. Level and balance change without restarting; other
+  changes restart the graph (serialised in the page so a Stop always wins).
+- `AudioRecorder` (`audio/recorder.ts`): copies captured frames into memory up to 10 minutes,
+  warns at 90 %, stops at the limit. `encodeWav` writes RIFF/WAVE mono, 16-bit PCM (clipped,
+  rounded) or 32-bit IEEE float with a `fact` chunk – header layout covered by tests and checked
+  on a real E2E download.
+
 ## Synthesis and playback (Morse encoder)
 
 - `scheduleMorse()` (`decoders/morse/morse-timing.ts`) turns text into key-down intervals: PARIS

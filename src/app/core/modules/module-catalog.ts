@@ -72,7 +72,7 @@ export const ANALYSIS_MODULES: readonly AnalysisModule[] = [
     summary: 'Sine, square, sawtooth and noise test signals.',
     group: 'generate',
     icon: 'tone',
-    status: 'planned',
+    status: 'available',
     prompt: '08-tone-generator-and-recorder.md',
   },
   {
@@ -82,7 +82,7 @@ export const ANALYSIS_MODULES: readonly AnalysisModule[] = [
     summary: 'Records audio locally and exports it on request.',
     group: 'generate',
     icon: 'record',
-    status: 'planned',
+    status: 'available',
     prompt: '08-tone-generator-and-recorder.md',
   },
 ];

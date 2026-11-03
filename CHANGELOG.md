@@ -60,6 +60,11 @@ All notable changes to this project are documented here. The format follows
   frequency estimation, ITU-style validation (frequency tolerance, twist, group separation, tone
   energy ratio), debounced key events; keypad UI with tone levels, copy and reset; DTMF demo input.
 
+- Tone generator (sine, square, triangle, sawtooth, white/pink noise, linear/log sweep, two-tone,
+  DTMF; level ≤ −3 dBFS with fades, balance) and audio recorder (in memory, 10-minute limit,
+  playback, WAV export 16-bit/32-bit float, discard). Export through a platform adapter: file
+  picker/download on the web, native save dialog via the `export_file` command on the desktop.
+
 ### Fixed
 
 - Insufficient colour contrast of secondary text and the light accent colour (WCAG AA).

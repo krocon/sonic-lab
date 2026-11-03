@@ -17,8 +17,11 @@ AudioLab is designed so that audio never leaves your device.
   switched off – not for privacy, but so that the signal is analysed as it arrives.
 - **No background recording.** Nothing is captured while capture is not visibly running.
 - **No audio in logs.** Sample data is never written to the console or log files.
-- **Export only on request.** Recordings or results are saved only when you explicitly export
-  them; nothing is stored automatically.
+- **Export only on request.** The Audio Recorder keeps recordings in memory only (max. 10 min);
+  leaving the page discards them. A WAV file is written only when you press _Export…_ and pick a
+  location – in the browser via the file picker or a download, on the desktop via the native save
+  dialog opened by the Rust command `export_file`, which writes exactly to the chosen path. The
+  webview itself has no file-system or dialog permission.
 - **Local preferences.** The only persisted data are UI preferences in the browser's
   `localStorage`: theme (`audiolab.theme`) and the chosen input device id (`audiolab.capture`).
 
