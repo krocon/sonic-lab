@@ -25,6 +25,8 @@ export class MorseSession {
   readonly wpm = signal<number | null>(null);
   readonly frequency = signal<number | null>(null);
   readonly unknownCount = signal(0);
+  /** Tone level above the noise floor while keyed, dB (null until a tone was heard). */
+  readonly snrDb = signal<number | null>(null);
   readonly hasOutput = computed(() => this.text().length > 0 || this.morse().length > 0);
   readonly timeline = new KeyingTimeline();
 
@@ -51,6 +53,7 @@ export class MorseSession {
     this.wpm.set(null);
     this.frequency.set(null);
     this.unknownCount.set(0);
+    this.snrDb.set(null);
   }
 
   /** Exposed for tests: feed decoder events directly. */
@@ -78,7 +81,10 @@ export class MorseSession {
           break;
         case 'tone':
           this.timeline.update(e.timestamp, e.keyDown, e.amplitude, e.threshold);
-          if (e.keyDown) this.frequency.set(e.frequency);
+          if (e.keyDown) {
+            this.frequency.set(e.frequency);
+            if (e.noise > 0) this.snrDb.set(Math.round(20 * Math.log10(e.amplitude / e.noise)));
+          }
           break;
       }
     }

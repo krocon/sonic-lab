@@ -43,6 +43,10 @@ export class MorseDecoderPage {
     const wpm = this.morse.wpm();
     return wpm === null ? '–' : String(wpm);
   });
+  protected readonly snrLabel = computed(() => {
+    const snr = this.morse.snrDb();
+    return snr === null ? '–' : `${snr} dB`;
+  });
   protected readonly frequencyLabel = computed(() => {
     const s = this.morse.settings();
     if (s.frequencyMode === 'manual') return `${s.frequency} Hz`;
@@ -63,6 +67,10 @@ export class MorseDecoderPage {
 
   protected setFrequency(value: string): void {
     this.morse.updateSettings({ frequency: Number(value) });
+  }
+
+  protected setInitialWpm(value: string): void {
+    this.morse.updateSettings({ initialWpm: Number(value) });
   }
 
   protected setSensitivity(value: string): void {

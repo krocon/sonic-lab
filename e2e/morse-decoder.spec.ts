@@ -18,7 +18,7 @@ test.describe('Morse decoder', () => {
     const text = page.getByLabel('Text', { exact: true });
     await expect(text).toContainText('PARIS TEST', { timeout: 15_000 });
     await expect(page.getByLabel('Morse', { exact: true })).toContainText('.--. .- .-. .. ...');
-    await expect(page.getByText(/^(19|20|21) WPM$/)).toBeVisible();
+    await expect(page.locator('.stat strong')).toHaveText(/^(19|20|21) WPM$/);
     await expect(page.getByText(/auto · (600|650|700) Hz/)).toBeVisible();
 
     await page.getByRole('button', { name: 'Copy' }).click();

@@ -119,6 +119,22 @@
   color: var(--color-text-muted);
 }
 
+.readout {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+}
+
+.advanced summary {
+  cursor: pointer;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.advanced[open] summary {
+  margin-bottom: var(--space-3);
+}
+
 .stats {
   display: flex;
   align-items: center;

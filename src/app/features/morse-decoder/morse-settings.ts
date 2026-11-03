@@ -28,9 +28,9 @@ export const SENSITIVITY_PRESETS: Record<
   Sensitivity,
   Pick<KeyingDetectorConfig, 'onRatio' | 'offRatio' | 'minSnr' | 'minElementMs'>
 > = {
-  low: { onRatio: 0.55, offRatio: 0.35, minSnr: 6, minElementMs: 14 },
-  medium: { onRatio: 0.5, offRatio: 0.3, minSnr: 4, minElementMs: 10 },
-  high: { onRatio: 0.45, offRatio: 0.25, minSnr: 3, minElementMs: 8 },
+  low: { onRatio: 0.55, offRatio: 0.35, minSnr: 3.5, minElementMs: 14 },
+  medium: { onRatio: 0.5, offRatio: 0.3, minSnr: 2.5, minElementMs: 10 },
+  high: { onRatio: 0.45, offRatio: 0.3, minSnr: 2.2, minElementMs: 10 },
 };
 
 export function toDecoderConfig(s: MorseSettings): Partial<MorseDecoderConfig> {

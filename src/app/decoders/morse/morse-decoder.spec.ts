@@ -67,6 +67,17 @@ describe('MorseDecoder (synthetic signals)', () => {
     }
   });
 
+  it('produces nothing from pure noise with high sensitivity either', () => {
+    const high = { onRatio: 0.45, offRatio: 0.3, minSnr: 2.2, minElementMs: 10 };
+    for (const seed of [21, 22, 23]) {
+      const samples = render(whiteNoise(0.02, seed), 8, 48000);
+      const chars = new MorseDecoder(high)
+        .decodeAll(samples, 48000)
+        .filter((e) => e.type === 'character');
+      expect(chars, `seed ${seed}`).toEqual([]);
+    }
+  });
+
   it('does not invent elements in noise before the first character', () => {
     expect(decode('CQ CQ', { wpm: 18, noiseRms: 0.01, leadIn: 1.5 })).toBe('CQ CQ');
   });

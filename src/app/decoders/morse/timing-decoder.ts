@@ -1,7 +1,7 @@
 import { decodeMorse } from './morse-alphabet';
 import { KeyingSegment } from './keying-detector';
 import { unitSeconds } from './morse-timing';
-import { estimateUnit } from './unit-estimator';
+import { estimateUnit, twoMeans } from './unit-estimator';
 
 /**
  * Stages 4–5 of the Morse chain: classifies mark/space durations relative to an adaptive time
@@ -24,6 +24,10 @@ export interface TimingDecoderConfig {
   readonly flushAfter: number;
   /** Number of recent marks/spaces used for the estimate. */
   readonly history: number;
+  /** Marks or spaces shorter than this fraction of a unit are glitches and merged with their neighbours. */
+  readonly glitchUnits: number;
+  /** Absolute glitch limit in seconds (≈ half a dit at 50 WPM). */
+  readonly minElementSeconds: number;
 }
 
 export const DEFAULT_TIMING_CONFIG: TimingDecoderConfig = {
@@ -32,7 +36,9 @@ export const DEFAULT_TIMING_CONFIG: TimingDecoderConfig = {
   charGapThreshold: 2,
   wordGapThreshold: 5,
   flushAfter: 1.5,
-  history: 24,
+  history: 12,
+  glitchUnits: 0.3,
+  minElementSeconds: 0.012,
 };
 
 export type TimingEvent =
@@ -56,7 +62,14 @@ export class TimingDecoder {
   private config = DEFAULT_TIMING_CONFIG;
   private marks: number[] = [];
   private spaces: number[] = [];
+  /**
+   * Recent character/word gaps in units of the estimate at that time (for the adaptive word-gap
+   * threshold, e.g. Farnsworth). Relative values keep it valid across tempo changes.
+   */
+  private gaps: number[] = [];
   private pending: Segment[] = [];
+  /** A glitch was just absorbed: the next segment of this kind continues the last pending one. */
+  private mergeNext: 'mark' | 'space' | null = null;
   private unit = unitSeconds(DEFAULT_TIMING_CONFIG.initialWpm);
   private confident = false;
   private wordGapEmitted = true;
@@ -71,7 +84,9 @@ export class TimingDecoder {
   reset(): void {
     this.marks = [];
     this.spaces = [];
+    this.gaps = [];
     this.pending = [];
+    this.mergeNext = null;
     this.unit = unitSeconds(this.config.initialWpm);
     this.confident = false;
     this.wordGapEmitted = true;
@@ -98,6 +113,36 @@ export class TimingDecoder {
   /** A mark or space has ended. */
   push(segment: KeyingSegment, out: TimingEvent[]): void {
     const mark = segment.state === 'mark';
+    const last = this.pending.at(-1);
+
+    // glitch filter relative to the unit: a too-short mark inside a gap, or a too-short dropout
+    // inside a mark, is absorbed by its neighbours and never enters the statistics
+    if (
+      segment.duration <
+      Math.max(this.config.minElementSeconds, this.config.glitchUnits * this.unit)
+    ) {
+      if (last && last.mark !== mark) {
+        this.replaceLast({ ...last, duration: last.duration + segment.duration });
+        this.mergeNext = last.mark ? 'mark' : 'space';
+      }
+      return; // a glitch with nothing before it (leading noise) is dropped
+    }
+    if (this.mergeNext === segment.state && last && last.mark === mark) {
+      this.mergeNext = null;
+      this.replaceLast({ ...last, duration: last.duration + segment.duration });
+      this.reestimate(out, segment.start + segment.duration);
+      if (this.confident) this.commit(out, false);
+      return;
+    }
+    this.mergeNext = null;
+
+    if (
+      !mark &&
+      segment.duration >= this.config.charGapThreshold * this.unit &&
+      segment.duration < 5
+    ) {
+      this.remember(this.gaps, segment.duration / this.unit);
+    }
     if (!mark && this.pending.length === 0) {
       // leading silence: only relevant for a word gap after committed text
       this.silence(segment.start + segment.duration, segment.duration, out);
@@ -131,7 +176,7 @@ export class TimingDecoder {
     if (
       !this.wordGapEmitted &&
       this.pending.length === 0 &&
-      silence >= this.config.wordGapThreshold * this.unit
+      silence >= this.wordGapUnits() * this.unit
     ) {
       out.push({ type: 'word-gap', timestamp: time });
       this.wordGapEmitted = true;
@@ -168,7 +213,7 @@ export class TimingDecoder {
       const units = s.duration / this.unit;
       if (units < this.config.charGapThreshold) continue; // element gap
       if (code) this.emitChar(code, charStart, out);
-      if (units >= this.config.wordGapThreshold) {
+      if (units >= this.wordGapUnits()) {
         out.push({ type: 'word-gap', timestamp: s.start });
         this.wordGapEmitted = true;
       }
@@ -193,6 +238,34 @@ export class TimingDecoder {
 
   private symbol(duration: number): '.' | '-' {
     return duration >= this.config.dahThreshold * this.unit ? '-' : '.';
+  }
+
+  /** Replaces the last pending segment and its entry in the statistics. */
+  private replaceLast(segment: Segment): void {
+    const previous = this.pending.at(-1);
+    if (!previous) return;
+    this.pending[this.pending.length - 1] = segment;
+    const list = segment.mark ? this.marks : this.spaces;
+    const i = list.lastIndexOf(previous.duration);
+    if (i >= 0) list[i] = segment.duration;
+  }
+
+  /**
+   * Word-gap threshold in units. Character and word gaps form two clusters; with Farnsworth timing
+   * both are stretched, so the boundary is taken from the observed gaps when they clearly split.
+   */
+  private wordGapUnits(): number {
+    const fallback = this.config.wordGapThreshold;
+    if (this.gaps.length < 4) return fallback;
+    const c = twoMeans(this.gaps);
+    if (!c) return fallback;
+    if (c.lowCount > 0 && c.highCount > 0 && c.high / c.low > 1.6) {
+      return Math.max(this.config.charGapThreshold + 1, Math.sqrt(c.low * c.high));
+    }
+    const centre = Math.sqrt(c.low * c.high);
+    // only one kind seen so far: if they are clearly longer than standard character gaps,
+    // they are stretched character gaps (Farnsworth) – a word gap must be longer still
+    return centre > fallback ? Math.max(fallback, centre * 1.6) : fallback;
   }
 
   private remember(list: number[], value: number): void {

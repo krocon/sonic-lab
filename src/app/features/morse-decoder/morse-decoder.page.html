@@ -76,6 +76,29 @@
         }
       </select>
     </label>
+    <p class="readout">
+      <span class="label">Signal above noise</span>
+      <span class="value">{{ snrLabel() }}</span>
+    </p>
+    <details class="advanced">
+      <summary>Advanced</summary>
+      <label class="field">
+        <span class="label">Expected speed before decoding starts</span>
+        <span class="value">{{ morse.settings().initialWpm }} WPM</span>
+        <input
+          type="range"
+          min="5"
+          max="50"
+          step="1"
+          [value]="morse.settings().initialWpm"
+          (change)="setInitialWpm($any($event.target).value)"
+        />
+      </label>
+      <p class="hint">
+        Speed, thresholds and word gaps adapt automatically; this only helps the very first
+        characters.
+      </p>
+    </details>
   </section>
 
   <section class="panel results" aria-labelledby="results-title">

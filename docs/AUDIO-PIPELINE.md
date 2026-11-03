@@ -1,6 +1,7 @@
 # Audio pipeline
 
-> **Status:** capture (prompt 02) and the Morse decoder (prompt 03) are implemented.
+> **Status:** capture (prompt 02), the Morse decoder (prompt 03) and its robustness work
+> (prompt 04) are implemented.
 
 ## Capture (implemented)
 
@@ -41,11 +42,11 @@ detection. The waveform draws min/max per pixel column (16384-sample window ≈ 
 `src/app/decoders/morse/`, wired to the UI by `features/morse-decoder/morse-session.ts`.
 
 ```text
-frames ─▶ ToneDetector ─▶ KeyingDetector ─▶ TimingDecoder ─▶ alphabet ─▶ events (character, word-gap, wpm)
-          Goertzel bank    noise/signal      adaptive unit,
-          2-hop Hann       tracking,         deferred decisions
-          windows          hysteresis,
-                           glitch filter
+frames ─▶ ToneDetector ─▶ EnvelopeSmoother ─▶ KeyingDetector ─▶ TimingDecoder ─▶ alphabet ─▶ events
+          Goertzel bank    moving average      noise/signal       adaptive unit,
+          2-hop Hann       ≈ 0.4 unit          tracking, SNR      glitch merging,
+          windows, keyed-                      gate, hysteresis   adaptive word gap,
+          bin tracking                                            deferred decisions
 ```
 
 | Stage            | What it does                                                                                                                                                                                                                                                                                                   | Defaults                                                                                       |
@@ -57,8 +58,8 @@ frames ─▶ ToneDetector ─▶ KeyingDetector ─▶ TimingDecoder ─▶ alp
 
 WPM = 1.2 s / unit (PARIS standard). The UI shows it only once the estimate is confident.
 
-Sensitivity presets (`morse-settings.ts`): low = onRatio 0.55 / minSnr 6 / glitch 14 ms,
-medium = 0.5 / 4 / 10 ms, high = 0.45 / 3 / 8 ms.
+Sensitivity presets (`morse-settings.ts`): low = onRatio 0.55 / minSnr 3.5 / glitch 14 ms,
+medium = 0.5 / 2.5 / 10 ms, high = 0.45 / 2.2 / 10 ms (offRatio 0.35 / 0.3 / 0.3).
 
 ### Verified with synthetic signals (`morse-decoder.spec.ts`)
 
@@ -69,8 +70,40 @@ medium = 0.5 / 4 / 10 ms, high = 0.45 / 3 / 8 ms.
 - Two simultaneous stations 600 Hz apart are separated by a fixed frequency.
 - Unknown codes (e.g. seven dits) are reported, not guessed.
 
-Robustness against low SNR, fading, glitches, drift and sloppy timing is the subject of
-prompt 04.
+### Robustness (prompt 04)
+
+Realistic signals come from `src/testing/signals/impaired-morse.ts` (seeded): white or pink
+noise at an SNR measured in a **500 Hz reference bandwidth** around the tone, QSB, broadband
+clicks, off-frequency bursts, 5 ms on-frequency glitches, linear drift, timing jitter, weighting
+and Farnsworth spacing. Quality metric: character error rate (CER, Levenshtein, whitespace
+normalised). `robustness.spec.ts` runs every scenario with 3 seeds on a 90-character QSO text.
+
+| Scenario                                  | Baseline (after prompt 03) | After prompt 04 | Limit in test      |
+| ----------------------------------------- | -------------------------- | --------------- | ------------------ |
+| clean / SNR 20 / SNR 10 dB, 20 WPM        | 0 %                        | 0 %             | 0 / 0 / 2 %        |
+| SNR 6 dB, 20 WPM                          | 137 %                      | 0.7 %           | 5 %                |
+| SNR 3 dB, 15 WPM (default sensitivity)    | 94 %                       | 16 %            | 20 %               |
+| SNR 3 dB, 15 WPM, sensitivity _high_      | –                          | 1.5 %           | 10 %               |
+| pink noise, SNR 10 dB                     | 0 %¹                       | 1.1 %           | 3 %                |
+| QSB 10 dB / 3 s, SNR 20 dB                | –                          | 0 %             | 5 %                |
+| QSB 20 dB / 4 s, SNR 15 dB (trough −5 dB) | 58 %                       | 50 %            | 60 % (known limit) |
+| clicks 2/s · off-frequency bursts 3/s     | 0 %                        | 0 %             | 3 %                |
+| on-frequency glitches 1/s                 | 12 %                       | 0 %             | 5 %                |
+| drift +60 Hz · weight 1:4 / 1:2.5         | 0 %                        | 0 %             | 2–3 %              |
+| hand keying ±15 % / ±25 %                 | 0 %                        | 0 %             | 3 / 8 %            |
+| Farnsworth 18/8 WPM                       | 50 %                       | 2.2 %           | 3 %                |
+| 35 WPM / 8 WPM                            | 0 %                        | 0.7 % / 0 %     | 3 / 2 %            |
+
+¹ The first pink-noise generator was miscalibrated (in-band noise ≈ 8 dB too high); the
+baseline row uses the corrected generator.
+
+Additional checks: a tempo change 15 → 30 WPM is followed within 10 characters; a 5-minute
+transmission decodes with CER ≤ 0.5 % and a stable speed estimate; pure noise (8 s, several
+levels, also with sensitivity _high_) produces no characters; one second of 48 kHz audio takes a
+few milliseconds (test limit 25 ms for slow CI machines).
+
+What did not help (kept out): a per-bin whitening of the auto-frequency search, a median
+noise floor, a longer smoothing window (0.5 unit) and a faster signal release while key-up.
 
 ## Testing approach
 
@@ -78,9 +111,15 @@ Deterministic synthetic signals (text, WPM, frequency, amplitude, sample rate, s
 fading, glitches, timing jitter) generated in `src/testing/signals/`. Quality metric: character
 error rate (CER). See prompts/10.
 
-## Known limits (expected)
+## Known limits
 
-- One Morse signal at a time; several simultaneous stations are out of scope.
-- Very low SNR (< 0 dB) and heavy fading will degrade results.
+- One Morse signal at a time. With a fixed frequency two stations ≥ 600 Hz apart are separated;
+  closer stations and pile-ups are out of scope.
+- Below ≈ 3 dB SNR (500 Hz) the default sensitivity misses elements; _high_ helps down to ≈ 3 dB,
+  below 0 dB decoding is unreliable. Deep fading that takes the signal below the noise loses
+  those parts.
+- The first one or two characters of a transmission can be wrong while speed and frequency are
+  learned (especially with Farnsworth spacing or coloured noise).
+- The test signals are synthetic; real recordings (prompts/10) are needed to confirm the numbers.
 - Browser and OS input processing that cannot be disabled (some devices, Bluetooth headsets)
   may affect detection.

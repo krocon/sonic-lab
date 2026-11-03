@@ -29,6 +29,10 @@ export const DEFAULT_TONE_DETECTOR_CONFIG: ToneDetectorConfig = {
 const BIN_SPACING = 50;
 /** Coherent gain of the Hann window (mean of its coefficients). */
 const HANN_GAIN = 0.5;
+/** Time constant of the per-bin envelope statistics used to recognise keyed bins, s. */
+const CV_SECONDS = 1.5;
+/** Coefficient of variation above which a bin's envelope counts as keyed (noise ≈ 0.52). */
+const KEYED_CV = 0.75;
 
 export interface ToneHop {
   /** Amplitude of the tracked tone (sine amplitude, 0..1). */
@@ -52,6 +56,9 @@ export class ToneDetector {
   private counts = [0, 0];
   private window = new Float64Array(0);
   private amps = new Float64Array(0);
+  /** Per-bin running mean and mean square of the amplitude (auto mode). */
+  private mean = new Float64Array(0);
+  private meanSquare = new Float64Array(0);
   /** Slow average of each bin's amplitude while it is the strongest (auto mode). */
   private score = new Float64Array(0);
   private samples = 0;
@@ -128,6 +135,7 @@ export class ToneDetector {
     }
 
     if (this.config.frequency === null) {
+      best = this.keyedCandidate(best);
       for (let b = 0; b < bins; b++)
         score[b] = (score[b] ?? 0) * 0.995 + (b === best ? (amps[b] ?? 0) : 0);
       if ((score[best] ?? 0) > 1.5 * (score[this.tracked] ?? 0)) this.tracked = best;
@@ -141,6 +149,33 @@ export class ToneDetector {
     this.out.frequency = this.freqs[this.tracked] ?? 0;
     this.out.time = this.samples / this.sampleRate;
     onHop(this.out);
+  }
+
+  /**
+   * Prefers bins whose envelope looks keyed. The coefficient of variation (std/mean) of a keyed
+   * tone's envelope is ≈ 1 (on/off), that of stationary noise ≈ 0.52 (Rayleigh) – independent of
+   * level, so loud coloured noise does not attract the tracker. Among keyed-looking bins the one
+   * with the largest mean wins (leakage into neighbours is keyed too, but weaker).
+   */
+  private keyedCandidate(fallback: number): number {
+    const { amps, mean, meanSquare } = this;
+    const k = 1 - Math.exp(-this.hop / this.sampleRate / CV_SECONDS);
+    let best = -1;
+    let bestMean = 0;
+    for (let b = 0; b < amps.length; b++) {
+      const a = amps[b] ?? 0;
+      const m = (mean[b] ?? 0) + (a - (mean[b] ?? 0)) * k;
+      const q = (meanSquare[b] ?? 0) + (a * a - (meanSquare[b] ?? 0)) * k;
+      mean[b] = m;
+      meanSquare[b] = q;
+      if (m <= 0) continue;
+      const cv = Math.sqrt(Math.max(0, q / (m * m) - 1));
+      if (cv > KEYED_CV && m > bestMean) {
+        bestMean = m;
+        best = b;
+      }
+    }
+    return best < 0 ? fallback : best;
   }
 
   private setup(sampleRate: number): void {
@@ -168,6 +203,8 @@ export class ToneDetector {
     // the second set starts half a window later; its first result covers only one hop of data
     this.counts = [0, this.hop];
     this.score = new Float64Array(bins);
+    this.mean = new Float64Array(bins);
+    this.meanSquare = new Float64Array(bins);
     this.amps = new Float64Array(bins);
     this.tracked = frequency === null ? 0 : Math.min(1, bins - 1);
   }

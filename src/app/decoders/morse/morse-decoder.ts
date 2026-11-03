@@ -1,5 +1,6 @@
 import { AudioFrame } from '../../audio/audio-frame';
 import { DecoderEvent, SignalDecoder } from '../signal-decoder';
+import { EnvelopeSmoother, MAX_SMOOTHING } from './envelope-smoother';
 import {
   DEFAULT_KEYING_CONFIG,
   KeyingDetector,
@@ -46,6 +47,10 @@ export type MorseEvent =
     });
 
 const TONE_REPORT_INTERVAL = 0.05; // s
+/** Envelope smoothing window in Morse units. */
+const SMOOTHING_UNITS = 0.4;
+/** Factor on `minSnr` for starting marks before the timing estimate is confident. */
+const UNCONFIDENT_START_GATE = 1.2;
 
 /**
  * Morse decoder: ToneDetector (Goertzel) → KeyingDetector (adaptive threshold, hysteresis,
@@ -58,6 +63,7 @@ export class MorseDecoder implements SignalDecoder<MorseDecoderConfig, MorseEven
   private readonly tone = new ToneDetector();
   private readonly keying = new KeyingDetector();
   private readonly timing = new TimingDecoder();
+  private readonly smoother = new EnvelopeSmoother();
   private config = DEFAULT_MORSE_CONFIG;
   private out: MorseEvent[] = [];
   private timingOut: TimingEvent[] = [];
@@ -120,12 +126,23 @@ export class MorseDecoder implements SignalDecoder<MorseDecoderConfig, MorseEven
     this.tone.reset();
     this.keying.reset();
     this.timing.reset();
+    this.smoother.reset();
     this.lastToneReport = -Infinity;
   }
 
   private readonly onHop = (hop: ToneHop): void => {
     const hopSeconds = this.tone.hopSeconds;
-    this.keying.push(hop.amplitude, hop.time, hopSeconds, this.onSegment);
+    // smoothing window ≈ 0.4 unit – from a confident estimate only (a wrong early guess would
+    // smear the very elements it is learned from), otherwise from the prior speed
+    const unit = this.timing.isConfident ? this.timing.unitSeconds : 1.2 / this.config.initialWpm;
+    this.smoother.setLength(
+      Math.min(MAX_SMOOTHING, Math.max(1, (SMOOTHING_UNITS * unit) / hopSeconds)),
+    );
+    const envelope = this.smoother.push(hop.amplitude);
+    this.keying.setEdgeGuard((this.smoother.length + 2) * hopSeconds);
+    // stricter start until a transmission has been recognised: no Morse from noise alone
+    this.keying.setStartGate(this.timing.isConfident ? 1 : UNCONFIDENT_START_GATE);
+    this.keying.push(envelope, hop.time, hopSeconds, this.onSegment);
     if (!this.keying.isKeyDown) {
       this.timingOut.length = 0;
       this.timing.idle(hop.time, this.keying.currentDuration, this.timingOut);
@@ -138,7 +155,7 @@ export class MorseDecoder implements SignalDecoder<MorseDecoderConfig, MorseEven
         type: 'tone',
         timestamp: hop.time,
         frequency: hop.frequency,
-        amplitude: hop.amplitude,
+        amplitude: envelope,
         noise: levels.noise,
         threshold: levels.threshold,
         keyDown: this.keying.isKeyDown,

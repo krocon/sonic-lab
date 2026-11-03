@@ -34,3 +34,8 @@ All notable changes to this project are documented here. The format follows
   with hysteresis and glitch filter, adaptive time unit with deferred decisions, ITU alphabet with
   prosigns, unknown-code marking, WPM; UI with key-down timeline, settings (persisted), copy and
   reset; the demo input now sends a Morse message.
+- Morse robustness: envelope smoothing matched to the unit, keyed-bin frequency tracking (robust
+  against coloured noise), SNR start gate, fading-aware signal level, unit-relative glitch merging,
+  bias-free speed estimate, learned word gaps (Farnsworth), tempo changes; realistic impaired test
+  signals with CER metrics; signal-above-noise readout and "Advanced" setting for the expected
+  speed.

@@ -1,7 +1,7 @@
 /**
  * Stage 3 of the Morse chain: turns per-hop tone amplitudes into key-down/key-up segments.
  *
- * - The noise floor is the running mean of the envelope while the key is up; the signal level is
+ * - The noise floor is the running mean of the settled key-up envelope; the signal level is
  *   a peak follower (fast attack, slow release). A tone counts only if the signal level is at
  *   least `minSnr` × the noise mean – the Rayleigh-distributed envelope of pure noise practically
  *   never gets there, so noise alone produces no marks. The switching thresholds sit between noise
@@ -25,7 +25,7 @@ export interface KeyingDetectorConfig {
 export const DEFAULT_KEYING_CONFIG: KeyingDetectorConfig = {
   onRatio: 0.5,
   offRatio: 0.3,
-  minSnr: 4,
+  minSnr: 2.5,
   minAmplitude: 0.001,
   minElementMs: 10,
 };
@@ -54,6 +54,20 @@ export class KeyingDetector {
   /** Time the raw input first disagreed with the accepted state, or -1. */
   private pendingSince = -1;
   private lastTime = 0;
+  /** Time after a state change during which the envelope is still settling (smoothing, window). */
+  private edgeGuard = 0;
+
+  /** Multiplies `minSnr` for starting a mark; the decoder raises it until a transmission is recognised. */
+  private startGate = 1;
+
+  setStartGate(factor: number): void {
+    this.startGate = factor;
+  }
+
+  /** Sets how long after a key-up the envelope is still decaying (excluded from the noise floor). */
+  setEdgeGuard(seconds: number): void {
+    this.edgeGuard = seconds;
+  }
 
   configure(config: Partial<KeyingDetectorConfig>): void {
     this.config = { ...this.config, ...config };
@@ -81,7 +95,7 @@ export class KeyingDetector {
     return {
       noise: this.noise,
       signal: this.signal,
-      threshold: this.threshold(this.config.onRatio),
+      threshold: this.onThreshold(),
     };
   }
 
@@ -98,11 +112,14 @@ export class KeyingDetector {
     this.track(amplitude, hopSeconds);
     this.lastTime = time;
     const hopStart = time - hopSeconds;
+    // The SNR gate decides whether a mark may *start*; an ongoing mark ends only at the off-threshold.
     const usable =
-      this.signal >= this.config.minAmplitude && this.signal >= this.config.minSnr * this.noise;
+      this.keyDown ||
+      (this.signal >= this.config.minAmplitude &&
+        this.signal >= this.startGate * this.config.minSnr * this.noise);
     const raw =
       usable &&
-      amplitude >= this.threshold(this.keyDown ? this.config.offRatio : this.config.onRatio);
+      amplitude >= (this.keyDown ? this.threshold(this.config.offRatio) : this.onThreshold());
 
     if (raw === this.keyDown) {
       this.pendingSince = -1;
@@ -128,6 +145,14 @@ export class KeyingDetector {
     return this.noise + ratio * (this.signal - this.noise);
   }
 
+  /** Key-down threshold: between noise and signal, but never closer than 0.8·minSnr to the noise mean. */
+  private onThreshold(): number {
+    return Math.max(
+      this.threshold(this.config.onRatio),
+      0.8 * this.startGate * this.config.minSnr * this.noise,
+    );
+  }
+
   private track(a: number, dt: number): void {
     if (!this.initialised) {
       this.noise = a;
@@ -137,15 +162,20 @@ export class KeyingDetector {
     }
     // time constants in seconds, converted to per-hop smoothing factors
     const k = (tau: number) => 1 - Math.exp(-dt / tau);
-    // Mean envelope of clear key-up hops: below the off-threshold and not right after a mark
-    // (the analysis window smears the falling edge over ~2 hops). Otherwise only creep, which
-    // still escapes a stuck carrier after ~10 s.
-    const quiet =
-      !this.keyDown &&
-      this.lastTime - this.stateStart > 2.5 * dt &&
-      a < this.threshold(this.config.offRatio);
-    this.noise += (a - this.noise) * (quiet ? k(0.3) : a < this.noise ? k(0.3) : k(10));
-    this.signal += (a - this.signal) * (a > this.signal ? k(0.01) : k(2));
+    const settled = this.lastTime - this.stateStart > Math.max(2.5 * dt, this.edgeGuard);
+
+    // Noise: mean envelope of settled key-up hops below the key-up threshold – not right after a
+    // mark (the analysis window and the smoothing smear the falling edge), and without hops above
+    // the threshold (missed parts of a weak tone are not noise). During key-down the floor
+    // only falls; after 2 s of continuous key-down (a carrier, not Morse) it rises slowly.
+    const quiet = !this.keyDown && settled && a < this.threshold(this.config.offRatio);
+    const carrier = this.keyDown && this.lastTime - this.stateStart > 2;
+    this.noise += (a - this.noise) * (quiet || a < this.noise ? k(0.3) : carrier ? k(3) : 0);
+
+    // Signal: fast attack; during a settled mark it also follows the tone down (fading/QSB), while
+    // the key is up it releases slowly.
+    const release = this.keyDown && settled ? k(0.15) : k(1.5);
+    this.signal += (a - this.signal) * (a > this.signal ? k(0.01) : release);
     if (this.signal < this.noise) this.signal = this.noise;
   }
 }
