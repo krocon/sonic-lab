@@ -164,13 +164,17 @@ export class ToneDetector {
     let bestMean = 0;
     for (let b = 0; b < amps.length; b++) {
       const a = amps[b] ?? 0;
-      const m = (mean[b] ?? 0) + (a - (mean[b] ?? 0)) * k;
-      const q = (meanSquare[b] ?? 0) + (a * a - (meanSquare[b] ?? 0)) * k;
-      mean[b] = m;
-      meanSquare[b] = q;
-      if (m <= 0) continue;
-      const cv = Math.sqrt(Math.max(0, q / (m * m) - 1));
-      if (cv > KEYED_CV && m > bestMean) {
+      mean[b] = (mean[b] ?? 0) + (a - (mean[b] ?? 0)) * k;
+      meanSquare[b] = (meanSquare[b] ?? 0) + (a * a - (meanSquare[b] ?? 0)) * k;
+    }
+    for (let b = 0; b < amps.length; b++) {
+      const m = mean[b] ?? 0;
+      if (m <= 0 || m <= bestMean) continue;
+      // only spectral peaks: the skirts of a tone whose gaps are filled by reverberation can look
+      // more keyed than the tone itself, but they are never louder than their inner neighbour
+      if (m < (mean[b - 1] ?? 0) || m < (mean[b + 1] ?? 0)) continue;
+      const cv = Math.sqrt(Math.max(0, (meanSquare[b] ?? 0) / (m * m) - 1));
+      if (cv > KEYED_CV) {
         bestMean = m;
         best = b;
       }

@@ -1,4 +1,5 @@
 import { render, tone } from '../../audio/synthesis/signal';
+import { impairedMorse } from '../../../testing/signals/impaired-morse';
 import { ToneDetector } from './tone-detector';
 
 function lastHop(detector: ToneDetector, samples: Float32Array, rate: number) {
@@ -23,6 +24,17 @@ describe('ToneDetector', () => {
     const d = new ToneDetector();
     const { freq } = lastHop(d, render(tone({ frequency: 1030, amplitude: 0.3 }), 1, 44100), 44100);
     expect(Math.abs(freq - 1030)).toBeLessThanOrEqual(25);
+  });
+
+  it('stays on a keyed tone whose gaps are filled by reverberation', () => {
+    // the reverberant tail makes the tone itself look less keyed than the skirts of its spectrum
+    const s = impairedMorse('PARIS PARIS PARIS PARIS PARIS PARIS', {
+      wpm: 40,
+      frequency: 750,
+      reverb: { rt60Seconds: 0.3, wet: 0.5, seed: 2 },
+    });
+    const { freq } = lastHop(new ToneDetector(), s.samples, s.sampleRate);
+    expect(freq).toBe(750);
   });
 
   it('attenuates far-off tones in manual mode', () => {

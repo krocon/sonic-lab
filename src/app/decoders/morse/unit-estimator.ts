@@ -77,7 +77,7 @@ export function estimateUnit(
     // dit + gap = 2 units and dah + gap = 4 units hold exactly – use those sums when the element
     // gap is plausible, weighted by how many dits and dahs were seen.
     const unit =
-      gap > fromMarks / 2 && gap < fromMarks * 2
+      gap > fromMarks / 3 && gap < fromMarks * 2
         ? (m.lowCount * ((m.low + gap) / 2) + m.highCount * ((m.high + gap) / 4)) /
           (m.lowCount + m.highCount)
         : fromMarks;

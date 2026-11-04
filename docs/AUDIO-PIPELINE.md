@@ -49,12 +49,12 @@ frames ─▶ ToneDetector ─▶ EnvelopeSmoother ─▶ KeyingDetector ─▶ 
           bin tracking                                            deferred decisions
 ```
 
-| Stage            | What it does                                                                                                                                                                                                                                                                                                   | Defaults                                                                                       |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `ToneDetector`   | Goertzel filters every 50 Hz in 300–1500 Hz (auto) or at f ± 50 Hz (manual). Windows are two hops long, Hann-weighted, 50 % overlap → one amplitude per hop. Auto mode tracks the bin that is most often the strongest (switches only at 1.5× score).                                                          | hop 6 ms, window 12 ms (≈ 125 Hz bandwidth), sidelobes −31 dB                                  |
-| `KeyingDetector` | Noise = mean envelope of clear key-up hops; signal = peak follower (attack 10 ms, release 2 s). A tone counts only if signal ≥ `minSnr` × noise. Key-down above `noise + onRatio·(signal−noise)`, key-up below `offRatio`. Changes must persist `minElementMs`; the boundary is placed where the change began. | onRatio 0.5, offRatio 0.3, minSnr 4 (12 dB), minElementMs 10                                   |
-| `TimingDecoder`  | Clusters recent mark and space durations (2-means on log scale) to estimate the unit (dit length). Until the estimate is confident, segments are buffered and re-classified; afterwards a character is committed as soon as its following gap exceeds the character threshold.                                 | history 24, dah ≥ 2 units, char gap ≥ 2, word gap ≥ 5, flush after 1.5 s silence, prior 20 WPM |
-| Alphabet         | ITU letters, digits, punctuation, prosigns (`<SK>`, `<KN>`, …). Unknown sequences → `�` + raw code.                                                                                                                                                                                                            | –                                                                                              |
+| Stage            | What it does                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Defaults                                                                                       |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `ToneDetector`   | Goertzel filters every 50 Hz in 300–1500 Hz (auto) or at f ± 50 Hz (manual). Windows are two hops long, Hann-weighted, 50 % overlap → one amplitude per hop. Auto mode prefers bins whose envelope looks keyed (std/mean > 0.75) and that are spectral peaks – the skirts of a reverberant tone can look more keyed than the tone itself – and switches only at 1.5× score. A switch drops the running mark (it belonged to the old signal, e.g. hum).                                                                                                                                                      | hop 6 ms, window 12 ms (≈ 125 Hz bandwidth), sidelobes −31 dB                                  |
+| `KeyingDetector` | Noise = mean envelope of clear key-up hops; signal = peak follower (attack 10 ms, release 2 s). A tone counts only if signal ≥ `minSnr` × noise. Key-down above `noise + onRatio·(signal−noise)`, key-up below `offRatio` – or when the level drops 6 dB below the running peak of the mark (element gaps that never reach the noise floor: speaker ringing, room reverberation). In the tail after such a key-up only a fresh rise of 8 dB out of the gap minimum, within 10 dB of recent marks, starts the next mark. Changes must persist `minElementMs`; the boundary is placed where the change began. | onRatio 0.5, offRatio 0.3, minSnr 4 (12 dB), minElementMs 10                                   |
+| `TimingDecoder`  | Clusters recent mark and space durations (2-means on log scale) to estimate the unit (dit length). Until the estimate is confident, segments are buffered and re-classified; afterwards a character is committed as soon as its following gap exceeds the character threshold.                                                                                                                                                                                                                                                                                                                              | history 24, dah ≥ 2 units, char gap ≥ 2, word gap ≥ 5, flush after 1.5 s silence, prior 20 WPM |
+| Alphabet         | ITU letters, digits, punctuation, prosigns (`<SK>`, `<KN>`, …). Unknown sequences → `�` + raw code.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | –                                                                                              |
 
 WPM = 1.2 s / unit (PARIS standard). The UI shows it only once the estimate is confident.
 
@@ -104,6 +104,44 @@ few milliseconds (test limit 25 ms for slow CI machines).
 
 What did not help (kept out): a per-bin whitening of the auto-frequency search, a median
 noise floor, a longer smoothing window (0.5 unit) and a faster signal release while key-up.
+
+### Real recordings and reverberation
+
+The synthetic suite missed what breaks the decoder in practice: Morse played through a loudspeaker
+and picked up by a microphone. The tone rings on and the room adds a reverberant tail, so element
+gaps fall only 7–15 dB below the marks instead of to the noise floor. With thresholds relative to
+noise and signal level alone, whole characters merged into one mark and the speed estimate
+collapsed (a 27 WPM recording was read as 2 WPM). Three changes address this: the relative 6 dB
+drop / 8 dB rise edges in `KeyingDetector`, spectral-peak tracking in `ToneDetector`, and a
+glitch filter in `TimingDecoder` that is capped by the prior speed until the unit estimate is
+confident (a first dah taken for a dit had made 0.3 unit long enough to swallow real dits).
+`unitEstimator` also accepts element gaps down to a third of the mark-derived unit – the tail
+shortens them – for its δ-free sums dit + gap = 2 and dah + gap = 4 units.
+
+Measured with `pnpm morse:corpus` (see `docs/TESTING.md`), 5/10/18 WPM W1AW recordings,
+RT60 0.3 s, 6 simulated rooms:
+
+| Reverberant energy | Rooms with CER < 5 %, before | after |
+| ------------------ | ---------------------------- | ----- |
+| 25 %               | 3 of 6                       | 5 / 6 |
+| 50 %               | 0 of 6                       | 4 / 6 |
+
+Clean recordings stay at 0.3 % CER, white noise at −3 dB broadband (8 kHz) at 0.7–0.8 %.
+
+Known limits:
+
+- Rooms with strong gain at the tone frequency (a room mode) still fail – the tone level itself
+  fluctuates as much as the gaps dip.
+- 30–40 WPM with more than ≈ 10 % reverberant energy: 30–40 ms gaps vanish inside the tail and
+  the 0.4-unit smoothing; a wrong (too slow) unit estimate then widens the smoothing further.
+- The SNR gate compares the signal level with the _mean_ noise envelope (`minSnr` 2.5, ×1.2 until
+  confident). Averaging lowers the noise fluctuation but not its mean, so below ≈ 8–10 dB in the
+  125 Hz detector bandwidth nothing starts at all. A gate on noise mean + k·σ of the smoothed
+  envelope, and a detector bandwidth that narrows with the speed, are the next steps.
+
+What did not help (kept out): a provisional key-up that is undone when the level returns to the
+mark level (helps 30/40 WPM, but couples with the unit estimate into merging at slow speeds), and
+a rise-based key-down outside the tail (spurious marks in noise).
 
 ## DTMF decoding (implemented)
 

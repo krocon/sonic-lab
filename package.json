@@ -36,6 +36,8 @@
     "test:coverage": "node scripts/build-worklets.mjs && ng test --watch=false --configuration coverage",
     "e2e:all": "playwright test --workers=2",
     "test:signals": "node scripts/build-worklets.mjs && ng test --watch=false --include=src/app/decoders/morse/robustness.spec.ts",
+    "morse:convert": "node scripts/morse-corpus.mjs convert",
+    "morse:corpus": "node scripts/morse-corpus.mjs run",
     "version:check": "node scripts/version.mjs check",
     "version:set": "node scripts/version.mjs set",
     "release:prepare": "node scripts/version.mjs prepare",

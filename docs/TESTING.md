@@ -19,12 +19,30 @@ All automated tests run without a microphone, without network access and without
 - `src/app/audio/synthesis/` – deterministic generators (sine, keyed tone, seeded noise, mix).
 - `src/testing/signals/morse-signal.ts` – clean Morse at a given speed, frequency, amplitude, sample rate.
 - `src/testing/signals/impaired-morse.ts` – noise at an SNR in a 500 Hz reference band (white or
-  pink), QSB, clicks, bursts, on-frequency glitches, drift, timing jitter, weighting, Farnsworth.
+  pink), QSB, clicks, bursts, on-frequency glitches, drift, timing jitter, weighting, Farnsworth,
+  room reverberation (`room-reverb.ts`).
 - `src/testing/signals/cer.ts` – character error rate.
 
 New scenario: add a row to `SCENARIOS` in `robustness.spec.ts` with a CER limit you have
 measured; never loosen an existing limit to make a change pass – improve the decoder or document
 the trade-off in `docs/AUDIO-PIPELINE.md`.
+
+## Real recordings (`morse-training/`)
+
+Recordings with their reference text: `<name>.mp3|opus|m4a|…` plus `<name>.txt` (for
+`<name>WPM.mp3`, `<name>.txt` also matches). `<` in a text is AR.
+
+```bash
+pnpm morse:convert   # ffmpeg → morse-training/wav/*.wav (16 bit mono, ≤ 16 kHz; git-ignored)
+pnpm morse:corpus    # decoder over every WAV: CER, speed, frequency per file and overall
+```
+
+`morse:corpus` options: `--filter <name>`, `--rate 48000` (the app's rate), `--snr <dB>`
+(broadband white noise), `--reverb <RT60 s> --wet <0..1> --room <n>` (simulated loudspeaker in a
+room, `src/testing/signals/room-reverb.ts`), `--sensitivity low|medium|high`,
+`--config '<json>'`, `--out <dir>` (decoded text and events), `--json`. Results depend strongly
+on the simulated room – compare several `--room` values before drawing conclusions. A reference
+text that paraphrases the QSO (e.g. subtitles) gives only a rough CER.
 
 ## Unit tests share modules – no module mocks
 
@@ -58,9 +76,9 @@ run because instrumentation makes it ~10× slower.
 
 ## Known gaps
 
-- **Real recordings (golden files):** no recordings with a known transcript are in the repository
-  yet. Contributions welcome: short (< 30 s), self-recorded or public-domain WAVs plus the
-  expected text under `test-data/`, with the licence noted next to the file.
+- **Real recordings in CI:** the recordings in `morse-training/` are run by hand
+  (`pnpm morse:corpus`), not by `pnpm test` – they need ffmpeg and take minutes. Short recordings
+  with an exact transcript (not a paraphrase) would be good candidates for golden-file unit tests.
 - **Firefox E2E** could not be launched in the local development sandbox; it runs green in CI
   (the job starts a PulseAudio null sink – runners have no sound card, and Firefox's Web Audio needs
   an output device). WebKit runs locally (29 tests incl. axe, 2 workers stable); the fake

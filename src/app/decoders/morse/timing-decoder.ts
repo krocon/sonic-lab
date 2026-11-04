@@ -117,9 +117,14 @@ export class TimingDecoder {
 
     // glitch filter relative to the unit: a too-short mark inside a gap, or a too-short dropout
     // inside a mark, is absorbed by its neighbours and never enters the statistics
+    // until the estimate is confident it may be a dah taken for a dit – then a third of it would
+    // swallow real dits; the prior speed caps it
+    const glitchUnit = this.confident
+      ? this.unit
+      : Math.min(this.unit, unitSeconds(this.config.initialWpm));
     if (
       segment.duration <
-      Math.max(this.config.minElementSeconds, this.config.glitchUnits * this.unit)
+      Math.max(this.config.minElementSeconds, this.config.glitchUnits * glitchUnit)
     ) {
       if (last && last.mark !== mark) {
         this.replaceLast({ ...last, duration: last.duration + segment.duration });

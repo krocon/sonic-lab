@@ -1,10 +1,11 @@
 import { createGaussian, createRandom } from '../../app/audio/synthesis/random';
 import { keyedEnvelope } from '../../app/audio/synthesis/signal';
 import { scheduleMorse, unitSeconds } from '../../app/decoders/morse/morse-timing';
+import { RoomReverbOptions, roomReverb } from './room-reverb';
 
 /**
  * Realistic Morse test signals: noise at a given SNR, fading (QSB), clicks and bursts,
- * frequency drift, sloppy hand timing, weighting and Farnsworth spacing. Deterministic per seed.
+ * frequency drift, sloppy hand timing, weighting, Farnsworth spacing and room reverberation. Deterministic per seed.
  */
 export interface ImpairedMorseOptions {
   readonly wpm: number;
@@ -31,6 +32,8 @@ export interface ImpairedMorseOptions {
   /** A burst of key-down at the decoder frequency lasting `ms` per second – worst case glitch. */
   readonly onFrequencyGlitchesPerSecond?: number;
   readonly leadIn?: number;
+  /** Room reverberation (loudspeaker → room → microphone), applied before the noise. */
+  readonly reverb?: RoomReverbOptions;
 }
 
 export interface ImpairedMorse {
@@ -69,7 +72,7 @@ export function impairedMorse(text: string, o: ImpairedMorseOptions): ImpairedMo
   }
   const duration = (spans.at(-1)?.end ?? 0) + 7 * unit + 0.5;
   const n = Math.round(duration * sampleRate);
-  const out = new Float32Array(n);
+  let out: Float32Array = new Float32Array(n);
 
   // 2. keyed tone with drift and fading (phase-continuous)
   let phase = 0;
@@ -88,6 +91,8 @@ export function impairedMorse(text: string, o: ImpairedMorseOptions): ImpairedMo
       );
     out[i] = gain * env * Math.sin(phase);
   }
+
+  if (o.reverb) out = roomReverb(out, sampleRate, o.reverb);
 
   // 3. noise at the requested SNR (500 Hz reference bandwidth around the tone)
   if (o.snrDb !== undefined) {

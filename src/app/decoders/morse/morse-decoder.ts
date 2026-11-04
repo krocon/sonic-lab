@@ -68,6 +68,7 @@ export class MorseDecoder implements SignalDecoder<MorseDecoderConfig, MorseEven
   private out: MorseEvent[] = [];
   private timingOut: TimingEvent[] = [];
   private lastToneReport = -Infinity;
+  private lastFrequency = 0;
 
   constructor(config: Partial<MorseDecoderConfig> = {}) {
     this.configure(config);
@@ -128,9 +129,15 @@ export class MorseDecoder implements SignalDecoder<MorseDecoderConfig, MorseEven
     this.timing.reset();
     this.smoother.reset();
     this.lastToneReport = -Infinity;
+    this.lastFrequency = 0;
   }
 
   private readonly onHop = (hop: ToneHop): void => {
+    if (hop.frequency !== this.lastFrequency) {
+      // a mark spanning a tracker switch is the old signal (hum, a carrier) – not Morse
+      if (this.lastFrequency !== 0) this.keying.restart(hop.time);
+      this.lastFrequency = hop.frequency;
+    }
     const hopSeconds = this.tone.hopSeconds;
     // smoothing window ≈ 0.4 unit – from a confident estimate only (a wrong early guess would
     // smear the very elements it is learned from), otherwise from the prior speed
@@ -140,6 +147,7 @@ export class MorseDecoder implements SignalDecoder<MorseDecoderConfig, MorseEven
     );
     const envelope = this.smoother.push(hop.amplitude);
     this.keying.setEdgeGuard((this.smoother.length + 2) * hopSeconds);
+    this.keying.setUnit(unit);
     // stricter start until a transmission has been recognised: no Morse from noise alone
     this.keying.setStartGate(this.timing.isConfident ? 1 : UNCONFIDENT_START_GATE);
     this.keying.push(envelope, hop.time, hopSeconds, this.onSegment);
