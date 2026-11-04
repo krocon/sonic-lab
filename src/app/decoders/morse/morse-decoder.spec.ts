@@ -82,6 +82,29 @@ describe('MorseDecoder (synthetic signals)', { timeout: 30_000 }, () => {
     expect(decode('CQ CQ', { wpm: 18, noiseRms: 0.01, leadIn: 1.5 })).toBe('CQ CQ');
   });
 
+  // a looping beacon or the pause between overs: far longer than a word gap, it must not be
+  // learned as one (the word-gap threshold would then swallow the real word gaps)
+  for (const pause of [1, 1.5, 3]) {
+    it(`keeps word gaps after ${pause} s pauses between repeated transmissions`, () => {
+      const message = 'CQ CQ DE DL1ABC K';
+      const spans: { start: number; end: number }[] = [];
+      let start = 0.4;
+      for (let i = 0; i < 3; i++) {
+        const s = scheduleMorse(message, { wpm: 18, leadIn: start });
+        spans.push(...s.elements.map((e) => ({ start: e.start, end: e.end })));
+        start = s.elements.at(-1)!.end + pause;
+      }
+      const samples = render(
+        mix(tone({ frequency: 700, amplitude: 0.4, spans }), whiteNoise(0.01, 7)),
+        start,
+        48000,
+      );
+      expect(eventsToText(new MorseDecoder().decodeAll(samples, 48000))).toBe(
+        [message, message, message].join(' '),
+      );
+    });
+  }
+
   it('decodes prosigns', () => {
     expect(decode('<SK>', { wpm: 20 })).toBe('<SK>');
   });

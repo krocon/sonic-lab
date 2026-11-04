@@ -1,11 +1,16 @@
 import { render } from '../../audio/synthesis/signal';
 import { MorseDecoder, eventsToText } from '../../decoders/morse/morse-decoder';
+import { scheduleMorse } from '../../decoders/morse/morse-timing';
 import { DEMO_TEXT, demoSignal } from './demo-signal';
 
 describe('demo signal', () => {
-  it('is a decodable Morse message', () => {
-    const samples = render(demoSignal(), 18, 48000);
-    expect(eventsToText(new MorseDecoder().decodeAll(samples, 48000))).toContain(DEMO_TEXT);
+  it('decodes with word gaps in every repetition, not only the first', () => {
+    // same loop length as demoSignal(): the pause between repetitions is ~22 units
+    const loopSeconds = scheduleMorse(DEMO_TEXT, { wpm: 18, leadIn: 0.4 }).duration + 0.6;
+    const samples = render(demoSignal(), 3 * loopSeconds, 48000);
+    expect(eventsToText(new MorseDecoder().decodeAll(samples, 48000))).toBe(
+      [DEMO_TEXT, DEMO_TEXT, DEMO_TEXT].join(' '),
+    );
   });
 });
 
