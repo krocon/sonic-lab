@@ -52,6 +52,12 @@ export type TimingEvent =
   | { readonly type: 'word-gap'; readonly timestamp: number }
   | { readonly type: 'wpm'; readonly timestamp: number; readonly wpm: number };
 
+/**
+ * Gap clusters further apart than this are not character vs. word gaps (3:7 ≈ 2.3, a little more
+ * when the keying shortens every space) but word gaps vs. pauses between transmissions.
+ */
+const PAUSE_SPLIT_RATIO = 3;
+
 interface Segment {
   readonly mark: boolean;
   readonly start: number;
@@ -262,7 +268,18 @@ export class TimingDecoder {
   private wordGapUnits(): number {
     const fallback = this.config.wordGapThreshold;
     if (this.gaps.length < 4) return fallback;
-    const c = twoMeans(this.gaps);
+    let gaps = this.gaps;
+    let c = twoMeans(gaps);
+    // Pauses between transmissions (a looping beacon, the end of an over) are far longer than word
+    // gaps and would lump character and word gaps into one low cluster, putting the boundary
+    // above the word gaps. Character and word gaps are 3:7 even with Farnsworth timing, so a much
+    // wider split is pauses: set them aside and split the rest. The threshold found from the rest
+    // stays below them, so they still separate words.
+    while (c && c.lowCount > 0 && c.highCount > 0 && c.high / c.low > PAUSE_SPLIT_RATIO) {
+      const boundary = Math.sqrt(c.low * c.high);
+      gaps = gaps.filter((g) => g <= boundary);
+      c = twoMeans(gaps);
+    }
     if (!c) return fallback;
     if (c.lowCount > 0 && c.highCount > 0 && c.high / c.low > 1.6) {
       return Math.max(this.config.charGapThreshold + 1, Math.sqrt(c.low * c.high));
