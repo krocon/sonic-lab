@@ -72,6 +72,29 @@ const SCENARIOS: Scenario[] = [
   // the first word gaps are learned from the data, so the first word may be split
   { name: 'Farnsworth 18/8', options: { wpm: 18, farnsworthWpm: 8, snrDb: 15 }, maxCer: 0.03 },
   { name: 'fast 35 WPM, SNR 15 dB', options: { wpm: 35, snrDb: 15 }, maxCer: 0.03 },
+  // loudspeaker → room → microphone: element gaps filled by the reverberant tail. The result
+  // depends on the room (its gain at the tone frequency); `seed` picks the simulated room.
+  {
+    name: 'room reverb RT60 0.3 s / 25 % wet, 18 WPM',
+    options: { wpm: 18, snrDb: 20, reverb: { rt60Seconds: 0.3, wet: 0.25, seed: 5 } },
+    maxCer: 0.02,
+  },
+  {
+    name: 'room reverb RT60 0.3 s / 50 % wet, 18 WPM',
+    options: { wpm: 18, snrDb: 20, reverb: { rt60Seconds: 0.3, wet: 0.5, seed: 3 } },
+    maxCer: 0.03,
+  },
+  {
+    name: 'room reverb RT60 0.6 s / 25 % wet, 12 WPM',
+    options: { wpm: 12, snrDb: 20, reverb: { rt60Seconds: 0.6, wet: 0.25, seed: 3 } },
+    maxCer: 0.03,
+  },
+  {
+    name: 'room reverb RT60 0.3 s / 25 % wet, 25 WPM',
+    options: { wpm: 25, snrDb: 20, reverb: { rt60Seconds: 0.3, wet: 0.25, seed: 7 } },
+    maxCer: 0.03,
+  },
+
   {
     name: 'slow 8 WPM, SNR 10 dB',
     options: { wpm: 8, snrDb: 10 },

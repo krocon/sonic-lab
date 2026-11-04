@@ -1,0 +1,76 @@
+
+= NOW 18 WPM transition file follows =
+
+Solar activity reached moderate levels with two M class flares
+earlier this week.  The first flares occurred on January 21 in
+regions 4345 and 4349.  Region 4345 continued to show development,
+as well as region 4342.  Region 4341 was a main contributor to the C
+level activity of the day, including a larger C class flare on
+January 21. No Earth directed CMEs were observed in the available
+coronagraph imagery.  Solar activity is likely to be at moderate, R1
+to R2, or minor to moderate, levels, with a slight chance for X
+class flares, R3 or strong, on January 24, primarily due to the
+magnetic potential of Regions 4341, 4342 and 4345.  Solar wind
+parameters reflected Coronal Mass Ejection influence transitioning
+into a high speed stream paradigm, with the interplanetary magnetic
+field returned to largely enhanced background levels. Solar wind
+speeds gradually decreased from about 800 km/s to 575 km/s at the
+end of the day. Phi angle remained in the positive solar sector away
+from the Sun, indicating the coronal hole high speed stream dominant
+influence over the period. Solar wind parameters near Earth are
+expected to be dominated by the CH HSS conditions in the next three
+days.  Geomagnetic field activity is likely to reach G1 or Minor
+geomagnetic storm levels on January 29 and unsettled to active
+levels on January 27 and 28, then 30 and 31, and then from February
+4 to 11.  All enhancements in activity are due to the anticipated
+influence of multiple, recurrent Coronal Hole High Speed Streams.
+The remainder of the outlook period is expected to be mostly quiet.
+Weekly Commentary on the Sun, the Magnetosphere, and the Earths
+Ionosphere, January 22, 2026, by F. K. Janda, OK1HH, A combination
+of favorable circumstances contributed to the northern lights on the
+night of January 19 and 20 becoming one of the main stories in the
+media in the following days. In particular, much of Europe enjoyed
+very favorable weather conditions thanks to an extensive high
+pressure system, the center of which slowly moved southward from
+Russia across Ukraine, the Black Sea, and Turkey to the Middle East.
+In its western part, a dry, cold wind blew from the south. As a
+result, the aurora borealis was observed as far south as southern
+Europe, for example in southern France, northern Italy, and Romania.
+Before the disturbance, a sunspot group AR4341, had been gradually
+growing. Its magnetic configuration became increasingly complex,
+while to the west and south of it lay the extensive coronal hole No.
+15. Then, in a position near the center of the solar disk, very
+favorable for the Earth to be hit by solar wind, a proton flare with
+the highest concentration and energy of protons in the last 36 years
+was observed. The beginning of the phenomenon was registered on
+January 18 at 1727 UT, with a maximum at 1809 UT and an end at 1851
+UT.  A very fast particle ejection, CME, began on January 18 at 1748
+UT, lasted 5 hours, while was best observed around 1812 UT. The
+particle flow velocity was extreme, ranging from 2900 up to 3500
+km/s.  Therefore, the geomagnetic disturbance did not begin two to
+three days after the flare, as is usual, but the very next day,
+January 19. The aurora borealis was visible for most of the night
+from January 19 to 20, and even at mid latitudes it had not only the
+usual red color, but also, exceptionally, green.  The G4 geomagnetic
+disturbance lasted 15 hours and was followed by a G3 disturbance
+lasting 18 hours. The occurrence of numerous inhomogeneities in the
+ionosphere caused large and variable attenuation. On the other hand,
+the values of the critical frequencies of the F2 ionospheric layer
+during the daytime in mid latitudes on January 19 and 20 were above
+average. The decline, typical for the end of the disruption, did not
+occur until January 21.  Solar activity at the end of December
+indicated that the maximum of the eleven year cycle is not yet over
+and will extend from 2024 to 2025 into part of 2026. During the rest
+of January, solar activity will decline only very slowly, with a
+more significant decline occurring after the beginning of February,
+when another longer geomagnetic disturbance can be expected.  The
+Predicted Planetary A Index for January 24 to 30 is 5, 5, 5, 10, 15,
+25, and 12, with a mean of 11.  Predicted Planetary K Index is 2, 2,
+2, 3,4, 5, and 4, with a mean of 3.14.  10.7 centimeter flux is 180,
+175, 170, 165, 160, 165, and 165, with a mean of 168.6.  Links to
+articles or other websites mentioned in this bulletin can be found
+in teleprinter, packet, and Internet versions of 2026 Propagation
+Forecast Bulletin ARLP004.
+
+= END OF 18 WPM transition file <
+

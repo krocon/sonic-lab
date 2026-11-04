@@ -54,16 +54,66 @@ describe('KeyingDetector', () => {
   });
 
   it('holds the state between the hysteresis thresholds', () => {
-    // 0.2 is below the on-threshold (0.25) but above the off-threshold (0.15) once a mark started
+    // after a 0.5 mark the thresholds are 0.25 (on) / 0.15 (off); a second mark at 0.3 that
+    // sinks gently to 0.2 – below on, above off, less than 6 dB under its peak – continues
     const segs = run([
       ...repeat(0.0001, 40),
       ...repeat(0.5, 10),
+      ...repeat(0.0001, 20),
+      ...repeat(0.3, 10),
       ...repeat(0.2, 10),
       ...repeat(0.0001, 20),
     ]);
     expect(segs.filter((s) => s.state === 'mark').map((s) => Math.round(s.duration / HOP))).toEqual(
-      [20],
+      [10, 20],
     );
+  });
+
+  it('finds element gaps that stay far above the noise floor (ringing, reverberation)', () => {
+    // gaps only 12 dB below the marks, 40 dB above the noise
+    const segs = run([
+      ...repeat(0.0001, 40),
+      ...repeat(0.5, 12),
+      ...repeat(0.12, 12),
+      ...repeat(0.5, 36),
+      ...repeat(0.12, 12),
+      ...repeat(0.5, 12),
+      ...repeat(0.0001, 40),
+    ]);
+    expect(segs.filter((s) => s.state === 'mark').map((s) => Math.round(s.duration / HOP))).toEqual(
+      [12, 36, 12],
+    );
+  });
+
+  it('does not start a mark on the swelling tail after a key-up', () => {
+    // a reverberant tail can rise again right after the dry tone stopped; only a fresh rise of
+    // ≥ 8 dB out of the gap minimum counts
+    const segs = run([
+      ...repeat(0.0001, 40),
+      ...repeat(0.5, 12),
+      ...repeat(0.15, 3),
+      ...repeat(0.3, 6),
+      ...repeat(0.1, 6),
+      ...repeat(0.5, 12),
+      ...repeat(0.0001, 40),
+    ]);
+    expect(segs.filter((s) => s.state === 'mark').map((s) => Math.round(s.duration / HOP))).toEqual(
+      [12, 12],
+    );
+  });
+
+  it('drops a running mark on restart', () => {
+    const d = new KeyingDetector();
+    const out: KeyingSegment[] = [];
+    const push = (a: number, hops: number, from: number) => {
+      for (let i = 0; i < hops; i++) d.push(a, (from + i + 1) * HOP, HOP, (s) => out.push(s));
+    };
+    push(0.0001, 40, 0);
+    push(0.5, 30, 40);
+    d.restart(70 * HOP);
+    expect(d.isKeyDown).toBe(false);
+    push(0.0001, 20, 70);
+    expect(out.filter((s) => s.state === 'mark')).toEqual([]);
   });
 
   it('ignores noise without a tone', () => {

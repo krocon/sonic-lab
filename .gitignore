@@ -57,3 +57,7 @@ Thumbs.db
 /.agents/
 /.gemini/
 /public/worklets/
+
+# Morse test corpus: generated WAVs and decoder output
+/morse-training/wav/
+/morse-training/out/
