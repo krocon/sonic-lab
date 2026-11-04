@@ -39,6 +39,17 @@ const DROP = Math.pow(10, -6 / 20);
 const RISE = Math.pow(10, 8 / 20);
 /** … if the level is within 10 dB of recent marks. */
 const NEAR = Math.pow(10, -10 / 20);
+/**
+ * … or on a fast rise of 4 dB within about one settling time (smoothing + analysis window), above
+ * the noise-relative on-threshold: the direct sound of the next element arriving on a tail that has
+ * not decayed yet. The room's build-up after it is slow, and the valley creeps up meanwhile – the
+ * 8 dB rise alone came too late (dahs read as dits) or not at all (lost elements).
+ */
+const FAST_RISE = Math.pow(10, 4 / 20);
+/** Earliest fast-rise key-down after a key-up, in units. */
+const FAST_RISE_AFTER_UNITS = 0.5;
+/** Hops of level history kept for the fast-rise test. */
+const RISE_HISTORY = 24;
 /** Time constant of the mark peak's decay, in units. */
 const PEAK_UNITS = 2;
 const VALLEY_SECONDS = 0.5;
@@ -81,9 +92,16 @@ export class KeyingDetector {
   private recentMark = 0;
   /** Current Morse unit estimate, s – sets how fast the mark peak may follow a decaying tone. */
   private unit = 0.06;
+  /** Recent levels (ring buffer) for the fast-rise test. */
+  private readonly history = new Float64Array(RISE_HISTORY);
+  private historyIndex = 0;
+  private historyFilled = 0;
+  private hopSeconds = 0.006;
 
   /** Multiplies `minSnr` for starting a mark; the decoder raises it until a transmission is recognised. */
   private startGate = 1;
+  /** No key-down this long after a key-up (s). */
+  private refractory = 0;
 
   setStartGate(factor: number): void {
     this.startGate = factor;
@@ -92,6 +110,14 @@ export class KeyingDetector {
   /** Current unit estimate (s); the local edge detection scales its time constants with it. */
   setUnit(seconds: number): void {
     this.unit = seconds;
+  }
+
+  /**
+   * No key-down for this long after a key-up (s). A reverberant tail swells again right after the
+   * direct sound stops (early reflections) – the next element cannot follow that early.
+   */
+  setRefractory(seconds: number): void {
+    this.refractory = seconds;
   }
 
   /** Sets how long after a key-up the envelope is still decaying (excluded from the noise floor). */
@@ -124,6 +150,7 @@ export class KeyingDetector {
     this.lastTime = 0;
     this.markPeak = this.valley = this.recentMark = 0;
     this.tail = false;
+    this.historyIndex = this.historyFilled = 0;
   }
 
   get isKeyDown(): boolean {
@@ -155,6 +182,7 @@ export class KeyingDetector {
   ): void {
     this.track(amplitude, hopSeconds);
     this.lastTime = time;
+    this.hopSeconds = hopSeconds;
     const hopStart = time - hopSeconds;
     // The SNR gate decides whether a mark may *start*; an ongoing mark ends only at the off-threshold.
     const usable =
@@ -163,6 +191,7 @@ export class KeyingDetector {
         this.signal >= this.startGate * this.config.minSnr * this.noise);
     const raw = usable && (this.keyDown ? this.holdsMark(amplitude) : this.startsMark(amplitude));
     this.trackLocal(amplitude, hopSeconds);
+    this.remember(amplitude);
 
     if (raw === this.keyDown) {
       this.pendingSince = -1;
@@ -195,16 +224,47 @@ export class KeyingDetector {
   }
 
   /**
-   * Key goes down above the noise-relative on-threshold. Right after a mark that ended by the
-   * relative drop, the decaying tail (reverberation) can still exceed that threshold or even
-   * swell again – there only a fresh rise out of the gap minimum, close to the level of recent
-   * marks, starts a new one.
+   * Key goes down above the noise-relative on-threshold, but not within the refractory time after
+   * a key-up. Right after a mark that ended by the relative drop, the decaying tail
+   * (reverberation) can still exceed that threshold or even swell again – there only a rise out
+   * of the gap minimum, close to the level of recent marks, starts a new one: 8 dB above the
+   * valley, or 4 dB within one settling time.
    */
   private startsMark(a: number): boolean {
+    if (this.lastTime - this.stateStart < this.refractory) return false;
     if (this.tail) {
-      return a >= this.valley * RISE && a >= this.recentMark * NEAR;
+      if (a < this.recentMark * NEAR) return false;
+      if (a >= this.valley * RISE) return true;
+      // the fast rise only from half a unit on (also before the decoder sets a refractory time):
+      // earlier, a 4 dB rise is the tail swelling, not the next element
+      return (
+        this.lastTime - this.stateStart >= FAST_RISE_AFTER_UNITS * this.unit &&
+        a >= this.onThreshold() &&
+        a >= this.recentMinimum() * FAST_RISE
+      );
     }
     return a >= this.onThreshold();
+  }
+
+  /** Lowest level of the last settling time (smoothing + analysis window), at least two hops. */
+  private recentMinimum(): number {
+    const hops = Math.min(
+      this.historyFilled,
+      Math.max(2, Math.round(this.edgeGuard / this.hopSeconds)),
+      RISE_HISTORY,
+    );
+    let min = Infinity;
+    for (let i = 1; i <= hops; i++) {
+      const v = this.history[(this.historyIndex - i + RISE_HISTORY) % RISE_HISTORY] ?? 0;
+      if (v < min) min = v;
+    }
+    return min;
+  }
+
+  private remember(a: number): void {
+    this.history[this.historyIndex] = a;
+    this.historyIndex = (this.historyIndex + 1) % RISE_HISTORY;
+    if (this.historyFilled < RISE_HISTORY) this.historyFilled++;
   }
 
   private trackLocal(a: number, dt: number): void {

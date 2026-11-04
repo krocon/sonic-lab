@@ -51,6 +51,12 @@ const TONE_REPORT_INTERVAL = 0.05; // s
 const SMOOTHING_UNITS = 0.4;
 /** Factor on `minSnr` for starting marks before the timing estimate is confident. */
 const UNCONFIDENT_START_GATE = 1.2;
+/**
+ * No key-down within half a unit after a key-up, once the speed is known: the reverberant tail
+ * swells again right after the direct sound stops. Not before – a prior far below the real speed
+ * would swallow element gaps of fast CW.
+ */
+const REFRACTORY_UNITS = 0.5;
 
 /**
  * Morse decoder: ToneDetector (Goertzel) → KeyingDetector (adaptive threshold, hysteresis,
@@ -148,6 +154,7 @@ export class MorseDecoder implements SignalDecoder<MorseDecoderConfig, MorseEven
     const envelope = this.smoother.push(hop.amplitude);
     this.keying.setEdgeGuard((this.smoother.length + 2) * hopSeconds);
     this.keying.setUnit(unit);
+    this.keying.setRefractory(this.timing.isConfident ? REFRACTORY_UNITS * unit : 0);
     // stricter start until a transmission has been recognised: no Morse from noise alone
     this.keying.setStartGate(this.timing.isConfident ? 1 : UNCONFIDENT_START_GATE);
     this.keying.push(envelope, hop.time, hopSeconds, this.onSegment);

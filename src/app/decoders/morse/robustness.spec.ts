@@ -94,6 +94,23 @@ const SCENARIOS: Scenario[] = [
     options: { wpm: 25, snrDb: 20, reverb: { rt60Seconds: 0.3, wet: 0.25, seed: 7 } },
     maxCer: 0.03,
   },
+  // gaps that stay above the off-threshold: the next element must start on the fast rise of its
+  // direct sound, and tail swells after a key-up must neither start marks nor skew the speed
+  {
+    name: 'room reverb RT60 0.3 s / 50 % wet, 12 WPM (tail above off-threshold)',
+    options: { wpm: 12, snrDb: 20, reverb: { rt60Seconds: 0.3, wet: 0.5, seed: 2 } },
+    maxCer: 0.06,
+  },
+  {
+    name: 'room reverb RT60 0.6 s / 25 % wet, 12 WPM (slow build-up)',
+    options: { wpm: 12, snrDb: 20, reverb: { rt60Seconds: 0.6, wet: 0.25, seed: 8 } },
+    maxCer: 0.03,
+  },
+  {
+    name: 'room reverb RT60 0.6 s / 25 % wet, 30 WPM',
+    options: { wpm: 30, snrDb: 20, reverb: { rt60Seconds: 0.6, wet: 0.25, seed: 4 } },
+    maxCer: 0.03,
+  },
 
   {
     name: 'slow 8 WPM, SNR 10 dB',

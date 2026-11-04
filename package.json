@@ -38,6 +38,7 @@
     "test:signals": "node scripts/build-worklets.mjs && ng test --watch=false --include=src/app/decoders/morse/robustness.spec.ts",
     "morse:convert": "node scripts/morse-corpus.mjs convert",
     "morse:corpus": "node scripts/morse-corpus.mjs run",
+    "morse:sweep": "node scripts/morse-corpus.mjs sweep",
     "version:check": "node scripts/version.mjs check",
     "version:set": "node scripts/version.mjs set",
     "release:prepare": "node scripts/version.mjs prepare",

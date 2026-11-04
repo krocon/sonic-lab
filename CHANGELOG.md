@@ -76,6 +76,8 @@ All notable changes to this project are documented here. The format follows
   decoded, one line per transmission with time and speed (a pause of 6 s, a capture restart or
   RESET starts a new line). In the log view COPY copies the log, SAVE writes it to a `.txt` file
   and CLEAR empties it. The log lives in memory only and survives switching modes.
+- `pnpm morse:sweep`: synthetic Morse through simulated rooms (RT60, reverberant share, six
+  impulse responses) at 12–40 WPM, CER matrix and score for comparing decoder versions.
 
 ### Changed
 
@@ -109,6 +111,12 @@ All notable changes to this project are documented here. The format follows
 
 ### Fixed
 
+- Morse decoding through a loudspeaker in a reverberant room: elements whose gap stays above the
+  off-threshold started late (dahs read as dits) or not at all – a fast 4 dB rise now starts
+  them; tail swells right after a key-up no longer start pseudo-marks once the speed is known; one
+  stray short gap no longer drags the speed estimate up (a 30 WPM recording was read at 44–50 WPM).
+  Simulated-room score 44 → 35 % CER, W1AW recordings in a RT60 0.3 s room 5.1 → 3.1 %; clean
+  and noisy recordings unchanged.
 - Insufficient colour contrast of secondary text and the light accent colour (WCAG AA).
 - Keyboard focus was lost while the microphone permission was requested (button got disabled).
 - The selected input device was not restored in WebKit when the device list loaded late.

@@ -44,6 +44,17 @@ room, `src/testing/signals/room-reverb.ts`), `--sensitivity low|medium|high`,
 on the simulated room – compare several `--room` values before drawing conclusions. A reference
 text that paraphrases the QSO (e.g. subtitles) gives only a rough CER.
 
+```bash
+pnpm morse:sweep     # synthetic QSO text through simulated rooms: CER matrix (≈ 1 min)
+```
+
+`morse:sweep` sends a ≈ 200-character text (letters, digits, punctuation, prosigns) at 12, 18, 25,
+30 and 40 WPM through RT60 0.3/0.6 s rooms with 25/50 % reverberant energy, six impulse responses
+each, and prints the mean CER per cell, the number of rooms below 5 % and an overall score. The
+keying is known exactly, so the numbers compare decoder versions directly. Options: `--speeds`,
+`--rooms`, `--reverbs 0.3/0.25,0.6/0.5` (`0/0` = no reverb), `--snr <dB, 500 Hz>`, `--rate`,
+`--sensitivity`, `--config '<json>'`, `--text`, `--json`, `--verbose` (decoded text per case).
+
 ## Unit tests share modules – no module mocks
 
 The Angular `unit-test` builder runs Vitest without isolation (`isolate: false`): spec files in a

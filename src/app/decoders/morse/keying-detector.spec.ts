@@ -102,6 +102,50 @@ describe('KeyingDetector', () => {
     );
   });
 
+  it('starts the next element on a fast rise out of a tail that has not decayed', () => {
+    // RT60 ≈ 0.3 s at 30 WPM: the gap stays ≈ 9 dB below the marks (tail flag stays on); the
+    // next element's direct sound adds ≈ 5 dB at once, the rest of the 9 dB builds up slowly –
+    // the 8 dB rise alone would start this mark ≈ 4 hops late
+    const d = new KeyingDetector();
+    d.setUnit(0.04);
+    const out: KeyingSegment[] = [];
+    [
+      ...repeat(0.0001, 40),
+      ...repeat(0.5, 24),
+      ...repeat(0.18, 8),
+      0.32,
+      0.36,
+      0.4,
+      0.44,
+      0.48,
+      ...repeat(0.5, 7),
+      ...repeat(0.0001, 40),
+    ].forEach((a, i) => d.push(a, (i + 1) * HOP, HOP, (s) => out.push(s)));
+    const marks = out.filter((s) => s.state === 'mark');
+    expect(marks.map((s) => Math.round(s.duration / HOP))).toEqual([24, 12]);
+  });
+
+  it('does not start a mark within the refractory time after a key-up', () => {
+    const signal = [
+      ...repeat(0.0001, 40),
+      ...repeat(0.5, 12),
+      ...repeat(0.0001, 2),
+      ...repeat(0.5, 3), // the tail swelling right after the key-up
+      ...repeat(0.0001, 10),
+      ...repeat(0.5, 12),
+      ...repeat(0.0001, 40),
+    ];
+    const marks = (refractory: number) => {
+      const d = new KeyingDetector();
+      d.setRefractory(refractory);
+      const out: KeyingSegment[] = [];
+      signal.forEach((a, i) => d.push(a, (i + 1) * HOP, HOP, (s) => out.push(s)));
+      return out.filter((s) => s.state === 'mark').map((s) => Math.round(s.duration / HOP));
+    };
+    expect(marks(0)).toEqual([12, 3, 12]);
+    expect(marks(6 * HOP)).toEqual([12, 12]);
+  });
+
   it('drops a running mark on restart', () => {
     const d = new KeyingDetector();
     const out: KeyingSegment[] = [];
