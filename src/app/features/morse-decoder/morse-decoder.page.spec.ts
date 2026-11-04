@@ -139,7 +139,11 @@ describe('MorseDecoderPage', () => {
 
     await (hw.soft('Save log') as { run(): Promise<void> }).run();
     expect(exporter.saved).toEqual([
-      { name: 'audiolab-morse-log-2026-11-04-14-02-31.txt', type: 'text/plain', text: text + '\n' },
+      {
+        name: 'sonic-lab-morse-log-2026-11-04-14-02-31.txt',
+        type: 'text/plain',
+        text: text + '\n',
+      },
     ]);
     expect(hw.message()?.text).toBe('Log saved to /tmp/log.txt');
     exporter.result = { status: 'cancelled' };

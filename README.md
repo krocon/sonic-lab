@@ -1,8 +1,8 @@
-# AudioLab
+# Sonic Lab
 
 **Local, privacy-first audio signal analyzer for the web and the desktop.**
 
-AudioLab captures audio from your microphone, visualises it in real time and decodes signals –
+Sonic Lab captures audio from your microphone, visualises it in real time and decodes signals –
 Morse code and telephone keypad tones (DTMF) – and comes with a spectrum analyzer, a tone
 generator and a recorder. Everything runs on your device: no server, no cloud, no telemetry. The
 same Angular application ships as a web app and as a [Tauri 2](https://tauri.app) desktop app for
@@ -54,7 +54,7 @@ Details: [docs/PRIVACY.md](docs/PRIVACY.md).
 
 **Web:** serve the build over HTTPS (or use `http://localhost` during development) – browsers only
 allow microphone access in a secure context. Release builds are attached to GitHub releases as
-`audiolab-web-<version>.zip` and can be deployed to GitHub Pages.
+`sonic-lab-web-<version>.zip` and can be deployed to GitHub Pages.
 
 **Desktop:** download the installer for your OS from the
 [releases page](https://github.com/krocon/sonic-lab/releases). Builds are currently
@@ -90,7 +90,7 @@ The development history is documented as work orders in [prompts/](prompts/READM
 
 ## Browser support
 
-Current desktop versions of Chromium-based browsers, Firefox and Safari. AudioLab needs
+Current desktop versions of Chromium-based browsers, Firefox and Safari. Sonic Lab needs
 `getUserMedia`, the Web Audio API and `AudioWorklet`; unsupported or insecure environments get a
 clear message instead of a broken page. Automated tests run in Chromium locally and in Chromium,
 Firefox and WebKit in CI.

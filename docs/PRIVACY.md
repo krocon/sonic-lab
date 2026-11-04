@@ -1,12 +1,12 @@
 # Privacy
 
-AudioLab is designed so that audio never leaves your device.
+Sonic Lab is designed so that audio never leaves your device.
 
 ## Principles
 
 - **Local processing only.** All capture, analysis and decoding run inside the browser or the
   desktop WebView. There is no backend server.
-- **No telemetry.** AudioLab sends no analytics, crash reports or usage data. The Angular CLI
+- **No telemetry.** Sonic Lab sends no analytics, crash reports or usage data. The Angular CLI
   analytics are disabled in the project configuration.
 - **Microphone on user action only.** Access is requested only after you press **Start**. The
   stream is stopped when you press **Stop**, leave the view, close or hide the page

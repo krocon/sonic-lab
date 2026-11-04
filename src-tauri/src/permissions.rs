@@ -1,6 +1,6 @@
 //! Web permission policy of the main webview (least privilege).
 //!
-//! AudioLab needs the microphone and nothing else. Without a handler the platform defaults differ:
+//! Sonic Lab needs the microphone and nothing else. Without a handler the platform defaults differ:
 //! wry grants *every* media capture request on macOS (camera included), WebView2 shows its own
 //! prompt and WebKitGTK decides on its own. The policy below makes the behaviour explicit and equal:
 //! microphone allowed (the page only asks after the user pressed Start; the OS still asks once on

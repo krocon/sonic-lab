@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!-- deployed at http://krocon.de/products/sonic-lab/ – every relative URL below resolves from here -->
+    <base href="/products/sonic-lab/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Sonic Lab — Hear what the signal says</title>
+    <link rel="canonical" href="http://krocon.de/products/sonic-lab/" />
+    <meta
+      name="description"
+      content="Sonic Lab is a local, privacy-first audio signal analyzer. Decode Morse and DTMF, analyze spectra, generate tones and record — live on your own device, on the web and on macOS, Windows and Linux."
+    />
+    <meta name="theme-color" content="#000000" />
+    <meta name="color-scheme" content="dark" />
+    <meta property="og:title" content="Sonic Lab — Hear what the signal says" />
+    <meta
+      property="og:description"
+      content="A local, privacy-first audio signal analyzer with the soul of a radio transceiver."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="http://krocon.de/products/sonic-lab/" />
+    <meta property="og:image" content="http://krocon.de/products/sonic-lab/assets/media/og.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+    <link rel="preload" href="assets/fonts/archivo-var.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="assets/fonts/jetbrains-mono-var.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="assets/css/site.css" />
+    <script>
+      document.documentElement.classList.add('js');
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <!-- Power-on sequence (decorative) -->
+    <div class="boot" aria-hidden="true">
+      <span class="boot-led"></span>
+      <span class="boot-line"></span>
+      <span class="boot-word">SONIC LAB</span>
+      <span class="boot-meta">AUDIO SIGNAL ANALYZER</span>
+    </div>
+
+    <div class="grid-bg" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <!-- Scroll position as an LED level meter -->
+    <div class="meter" aria-hidden="true">
+      <span class="meter-label">LEVEL</span>
+      <div class="meter-segs"></div>
+    </div>
+
+    <header class="nav">
+      <a class="brand" href="#top" aria-label="Sonic Lab, back to top">
+        <span class="led" aria-hidden="true"></span>
+        <span class="brand-word">SONIC LAB</span>
+      </a>
+      <nav class="nav-links" aria-label="Sections">
+        <a href="#panel" data-hover-scramble>Panel</a>
+        <a href="#modules" data-hover-scramble>Modules</a>
+        <a href="#morse" data-hover-scramble>Morse</a>
+        <a href="#privacy" data-hover-scramble>Privacy</a>
+        <a href="#download" data-hover-scramble>Download</a>
+      </nav>
+      <a class="btn btn-key btn-sm" href="https://github.com/krocon/sonic-lab">
+        <span>GitHub</span>
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 12 12 4M6 4h6v6" /></svg>
+      </a>
+    </header>
+
+    <main id="main">
+      <!-- ───────────────────────── HERO ───────────────────────── -->
+      <section class="hero" id="top" aria-labelledby="hero-title">
+        <canvas class="scope" aria-hidden="true"></canvas>
+        <div class="hero-inner">
+          <p class="eyebrow hero-eyebrow" data-scramble>Audio signal analyzer · Web · macOS · Windows · Linux</p>
+          <h1 class="hero-title" id="hero-title" data-split>
+            Hear what<br />
+            the <em>signal</em> says.
+          </h1>
+          <div class="hero-row">
+            <p class="hero-lede">
+              Decode Morse and DTMF, read spectra, generate tones and record — live, on your own
+              device. No server. No cloud. No telemetry.
+            </p>
+            <div class="hero-cta">
+              <a class="btn btn-primary" href="#download" data-magnetic>
+                <span>Get Sonic Lab</span>
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3.5 8.5 8 13l4.5-4.5" /></svg>
+              </a>
+              <button class="btn btn-ghost listen" type="button" aria-pressed="false" data-magnetic>
+                <span class="listen-icon" aria-hidden="true"><i></i><i></i><i></i></span>
+                <span class="listen-label">Listen</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="scope-band" aria-hidden="true">
+          <div class="hud hud-top">
+            <span class="hud-tag">SIGNAL</span>
+            <span class="hud-live"><i></i> Listening · 48.0 kHz</span>
+          </div>
+          <div class="hud hud-bottom">
+            <span class="hud-tag">KEY-DOWN</span>
+            <span class="hud-dim">move the pointer to retune</span>
+          </div>
+        </div>
+
+        <div class="hero-foot">
+          <div class="readouts" aria-hidden="true">
+            <div class="ro"><span class="ro-k">TONE · AUTO</span><span class="ro-v cyan"><b data-ro="tone">700</b> Hz</span></div>
+            <div class="ro"><span class="ro-k">SIGNAL / NOISE</span><span class="ro-v"><b data-ro="snr">36</b> dB</span></div>
+            <div class="ro"><span class="ro-k">SPEED</span><span class="ro-v amber"><b>18</b> WPM</span></div>
+          </div>
+          <div class="decoded" role="img" aria-label="An animated decoder spelling CQ CQ DE SONIC LAB K">
+            <span class="decoded-tag" aria-hidden="true">DECODED</span>
+            <span class="decoded-code" aria-hidden="true"></span>
+            <span class="decoded-text" aria-hidden="true"></span>
+          </div>
+          <a class="scroll-cue" href="#panel" aria-label="Scroll to the front panel">
+            <span>Scroll</span><i aria-hidden="true"></i>
+          </a>
+        </div>
+      </section>
+
+      <!-- ───────────────────────── FRONT PANEL TOUR ───────────────────────── -->
+      <section class="panel" id="panel" aria-labelledby="panel-title" data-pin>
+        <div class="pin">
+          <header class="panel-head">
+            <p class="eyebrow"><span class="idx">01</span> The front panel</p>
+            <h2 id="panel-title" class="panel-title" data-split>Built like hardware. Thinks like software.</h2>
+          </header>
+
+          <div class="stage">
+            <div class="device">
+              <img
+                class="device-img"
+                src="assets/media/device-morse.webp"
+                width="2400"
+                height="1500"
+                alt="The Sonic Lab front panel: a large OLED display decoding Morse, six soft keys beside it, eight F keys below, and a control panel with TONE, SPEED and LEVEL knobs, a keypad, transport keys and a MULTI jog dial."
+              />
+              <div class="device-screen">
+                <video
+                  class="device-video"
+                  muted
+                  loop
+                  playsinline
+                  preload="none"
+                  poster="assets/media/live-morse-poster.webp"
+                  aria-hidden="true"
+                >
+                  <source src="assets/media/live-morse.mp4" type="video/mp4" />
+                </video>
+                <span class="scanline" aria-hidden="true"></span>
+              </div>
+              <div class="device-shade" aria-hidden="true"></div>
+              <div class="focus" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+            </div>
+          </div>
+
+          <div class="tour" aria-live="polite">
+            <ol class="tour-list">
+              <li class="tour-item">
+                <span class="tour-n">01</span>
+                <div><h3>OLED display</h3><p>True black and emissive — and the only part that changes. It adapts to every module and grows with the window.</p></div>
+              </li>
+              <li class="tour-item">
+                <span class="tour-n">02</span>
+                <div><h3>F1 – F8</h3><p>Eight function keys, eight modules. One press and the display becomes a different instrument.</p></div>
+              </li>
+              <li class="tour-item">
+                <span class="tour-n">03</span>
+                <div><h3>Soft keys</h3><p>Six keys that do whatever the display shows beside them: tone, sensitivity, speed, reset, view.</p></div>
+              </li>
+              <li class="tour-item">
+                <span class="tour-n">04</span>
+                <div><h3>Tone · Speed · Level</h3><p>Machined knobs for the values you touch most. Drag, scroll or use the keyboard.</p></div>
+              </li>
+              <li class="tour-item">
+                <span class="tour-n">05</span>
+                <div><h3>Keypad &amp; transport</h3><p>Type values like on a real rig. ▶ starts the microphone, ■ releases it, ● records.</p></div>
+              </li>
+              <li class="tour-item">
+                <span class="tour-n">06</span>
+                <div><h3>MULTI jog dial</h3><p>One big dial for fine-tuning whatever is selected. Spin it.</p></div>
+              </li>
+            </ol>
+            <div class="tour-progress" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ───────────────────────── MODULES ───────────────────────── -->
+      <section class="modules" id="modules" aria-labelledby="modules-title" data-pin>
+        <div class="pin">
+          <div class="mod-copy">
+            <p class="eyebrow"><span class="idx">02</span> Eight modules</p>
+            <h2 id="modules-title" class="sr-only">Eight modules, one front panel</h2>
+            <ol class="mod-list">
+              <li class="mod" data-group="Decode" data-key="F1" data-label="MORSE">
+                <p class="mod-meta"><span class="mod-key">F1</span><span class="mod-group">Decode</span></p>
+                <h3 class="mod-title">Morse Decoder</h3>
+                <p class="mod-desc">Automatic or fixed tone, adaptive threshold and speed. Unknown sequences are marked, not guessed — and every transmission lands in a log with time and speed.</p>
+                <ul class="chips"><li>5 – 40 WPM</li><li>Auto tone</li><li>Log · copy · save</li></ul>
+                <img class="mod-img" src="assets/media/morse-decoder.webp" width="1600" height="1174" alt="Morse decoder display: 700 Hz tone, 18 WPM, decoded text CQ CQ DE SONIC LAB K" loading="lazy" />
+              </li>
+              <li class="mod" data-group="Decode" data-key="F2" data-label="DTMF">
+                <p class="mod-meta"><span class="mod-key">F2</span><span class="mod-group">Decode</span></p>
+                <h3 class="mod-title">DTMF Decoder</h3>
+                <p class="mod-desc">All sixteen keys, checked the ITU way: frequency tolerance, twist and energy ratio. A live keypad and tone levels show exactly what was heard.</p>
+                <ul class="chips"><li>16 keys</li><li>±1.5 % accept</li><li>Twist check</li></ul>
+                <img class="mod-img" src="assets/media/dtmf-decoder.webp" width="1600" height="1174" alt="DTMF decoder display with keypad grid and the decoded digits 0123456789*#ABCD" loading="lazy" />
+              </li>
+              <li class="mod" data-group="Analyze" data-key="F3" data-label="FREQ">
+                <p class="mod-meta"><span class="mod-key">F3</span><span class="mod-group">Analyze</span></p>
+                <h3 class="mod-title">Frequency Analyzer</h3>
+                <p class="mod-desc">The dominant frequency with note name and cents, how stable it is, and where it has been for the last ten seconds.</p>
+                <ul class="chips"><li>Note + cents</li><li>Stability</li><li>10 s history</li></ul>
+                <img class="mod-img" src="assets/media/frequency-analyzer.webp" width="1600" height="1174" alt="Frequency analyzer display reading 1134.3 Hz, note C sharp 6, plus 39 cents" loading="lazy" />
+              </li>
+              <li class="mod" data-group="Analyze" data-key="F4" data-label="SPECTRUM">
+                <p class="mod-meta"><span class="mod-key">F4</span><span class="mod-group">Analyze</span></p>
+                <h3 class="mod-title">Spectrum Analyzer</h3>
+                <p class="mod-desc">FFT from 1,024 to 16,384 points, Hann or Blackman-Harris window, log or linear axis, averaging, peak hold and a scrolling spectrogram.</p>
+                <ul class="chips"><li>FFT 1k – 16k</li><li>Spectrogram</li><li>Peak hold</li></ul>
+                <img class="mod-img" src="assets/media/spectrum-analyzer.webp" width="1600" height="1174" alt="Spectrum analyzer display with a peak at 1228.6 Hz and a spectrogram of a gliding tone" loading="lazy" />
+              </li>
+              <li class="mod" data-group="Analyze" data-key="F5" data-label="MONITOR">
+                <p class="mod-meta"><span class="mod-key">F5</span><span class="mod-group">Analyze</span></p>
+                <h3 class="mod-title">Signal Monitor</h3>
+                <p class="mod-desc">RMS and peak on an analog meter, a clipping warning, the dominant frequency and thirty seconds of history at a glance.</p>
+                <ul class="chips"><li>RMS / peak</li><li>Clip warning</li><li>30 s history</li></ul>
+                <img class="mod-img" src="assets/media/signal-monitor.webp" width="1600" height="1174" alt="Signal monitor display with an analog dBFS meter, peak and RMS readouts and the dominant frequency" loading="lazy" />
+              </li>
+              <li class="mod" data-group="Generate" data-key="F6" data-label="MORSE">
+                <p class="mod-meta"><span class="mod-key">F6</span><span class="mod-group">Generate</span></p>
+                <h3 class="mod-title">Morse Encoder</h3>
+                <p class="mod-desc">Text to Morse with a live preview and click-free playback, scheduled on the audio clock. Farnsworth spacing for learners included.</p>
+                <ul class="chips"><li>Live preview</li><li>Click-free audio</li><li>Farnsworth</li></ul>
+                <img class="mod-img" src="assets/media/morse-encoder.webp" width="1600" height="1174" alt="Morse encoder display showing CQ CQ DE SONIC LAB K with the Morse code under every character" loading="lazy" />
+              </li>
+              <li class="mod" data-group="Generate" data-key="F7" data-label="TONE">
+                <p class="mod-meta"><span class="mod-key">F7</span><span class="mod-group">Generate</span></p>
+                <h3 class="mod-title">Tone Generator</h3>
+                <p class="mod-desc">Sine, square, triangle, sawtooth, white and pink noise, linear and log sweeps, two-tone and DTMF — level-capped with fades, so nothing pops.</p>
+                <ul class="chips"><li>10 signal types</li><li>Sweeps</li><li>≤ −3 dBFS</li></ul>
+                <img class="mod-img" src="assets/media/tone-generator.webp" width="1600" height="1174" alt="Tone generator display with a 1000 Hz sine wave preview" loading="lazy" />
+              </li>
+              <li class="mod" data-group="Record" data-key="F8" data-label="REC">
+                <p class="mod-meta"><span class="mod-key">F8</span><span class="mod-group">Record</span></p>
+                <h3 class="mod-title">Audio Recorder</h3>
+                <p class="mod-desc">Up to ten minutes in memory, playback, and WAV export as 16-bit PCM or 32-bit float. Nothing is kept unless you export it.</p>
+                <ul class="chips"><li>10 min</li><li>WAV 16 / 32f</li><li>Memory only</li></ul>
+                <img class="mod-img" src="assets/media/audio-recorder.webp" width="1600" height="1174" alt="Audio recorder display at 0:00.0, ready to record" loading="lazy" />
+              </li>
+            </ol>
+          </div>
+
+          <div class="mod-screen">
+            <div class="oled-frame" aria-hidden="true">
+              <div class="oled-stack"></div>
+              <span class="oled-scan"></span>
+              <span class="oled-glare"></span>
+            </div>
+            <div class="fbar">
+              <div class="fbar-groups" aria-hidden="true"><span style="--span: 2">Decode</span><span style="--span: 3">Analyze</span><span style="--span: 3">Generate · Record</span></div>
+              <div class="fbar-labels" aria-hidden="true"></div>
+              <div class="fbar-keys" role="group" aria-label="Function keys: jump to a module"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ───────────────────────── MORSE ROBUSTNESS ───────────────────────── -->
+      <section class="robust section" id="morse" aria-labelledby="robust-title">
+        <header class="section-head">
+          <p class="eyebrow"><span class="idx">03</span> Morse decoder</p>
+          <h2 id="robust-title" data-split>Made for messy airwaves.</h2>
+          <p class="lede" data-reveal>
+            Real signals hiss, fade, click, wobble and echo around the room. The decoder tracks tone,
+            threshold and speed on the fly — the top trace is what it hears, the white bars are what
+            it keys.
+          </p>
+        </header>
+
+        <div class="tiles" data-stagger>
+          <article class="tile" data-reveal>
+            <canvas class="tile-canvas" data-impair="noise" aria-hidden="true"></canvas>
+            <div class="tile-body">
+              <h3>Noise</h3>
+              <p class="tile-stat"><b data-count="0.7" data-decimals="1" data-from="38">0.7</b><span>% CER</span></p>
+              <p class="tile-note">white noise at 6 dB SNR, 20 WPM</p>
+            </div>
+          </article>
+          <article class="tile" data-reveal>
+            <canvas class="tile-canvas" data-impair="fading" aria-hidden="true"></canvas>
+            <div class="tile-body">
+              <h3>Fading</h3>
+              <p class="tile-stat"><b data-count="0" data-from="27">0</b><span>% CER</span></p>
+              <p class="tile-note">QSB 10 dB over 3 s at 20 dB SNR</p>
+            </div>
+          </article>
+          <article class="tile" data-reveal>
+            <canvas class="tile-canvas" data-impair="clicks" aria-hidden="true"></canvas>
+            <div class="tile-body">
+              <h3>Clicks &amp; bursts</h3>
+              <p class="tile-stat"><b data-count="0" data-from="19">0</b><span>% CER</span></p>
+              <p class="tile-note">2 clicks/s plus 3 off-frequency bursts/s</p>
+            </div>
+          </article>
+          <article class="tile" data-reveal>
+            <canvas class="tile-canvas" data-impair="hand" aria-hidden="true"></canvas>
+            <div class="tile-body">
+              <h3>Hand keying</h3>
+              <p class="tile-stat"><b data-count="0" data-from="23">0</b><span>% CER</span></p>
+              <p class="tile-note">timing jitter of ±25 %</p>
+            </div>
+          </article>
+          <article class="tile" data-reveal>
+            <canvas class="tile-canvas" data-impair="farnsworth" aria-hidden="true"></canvas>
+            <div class="tile-body">
+              <h3>Farnsworth</h3>
+              <p class="tile-stat"><b data-count="2.2" data-decimals="1" data-from="50">2.2</b><span>% CER</span></p>
+              <p class="tile-note">18 WPM characters, 8 WPM spacing</p>
+            </div>
+          </article>
+          <article class="tile" data-reveal>
+            <canvas class="tile-canvas" data-impair="reverb" aria-hidden="true"></canvas>
+            <div class="tile-body">
+              <h3>Room reverb</h3>
+              <p class="tile-stat"><b data-count="4" data-from="0">4</b><span>of 6 rooms</span></p>
+              <p class="tile-note">under 5 % CER at 50 % reverberant energy — up from 0</p>
+            </div>
+          </article>
+        </div>
+        <p class="footnote" data-reveal>
+          CER = character error rate, measured by the project's seeded signal tests and a corpus of real
+          recordings. Methods and limits:
+          <a href="https://github.com/krocon/sonic-lab/blob/main/docs/AUDIO-PIPELINE.md">docs/AUDIO-PIPELINE.md</a>.
+        </p>
+      </section>
+
+      <!-- ───────────────────────── ENCODER PLAYGROUND ───────────────────────── -->
+      <section class="encoder section" id="encoder" aria-labelledby="encoder-title">
+        <header class="section-head section-head--split">
+          <div>
+            <p class="eyebrow"><span class="idx">03b</span> Try it</p>
+            <h2 id="encoder-title" data-split>Type. Listen. Learn the rhythm.</h2>
+          </div>
+          <p class="lede" data-reveal>
+            A pocket version of the built-in Morse encoder. Type a message, set speed and tone, and press
+            play — the same click-free keying the app schedules on the audio clock.
+          </p>
+        </header>
+
+        <div class="enc oled-panel" data-reveal>
+          <div class="enc-status">
+            <span>MORSE ENCODER</span>
+            <span class="enc-state"><i></i> <span class="enc-state-text">Ready</span></span>
+          </div>
+          <div class="enc-readouts">
+            <label class="enc-ro">
+              <span class="ro-k">SPEED</span>
+              <span class="ro-v amber"><b class="enc-wpm">20</b> WPM</span>
+              <input class="enc-range" type="range" min="8" max="35" value="20" step="1" data-enc="wpm" aria-label="Speed in words per minute" />
+            </label>
+            <label class="enc-ro">
+              <span class="ro-k">TONE</span>
+              <span class="ro-v cyan"><b class="enc-tone">700</b> Hz</span>
+              <input class="enc-range" type="range" min="400" max="1000" value="700" step="10" data-enc="tone" aria-label="Tone in hertz" />
+            </label>
+            <div class="enc-ro">
+              <span class="ro-k">LENGTH</span>
+              <span class="ro-v"><b class="enc-len">0.0</b> s</span>
+            </div>
+          </div>
+          <label class="enc-input-wrap">
+            <span class="box-tag">TEXT</span>
+            <input class="enc-input" type="text" value="CQ CQ DE SONIC LAB K" maxlength="40" spellcheck="false" autocomplete="off" aria-label="Message to encode" />
+          </label>
+          <ol class="enc-tokens" aria-label="Characters and their Morse code"></ol>
+          <canvas class="enc-bars" aria-hidden="true"></canvas>
+          <div class="enc-foot">
+            <output class="enc-code" aria-label="Morse code"></output>
+            <button class="btn btn-primary enc-play" type="button" data-magnetic>
+              <span class="enc-play-icon" aria-hidden="true"></span><span class="enc-play-label">Play</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ───────────────────────── MARQUEE ───────────────────────── -->
+      <div class="marquee" aria-hidden="true">
+        <div class="mq-row"><div class="mq-track">Morse<i>·</i><s>DTMF</s><i>·</i>FFT 16384<i>·</i><s>Spectrogram</s><i>·</i>Note + Cents<i>·</i><s>Peak hold</s><i>·</i>Sweeps<i>·</i><s>WAV export</s><i>·</i></div></div>
+        <div class="mq-row mq-rev"><div class="mq-track"><s>Goertzel</s><i>·</i>AudioWorklet<i>·</i><s>Blackman-Harris</s><i>·</i>Farnsworth<i>·</i><s>Tauri 2</s><i>·</i>Prosigns<i>·</i><s>Pink noise</s><i>·</i>ITU twist<i>·</i></div></div>
+      </div>
+
+      <!-- ───────────────────────── SPECTRUM ───────────────────────── -->
+      <section class="spectrum section" id="spectrum" aria-labelledby="spectrum-title">
+        <div class="spec-media" data-reveal>
+          <div class="oled-frame oled-frame--video">
+            <video class="spec-video" muted loop playsinline preload="none" poster="assets/media/live-spectrum-poster.webp" aria-label="Live recording of the spectrum analyzer following a gliding tone">
+              <source src="assets/media/live-spectrum.mp4" type="video/mp4" />
+            </video>
+            <span class="oled-glare"></span>
+          </div>
+          <span class="rec-tag" aria-hidden="true"><i></i> LIVE CAPTURE · REAL APP</span>
+        </div>
+        <div class="spec-copy">
+          <p class="eyebrow"><span class="idx">04</span> Analyze</p>
+          <h2 id="spectrum-title" data-split>See every hertz.</h2>
+          <p class="lede" data-reveal>
+            Its own FFT, windows with known sidelobes, parabolic peak interpolation and a spectrogram that
+            scrolls in real time. Everything you see here was recorded straight off the display.
+          </p>
+          <dl class="stats" data-stagger>
+            <div class="stat" data-reveal><dt>FFT points, max</dt><dd><b data-count="16384" data-sep>16,384</b></dd></div>
+            <div class="stat" data-reveal><dt>Bin width at 4096 / 48 kHz</dt><dd><b data-count="11.7" data-decimals="1">11.7</b><span>Hz</span></dd></div>
+            <div class="stat" data-reveal><dt>Capture latency</dt><dd><b data-count="25" data-from="0">25</b><span>–40 ms</span></dd></div>
+            <div class="stat" data-reveal><dt>Blackman-Harris sidelobes</dt><dd><b data-count="-92" data-from="0">−92</b><span>dB</span></dd></div>
+          </dl>
+        </div>
+      </section>
+
+      <!-- ───────────────────────── PRIVACY ───────────────────────── -->
+      <section class="privacy section" id="privacy" aria-labelledby="privacy-title">
+        <div class="priv-visual" aria-hidden="true">
+          <canvas class="rings"></canvas>
+          <svg class="priv-ring-text" viewBox="0 0 400 400">
+            <defs><path id="circ" d="M200,200 m-172,0 a172,172 0 1,1 344,0 a172,172 0 1,1 -344,0" /></defs>
+            <text><textPath href="#circ" textLength="1075" lengthAdjust="spacing">YOUR DEVICE · LOCAL PROCESSING · NO UPLOAD · YOUR DEVICE · LOCAL PROCESSING · NO UPLOAD ·</textPath></text>
+          </svg>
+          <svg class="priv-mic" viewBox="0 0 48 48"><rect x="17" y="6" width="14" height="24" rx="7" /><path d="M11 22a13 13 0 0 0 26 0M24 35v7M17 42h14" /></svg>
+        </div>
+        <div class="priv-copy">
+          <p class="eyebrow"><span class="idx">05</span> Privacy</p>
+          <h2 id="privacy-title" data-split>Your audio never leaves the room.</h2>
+          <ul class="priv-list" data-stagger>
+            <li data-reveal>Audio is processed on your device and never uploaded. There is no backend.</li>
+            <li data-reveal>The microphone opens only after you press <kbd>▶</kbd> — and is released when you stop, switch away or close the app.</li>
+            <li data-reveal>Nothing is stored or exported unless you ask for it.</li>
+            <li data-reveal>The desktop app may use the microphone and nothing else.</li>
+          </ul>
+          <div class="zeros" data-stagger>
+            <div class="zero" data-reveal><b data-count="0" data-from="128">0</b><span>servers</span></div>
+            <div class="zero" data-reveal><b data-count="0" data-from="4096">0</b><span>bytes uploaded</span></div>
+            <div class="zero" data-reveal><b data-count="0" data-from="37">0</b><span>trackers</span></div>
+          </div>
+          <p class="priv-note" data-reveal>This page plays by the same rules: no cookies, no analytics, no third-party requests.</p>
+        </div>
+      </section>
+
+      <!-- ───────────────────────── PLATFORMS / DOWNLOAD ───────────────────────── -->
+      <section class="platforms section" id="download" aria-labelledby="platforms-title">
+        <header class="section-head center">
+          <p class="eyebrow"><span class="idx">06</span> Platforms</p>
+          <h2 id="platforms-title" data-split>One codebase. Every desk.</h2>
+          <p class="lede" data-reveal>
+            The same Angular app runs in your browser and ships as a native Tauri 2 desktop app — small,
+            fast, and allowed to touch the microphone and nothing else.
+          </p>
+        </header>
+        <div class="cards" data-stagger>
+          <article class="card" data-reveal data-tilt>
+            <span class="card-glyph" aria-hidden="true">
+              <svg viewBox="0 0 48 48"><rect x="5" y="9" width="38" height="30" rx="4" /><path d="M5 17h38" /><circle cx="10" cy="13" r="1.2" /><circle cx="14" cy="13" r="1.2" /><circle cx="18" cy="13" r="1.2" /></svg>
+            </span>
+            <h3>Web</h3>
+            <p>Chromium, Firefox and Safari. Serve it over HTTPS — or straight from localhost.</p>
+            <p class="card-fmt">Static build · ZIP</p>
+          </article>
+          <article class="card" data-reveal data-tilt>
+            <span class="card-glyph" aria-hidden="true">
+              <svg viewBox="0 0 48 48"><rect x="7" y="8" width="34" height="23" rx="3" /><path d="M18 40h12M24 31v9" /></svg>
+            </span>
+            <h3>macOS</h3>
+            <p>One universal build for Apple silicon and Intel.</p>
+            <p class="card-fmt">.app · .dmg</p>
+          </article>
+          <article class="card" data-reveal data-tilt>
+            <span class="card-glyph" aria-hidden="true">
+              <svg viewBox="0 0 48 48"><rect x="8" y="8" width="14.5" height="14.5" rx="1.5" /><rect x="25.5" y="8" width="14.5" height="14.5" rx="1.5" /><rect x="8" y="25.5" width="14.5" height="14.5" rx="1.5" /><rect x="25.5" y="25.5" width="14.5" height="14.5" rx="1.5" /></svg>
+            </span>
+            <h3>Windows</h3>
+            <p>Installer of your choice, window position remembered across monitors.</p>
+            <p class="card-fmt">.msi · .exe</p>
+          </article>
+          <article class="card" data-reveal data-tilt>
+            <span class="card-glyph" aria-hidden="true">
+              <svg viewBox="0 0 48 48"><path d="M8 12h32M8 24h32M8 36h32" /><path d="M14 9v6M30 21v6M20 33v6" /></svg>
+            </span>
+            <h3>Linux</h3>
+            <p>Packages for the usual suspects, media streams enabled for WebKitGTK.</p>
+            <p class="card-fmt">.deb · .rpm · AppImage</p>
+          </article>
+        </div>
+        <div class="dl-cta" data-reveal>
+          <a class="btn btn-primary btn-lg" href="https://github.com/krocon/sonic-lab/releases" data-magnetic>
+            <span>Download from GitHub Releases</span>
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3.5 8.5 8 13l4.5-4.5" /></svg>
+          </a>
+          <a class="btn btn-ghost btn-lg" href="https://github.com/krocon/sonic-lab" data-magnetic>
+            <span>View the source</span>
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 12 12 4M6 4h6v6" /></svg>
+          </a>
+          <p class="dl-note">Desktop builds are currently unsigned — your OS will ask once. Free and open source under the MIT license.</p>
+        </div>
+        <ul class="tech" data-stagger aria-label="Built with">
+          <li data-reveal>Angular 22</li><li data-reveal>Tauri 2</li><li data-reveal>Rust</li><li data-reveal>Web Audio</li><li data-reveal>AudioWorklet</li><li data-reveal>TypeScript</li><li data-reveal>MIT</li>
+        </ul>
+      </section>
+
+      <!-- ───────────────────────── FINALE ───────────────────────── -->
+      <section class="finale" aria-labelledby="finale-title">
+        <div class="finale-morse" aria-hidden="true"></div>
+        <h2 id="finale-title" class="finale-title" data-split>Tune in.</h2>
+        <p class="finale-sub" data-reveal>Plug in a microphone — or press ▶ on the demo signal.</p>
+        <div class="finale-cta" data-reveal>
+          <a class="btn btn-primary btn-lg" href="https://github.com/krocon/sonic-lab/releases" data-magnetic><span>Get Sonic Lab</span></a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="foot-brand">
+        <span class="led" aria-hidden="true"></span>
+        <span class="brand-word">SONIC LAB</span>
+      </div>
+      <p class="foot-73" title="73 — best regards, in ham radio"><span aria-hidden="true">...-- ...--</span> 73</p>
+      <nav class="foot-links" aria-label="Project">
+        <a href="https://github.com/krocon/sonic-lab">GitHub</a>
+        <a href="https://github.com/krocon/sonic-lab/blob/main/docs/PRIVACY.md">Privacy</a>
+        <a href="https://github.com/krocon/sonic-lab/blob/main/CHANGELOG.md">Changelog</a>
+        <a href="https://github.com/krocon/sonic-lab/blob/main/LICENSE">MIT License</a>
+      </nav>
+      <p class="foot-copy">© 2026 Marc Kronberg</p>
+    </footer>
+
+    <script src="assets/js/site.js" defer></script>
+  </body>
+</html>

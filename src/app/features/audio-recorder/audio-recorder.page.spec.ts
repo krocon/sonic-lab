@@ -46,7 +46,7 @@ describe('AudioRecorderPage', () => {
     hw.press('Export…');
     await fixture.whenStable();
     await new Promise((r) => setTimeout(r));
-    expect(exporter.saved[0]?.name).toMatch(/^audiolab-.*\.wav$/);
+    expect(exporter.saved[0]?.name).toMatch(/^sonic-lab-.*\.wav$/);
     expect(exporter.saved[0]?.size).toBe(44 + 47 * 1024 * 2);
     expect(hw.message()?.text).toBe('Saved to /tmp/x.wav');
 

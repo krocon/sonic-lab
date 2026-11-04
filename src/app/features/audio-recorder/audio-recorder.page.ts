@@ -199,7 +199,7 @@ export class AudioRecorderPage {
     try {
       const result = await this.exporter.save(
         new Blob([wav], { type: 'audio/wav' }),
-        `audiolab-${stamp}.wav`,
+        `sonic-lab-${stamp}.wav`,
         'audio/wav',
       );
       this.status.set(

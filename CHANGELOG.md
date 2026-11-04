@@ -79,7 +79,11 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
-- The app is now called Sonic Lab: nameplate, window and page titles, desktop product name.
+- The app is now called Sonic Lab: nameplate, window and page titles, desktop product name, the
+  demo transmission and the encoder's default text (`CQ CQ DE SONIC LAB K`), release titles, the
+  web build archive (`sonic-lab-web-<version>.zip`), exported files (`sonic-lab-<time>.wav`,
+  `sonic-lab-morse-log-<time>.txt`) and the documentation. Package names, bundle identifier and
+  settings keys keep `audiolab`, so saved settings and window state survive.
 
 - New front panel: a transceiver with a large OLED. Eight F keys under the display choose the
   module, six soft keys next to it carry the module's settings and actions (legends in the

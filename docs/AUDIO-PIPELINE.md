@@ -210,7 +210,7 @@ waterfall via self-blit + one `ImageData` column, theme-independent colour map),
   PARIS), weighting; unsupported characters are reported and skipped.
 - `morseTone()` (`morse-synthesis.ts`) renders that schedule as a phase-continuous sine with
   raised-cosine edges – used by the demo input, the tests and the encoder's offline path, so test
-  signals equal what AudioLab sends.
+  signals equal what Sonic Lab sends.
 - `KeyedTonePlayer` (`audio/output/`) plays it live: one `OscillatorNode` + `GainNode`, every edge
   scheduled on the `AudioContext` clock with 5 ms linear ramps (no key clicks, no `setTimeout`
   jitter), volume capped at 0.8, stop fades out within ~10 ms and closes the context.

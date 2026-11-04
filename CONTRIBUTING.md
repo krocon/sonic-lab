@@ -1,4 +1,4 @@
-# Contributing to AudioLab
+# Contributing to Sonic Lab
 
 Thanks for your interest! The roadmap lives in [docs/ROADMAP.md](docs/ROADMAP.md); the
 development history in [prompts/](prompts/README.md). Good first contributions: real test

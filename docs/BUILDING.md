@@ -1,4 +1,4 @@
-# Building AudioLab
+# Building Sonic Lab
 
 ## Versions in use
 
@@ -88,7 +88,7 @@ Versions follow [SemVer](https://semver.org/). `package.json` is the single sour
 4. `.github/workflows/release.yml` creates a **draft** release with the CHANGELOG section as notes
    and attaches: macOS universal `.dmg`/`.app.tar.gz`, Windows `.msi` + NSIS `.exe`, Linux
    `.AppImage`/`.deb`/`.rpm` (built on Ubuntu 22.04 for an older glibc baseline), the static web
-   build `audiolab-web-<version>.zip` and `SHA256SUMS.txt`.
+   build `sonic-lab-web-<version>.zip` and `SHA256SUMS.txt`.
 5. Check the artefacts, then publish the draft.
 
 Optional:

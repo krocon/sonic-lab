@@ -1,6 +1,6 @@
 # Architecture
 
-AudioLab is one Angular application that runs in two hosts: a web browser and a Tauri 2
+Sonic Lab is one Angular application that runs in two hosts: a web browser and a Tauri 2
 WebView. All audio capture and signal processing happen in the frontend; the Rust side only
 hosts the window and exposes a small, explicit command surface.
 

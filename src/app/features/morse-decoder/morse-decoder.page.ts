@@ -213,7 +213,7 @@ export class MorseDecoderPage {
     try {
       const result = await this.exporter.save(
         new Blob([this.log.toText() + '\n'], { type: 'text/plain;charset=utf-8' }),
-        `audiolab-morse-log-${stamp}.txt`,
+        `sonic-lab-morse-log-${stamp}.txt`,
         'text/plain',
       );
       this.flash(

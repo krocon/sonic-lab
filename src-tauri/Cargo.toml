@@ -1,7 +1,7 @@
 [package]
 name = "audiolab"
 version = "0.1.0"
-description = "AudioLab – local, privacy-first audio signal analyzer (Tauri 2 + Angular)"
+description = "Sonic Lab – local, privacy-first audio signal analyzer (Tauri 2 + Angular)"
 authors = ["krocon"]
 license = "MIT"
 edition = "2024"
