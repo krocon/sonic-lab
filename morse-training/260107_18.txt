@@ -1,0 +1,50 @@
+
+= NOW 18 WPM transition file follows =
+
+Solar activity has been at low levels with only a few C1 flares from
+Region 4307. Slight growth and consolidation were observed in that
+region as it neared the southwestern limb. Slight decay and
+separation were observed in Region 4311. The rest of the spotted
+regions were either stable or in decay. CME analysis will be
+conducted as imagery becomes available. Solar activity is expected
+to be low with a slight chance for M class flares, R1 to R2, minor
+to moderate, December 18 to 20.  Solar wind parameters continued to
+be under the influence of a negative polarity coronal hole high
+speed stream, CH HSS. Solar wind speed was mostly in the 550 to 650
+km/s range. HSS influences are expected to gradually diminish
+December 19 to 20.  Solar activity is expected to continue at low
+levels over December 19 to 21. There is a chance for R1 to R2, Minor
+to Moderate, events through December 21. The solar wind environment
+is expected to remain mildly enhanced over December 19 to 21 as
+negative polarity CH HSS influences diminish.  The occurrence of an
+extensive coronal hole in the western half of the solar disk is
+consistent with the increased speed of the solar wind, as measured
+by geostationary satellites. The edges of another relatively large
+coronal hole in the east are likely to be the source of the next
+period of enhanced solar wind during the coming week.  However,
+overall solar activity is low, as reflected in the low values of the
+critical frequencies of the F2 ionospheric layer.  The decline in
+geomagnetic activity in mid December did, however, have a positive
+effect on shortwave propagation conditions, albeit mainly at lower
+frequencies. This included the occasional formation of ionospheric
+waveguides.  Although solar activity is likely to increase next
+week, the activity of the Earths magnetic field is also likely to
+increase.  Therefore, unstable conditions can be expected in the
+Earths ionosphere, with short intervals of improvement followed by
+longer intervals of deterioration in shortwave propagation
+conditions.  The current Solar Cycle Progression from the NOAA/Space
+Weather Prediction Center can be found at,
+//www.swpc.noaa.gov/products/solar cycle progression .  Part 97.27.
+This provision is duplicative of a statutory provision related to
+the FCCs right to modify station licenses.  Part 97.29. This
+provision specified an obsolete procedure to replace paper licenses.
+ARRL proposed deleting this section in comments filed earlier this
+year.  Part 97.315 b2. This obsolete provision grandfathered HF
+amplifiers purchased before April 28, 1978 by an amateur radio
+operator for use at that operators station, and grandfathered those
+manufactured before April 28, 1978, for which a marketing waiver was
+issued.  Part 97.521b and Appendix 2. This rule and appendix relate
+to obsolete VEC regions.
+
+= END OF 18 WPM transition file <
+
