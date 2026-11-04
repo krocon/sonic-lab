@@ -79,6 +79,15 @@ const HANDOVER_GAP_UNITS = 2;
  * short decisions are only noisier than the smoothed level.
  */
 const HANDOVER_EVIDENCE = 0.15;
+/** More than this is not a room but a broken model. */
+const MAX_EVIDENCE = 1.2;
+/**
+ * Watchdogs while the equalizer decodes: this many level marks without a single equalizer
+ * transition, or a key held down this many units (no Morse element is that long), mean its model
+ * broke – back to the level detector, and learn the room again.
+ */
+const SILENT_LEVEL_MARKS = 4;
+const MAX_MARK_UNITS = 6;
 /** Back to the level detector (in a gap) when the room turns out to shape the tone less than this. */
 const HANDBACK_EVIDENCE = 0.1;
 
@@ -97,6 +106,8 @@ export class MorseDecoder implements SignalDecoder<MorseDecoderConfig, MorseEven
   private readonly room = new RoomEqualizer();
   /** Segments come from the room equalizer (it took over in a character gap). */
   private roomActive = false;
+  /** Level marks since the equalizer last reported a segment (watchdog). */
+  private levelMarksUnheard = 0;
   private config = DEFAULT_MORSE_CONFIG;
   private out: MorseEvent[] = [];
   private timingOut: TimingEvent[] = [];
@@ -235,13 +246,30 @@ export class MorseDecoder implements SignalDecoder<MorseDecoderConfig, MorseEven
         return;
       }
       for (const s of segments) this.onSegment(s);
+      if (segments.length) this.levelMarksUnheard = 0;
+      const stuck =
+        this.levelMarksUnheard >= SILENT_LEVEL_MARKS ||
+        (this.room.isKeyDown &&
+          hop.time - this.room.stateSince > MAX_MARK_UNITS * this.room.unitSeconds);
+      if (stuck) {
+        this.roomActive = false;
+        this.room.relearn();
+        return;
+      }
       // a room that turned out not to shape the tone: the smoothed level is the better detector
       if (inGap && this.room.evidence < HANDBACK_EVIDENCE) this.roomActive = false;
       return;
     }
-    if (inGap && this.room.isConfirmed && this.room.evidence >= HANDOVER_EVIDENCE) {
+    const evidence = this.room.evidence;
+    if (
+      inGap &&
+      this.room.isConfirmed &&
+      evidence >= HANDOVER_EVIDENCE &&
+      evidence <= MAX_EVIDENCE
+    ) {
       this.room.startEmitting(hop.time - this.keying.currentDuration);
       this.roomActive = true;
+      this.levelMarksUnheard = 0;
     }
   }
 
@@ -258,7 +286,9 @@ export class MorseDecoder implements SignalDecoder<MorseDecoderConfig, MorseEven
       segment.duration >= (ONSET_GAP_UNITS * 1.2) / this.config.initialWpm
     )
       this.room.onset(segment.start + segment.duration);
-    if (!this.roomActive) this.onSegment(segment);
+    if (this.roomActive) {
+      if (segment.state === 'mark') this.levelMarksUnheard++;
+    } else this.onSegment(segment);
   };
 
   private readonly onSegment = (segment: KeyingSegment): void => {

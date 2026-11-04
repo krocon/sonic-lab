@@ -201,33 +201,43 @@ the speed comes from the decoded elements; two least-squares refinements of all 
 characters whose decoded timing is plausible (marks ≈ 1/3 units, gaps ≈ 1 unit). The frequency
 offset from the bin must be removed to a fraction of a hertz – a dah's tail is predicted hundreds
 of ms ahead –, but a phase tracker is biased by the room's own build-up by up to 4 Hz; the
-learning chain is therefore run for offsets of ±5 Hz (0.5 Hz steps), the three most plausible
-decodes are compared by model fit, then a ±0.4 Hz fine search. Online, S and the offset are
-refined every 2 s; a model error above −5 dB starts learning again.
+learning chain is therefore run for offsets of ±5 Hz (0.5 Hz steps). A wrong offset can be
+"explained" by chains of short elements, each with its own phase – many plausibly timed characters
+at a multiple of the speed –, so the best two candidates of each reading of the speed are compared
+by model fit, penalised for large corrections and for more elements than the sparest reading; then
+a ±0.4 Hz fine search. Online, S and the offset are refined every 2 s; a model error above −5 dB
+starts learning again.
 
-The decoder hands over to the equalizer in a character gap once it has been refined at least once
-and the room visibly shapes the tone (mean change of S after the direct sound ≥ 15 %; ≈ 5 %
-without a room, also in strong noise), and hands back below 10 %. The first ≈ 6–10 s of a
-transmission (six character onsets, ≥ 4 s) still come from the level detector.
+The decoder hands over to the equalizer in a character gap once it has been refined at least
+once, its model error is below −8 dB, and the room shapes the tone beyond what noise explains
+(mean change of S after the direct sound minus the model error between 0.15 and 1.2; ≈ 0 without
+a room, also in strong noise – there the step response wanders like a random walk, by about the
+model error), and hands back below 0.1. Two watchdogs hand back and learn the room again: four
+level marks without a single equalizer edge (a model that stopped seeing the keying – the text
+went silent), or a key held down longer than six units. The first ≈ 6–10 s of a transmission (six
+character onsets, ≥ 4 s) still come from the level detector.
 
 Measured (`morse:sweep`, `morse:corpus`, CER):
 
 | Case                                                  | level detector | with equalizer |
 | ----------------------------------------------------- | -------------- | -------------- |
 | `morse:sweep` score, tone 700 Hz                      | 34.8 %         | 10.9 %         |
-| `morse:sweep` score, tone 712 Hz (12 Hz off the bins) | 35.8 %         | 23.1 %         |
-| `morse:sweep` score, SNR 10 dB                        | 39.8 %         | 22.4 %         |
+| `morse:sweep` score, tone 712 Hz (12 Hz off the bins) | 35.8 %         | 16.7 %         |
+| `morse:sweep` score, tone 735 Hz                      | 14.5 %         | 4.4 %          |
+| `morse:sweep` score, SNR 10 dB                        | 39.8 %         | 23.2 %         |
 | W1AW corpus + RT60 0.6 s / 50 % (room 1)              | 37.5 %         | 3.6 %          |
-| W1AW corpus + RT60 0.3 s / 50 %                       | 3.1 %          | 3.4 %          |
+| W1AW corpus + RT60 0.3 s / 50 %                       | 3.1 %          | 3.6 %          |
 | W1AW corpus + RT60 0.3 s / 25 %                       | 2.9 %          | 3.0 %          |
-| W1AW corpus + RT60 0.6 s / 25 %                       | 3.3 %          | 2.9 %          |
-| W1AW corpus clean                                     | 2.9 %          | 2.8 %          |
+| W1AW corpus + RT60 0.6 s / 25 %                       | 3.3 %          | 3.0 %          |
+| W1AW corpus clean                                     | 2.9 %          | 2.9 %          |
 | W1AW corpus, white noise −3 dB (8 kHz)                | 3.9 %          | 3.9 %          |
 
 At 700 Hz, 12 WPM decodes in every room up to RT60 0.6 s / 25 % and 0.3 s / 50 %, 18 WPM in every
 room at 0.3 s / 25 %; most remaining errors are the first seconds before the handover. Weak
-spots: 12 WPM at RT60 0.6 s with the tone off the analysis bins (68 % instead of 35–48 %), 40 WPM
-at 50 % reverberant energy, and noise plus heavy reverberation, where it hands over less often.
+spots: 40 WPM at 50 % reverberant energy, noise plus heavy reverberation (it hands over less
+often), and a few cells where the level detector alone was already error-free and the
+equalizer's first seconds or a wrong early model cost some characters (12 WPM at 735 Hz,
+RT60 0.3 s / 50 %: 0 → 5 %).
 
 Cost: ≈ 11 ms per second of 48 kHz audio (level detector alone ≈ 4 ms); a learning attempt blocks
 for ≈ 0.2 s once (the capture buffer holds 1.4 s).

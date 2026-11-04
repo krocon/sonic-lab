@@ -71,8 +71,13 @@ const PEAK_SECONDS = 2;
 /** Coarse search for the residual frequency offset when learning: ±span in steps, Hz. */
 const COARSE_SPAN = 5;
 const COARSE_STEP = 0.5;
-/** Candidates with the most plausibly timed decodes compared by their model fit … */
-const COARSE_FINALISTS = 3;
+/**
+ * Candidates with the most plausibly timed decodes – this many per reading of the speed (units
+ * within a factor SAME_SPEED), from up to SPEED_GROUPS readings – are compared by model fit …
+ */
+const COARSE_FINALISTS = 2;
+const SAME_SPEED = 1.4;
+const SPEED_GROUPS = 3;
 /** … which is weighted up by this per Hz of correction (the tracker is unbiased without a room). */
 const OFFSET_PENALTY = 0.1;
 /** Fine search after the coarse one, ±span in steps (Hz) … */
@@ -366,9 +371,22 @@ export class RoomEqualizer {
     return this.decoder !== null;
   }
 
-  /** True once S has been learned and refined online at least once (a steadier estimate). */
+  /**
+   * True once S has been learned, refined online at least once (a steadier estimate) and still
+   * explains the signal well.
+   */
   get isConfirmed(): boolean {
-    return this.decoder !== null && this.refits > 0;
+    return this.decoder !== null && this.refits > 0 && this.residual <= MAX_RESIDUAL;
+  }
+
+  /** Forget the room and learn it again (the decoder found the equalizer's output implausible). */
+  relearn(): void {
+    this.decoder = null;
+    this.onsets = [];
+    this.learnAttempts = 0;
+    this.frozen = false;
+    this.refits = 0;
+    this.residual = 1;
   }
 
   /**
@@ -560,22 +578,47 @@ export class RoomEqualizer {
     // estimate is biased by the room's own build-up); the offset that decodes the most plausible
     // characters wins
     const prior = unit;
-    const candidates: { hz: number; trusted: number; unit: number; residual: number }[] = [];
+    const candidates: {
+      hz: number;
+      trusted: number;
+      unit: number;
+      residual: number;
+      elements: number;
+    }[] = [];
     for (let hz = -COARSE_SPAN; hz <= COARSE_SPAN + 1e-9; hz += COARSE_STEP) {
       this.trial = hz * 2 * Math.PI * this.hopSeconds;
       this.trialFrom = first;
       const result = this.learnRoom(onsets, first, last, prior);
-      candidates.push({ hz, ...result, residual: Infinity });
+      candidates.push({ hz, ...result, residual: Infinity, elements: 0 });
     }
     // the most plausible decodes; among them the room model that fits best (a wrong offset can
     // still decode a few characters, e.g. at twice the speed)
     candidates.sort((a, b) => b.trusted - a.trusted);
-    const top = candidates.filter((c) => c.trusted >= 4 * TAPS).slice(0, COARSE_FINALISTS);
+    // finalists from different readings of the speed: a wrong offset can be "explained" by chains
+    // of short elements, each with its own phase – many plausible characters at a multiple of the
+    // speed, but a clearly worse fit than the right reading
+    const top: typeof candidates = [];
+    const groups: number[] = [];
+    for (const c of candidates) {
+      if (c.trusted < 4 * TAPS) break;
+      let g = groups.findIndex((u) => Math.abs(Math.log(c.unit / u)) < Math.log(SAME_SPEED));
+      if (g < 0) {
+        if (groups.length >= SPEED_GROUPS) continue;
+        groups.push(c.unit);
+        g = groups.length - 1;
+      }
+      if (
+        top.filter((t) => Math.abs(Math.log(t.unit / (groups[g] ?? 1))) < Math.log(SAME_SPEED))
+          .length < COARSE_FINALISTS
+      )
+        top.push(c);
+    }
     for (const c of top) {
       this.trial = c.hz * 2 * Math.PI * this.hopSeconds;
       this.learnRoom(onsets, first, last, prior);
       const elements = this.decodeRange(first, last, c.unit).all;
       c.residual = this.fit(elements, first, last, c.unit, 0, false) ?? Infinity;
+      c.elements = elements.length;
     }
     this.trial = 0;
     // mild preference for small corrections: the tracker is unbiased without a room
@@ -875,14 +918,8 @@ export class RoomEqualizer {
     elements = this.decodeRange(first, last, this.unitHops).all;
     if (this.fit(elements, first, last, this.unitHops) === null) return;
     this.refits++;
-    if (this.residual > 2 * MAX_RESIDUAL) {
-      // the room changed or the model never fitted: learn again
-      this.decoder = null;
-      this.onsets = [];
-      this.learnAttempts = 0;
-      this.frozen = false;
-      this.refits = 0;
-    }
+    // the room changed or the model never fitted: learn again
+    if (this.residual > 2 * MAX_RESIDUAL) this.relearn();
   }
 }
 
