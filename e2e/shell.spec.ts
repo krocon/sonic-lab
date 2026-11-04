@@ -4,7 +4,7 @@ import { frontPanel } from './fixtures/front-panel';
 test('opens in the Morse decoder – there is no start page', async ({ page }) => {
   await page.goto('/');
   await expect(page).toHaveURL(/#\/morse-decoder$/);
-  await expect(page).toHaveTitle('Morse Decoder · AudioLab');
+  await expect(page).toHaveTitle('Morse Decoder · Sonic Lab');
   await expect(page.getByRole('heading', { name: 'Morse Decoder', level: 1 })).toBeVisible();
 });
 

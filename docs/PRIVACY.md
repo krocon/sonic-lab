@@ -22,7 +22,8 @@ AudioLab is designed so that audio never leaves your device.
   leaving the page discards them. A WAV file is written only when you press _Export…_ and pick a
   location – in the browser via the file picker or a download, on the desktop via the native save
   dialog opened by the Rust command `export_file`, which writes exactly to the chosen path. The
-  webview itself has no file-system or dialog permission.
+  webview itself has no file-system or dialog permission. The Morse decoder's log is likewise
+  held in memory only (until the app is closed) and written to a text file only on _SAVE_.
 - **Local preferences.** The only persisted data are UI preferences in the browser's
   `localStorage`: the chosen input device id (`audiolab.capture`) and module settings
   (`audiolab.morse`, `audiolab.encoder` incl. the text to encode, `audiolab.spectrum`,

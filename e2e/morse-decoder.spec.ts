@@ -37,6 +37,20 @@ test.describe('Morse decoder', () => {
 
     await panel.softKey('Reset').click();
     await expect(text).not.toContainText('PARIS');
+
+    // the log keeps what was decoded, with time and speed
+    await panel.softKey('View').click();
+    await expect(panel.softKey('View')).toHaveAccessibleName('View: LOG');
+    await expect(page.getByRole('log', { name: 'Log' })).toContainText(
+      /\d\d:\d\d:\d\d\s+(19|20|21) WPM\s+PARIS TEST/,
+    );
+    if (browserName === 'chromium') {
+      await panel.key('Copy log').click();
+      await expect(panel.message()).toHaveText('Log copied to the clipboard.');
+      expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(
+        /^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d  (19|20|21) WPM  PARIS TEST/,
+      );
+    }
   });
 
   test('decodes the demo signal', async ({ page }) => {

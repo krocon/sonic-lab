@@ -3,16 +3,32 @@ import { FakeAudioSource } from '../../../testing/fake-audio-source';
 import { frontPanel } from '../../../testing/front-panel';
 import { morseSignal } from '../../../testing/signals/morse-signal';
 import { AUDIO_SOURCE, CaptureSession } from '../../core/capture/capture-session';
+import { ExportResult, FileExportAdapter } from '../../platform/file-export';
+import { MorseLog } from './morse-log';
 import { MorseDecoderPage } from './morse-decoder.page';
 import { MorseSession } from './morse-session';
 
+class FakeExporter extends FileExportAdapter {
+  saved: { name: string; type: string; text: string }[] = [];
+  result: ExportResult = { status: 'saved', location: '/tmp/log.txt' };
+  override async save(data: Blob, name: string, type: string): Promise<ExportResult> {
+    this.saved.push({ name, type, text: await data.text() });
+    return this.result;
+  }
+}
+
 describe('MorseDecoderPage', () => {
   let source: FakeAudioSource;
+  let exporter: FakeExporter;
 
   beforeEach(() => {
     localStorage.clear();
     source = new FakeAudioSource();
-    TestBed.configureTestingModule({ imports: [MorseDecoderPage] });
+    exporter = new FakeExporter();
+    TestBed.configureTestingModule({
+      imports: [MorseDecoderPage],
+      providers: [{ provide: FileExportAdapter, useValue: exporter }],
+    });
     TestBed.overrideComponent(MorseDecoderPage, {
       set: {
         providers: [{ provide: AUDIO_SOURCE, useValue: source }, CaptureSession, MorseSession],
@@ -29,8 +45,9 @@ describe('MorseDecoderPage', () => {
       'Sensitivity',
       'Start speed',
       'Reset',
-      null,
+      'View',
     ]);
+    expect(hw.text('View')).toBe('LIVE');
     expect(hw.knob(0)?.name).toBe('Fixed tone');
     expect(hw.knob(1)?.name).toBe('Start speed');
     expect(hw.knob(2)).toBeNull();
@@ -83,6 +100,73 @@ describe('MorseDecoderPage', () => {
     });
     await frontPanel().run('copy');
     expect(frontPanel().message()?.text).toBe('Copying failed.');
+  });
+
+  it('shows the log, copies, saves and clears it', async () => {
+    const fixture = TestBed.createComponent(MorseDecoderPage);
+    const el: HTMLElement = fixture.nativeElement;
+    const hw = frontPanel();
+    const log = TestBed.inject(MorseLog);
+    log.now = () => new Date(2026, 10, 4, 14, 2, 31);
+    log.append('CQ', 20);
+    log.endLine();
+    log.append('K', null);
+
+    hw.press('View');
+    await fixture.whenStable();
+    expect(hw.text('View')).toBe('LOG');
+    expect(hw.softNames()).toEqual([
+      'Tone frequency',
+      'Fixed tone',
+      'Sensitivity',
+      'Save log',
+      'Clear log',
+      'View',
+    ]);
+    const lines = [...el.querySelectorAll('[role="log"] .entry')].map((p) =>
+      p.textContent?.replace(/\s+/g, ' ').trim(),
+    );
+    expect(lines).toEqual(['14:02:31 20 WPM CQ', '14:02:31 – WPM K']);
+    expect(el.querySelector('app-waveform-canvas')).toBeNull();
+    const text = '2026-11-04 14:02:31  20 WPM  CQ\n2026-11-04 14:02:31  -- WPM  K';
+
+    const writeText = vi.fn(() => Promise.resolve());
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    expect(hw.key('copy')?.name).toBe('Copy log');
+    await hw.run('copy');
+    expect(writeText).toHaveBeenCalledWith(text);
+    expect(hw.message()?.text).toBe('Log copied to the clipboard.');
+
+    await (hw.soft('Save log') as { run(): Promise<void> }).run();
+    expect(exporter.saved).toEqual([
+      { name: 'audiolab-morse-log-2026-11-04-14-02-31.txt', type: 'text/plain', text: text + '\n' },
+    ]);
+    expect(hw.message()?.text).toBe('Log saved to /tmp/log.txt');
+    exporter.result = { status: 'cancelled' };
+    await (hw.soft('Save log') as { run(): Promise<void> }).run();
+    expect(hw.message()?.text).toBe('Saving cancelled.');
+
+    hw.press('Clear log');
+    await fixture.whenStable();
+    expect(log.entries()).toEqual([]);
+    expect(hw.disabled('Save log')).toBe(true);
+    expect(hw.key('copy')?.disabled?.()).toBe(true);
+    expect(el.querySelector('[role="log"]')?.textContent).toContain('Everything decoded is logged');
+
+    hw.press('View');
+    await fixture.whenStable();
+    expect(hw.key('copy')?.name).toBe('Copy text');
+    expect(el.querySelector('app-waveform-canvas')).not.toBeNull();
+  });
+
+  it('reports a failed save', async () => {
+    TestBed.createComponent(MorseDecoderPage);
+    const hw = frontPanel();
+    TestBed.inject(MorseLog).append('E', 20);
+    hw.press('View');
+    exporter.save = () => Promise.reject(new Error('disk full'));
+    await (hw.soft('Save log') as { run(): Promise<void> }).run();
+    expect(hw.message()?.text).toBe('Saving the log failed.');
   });
 
   it('switches to a fixed tone with the knob and persists the settings', async () => {

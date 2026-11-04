@@ -72,8 +72,14 @@ All notable changes to this project are documented here. The format follows
 
 - Documentation: README with real screenshots (`pnpm screenshots`), updated architecture and
   roadmap, code of conduct, security policy, issue and pull-request templates.
+- Morse decoder log: soft key VIEW switches between the live display and a log of everything
+  decoded, one line per transmission with time and speed (a pause of 6 s, a capture restart or
+  RESET starts a new line). In the log view COPY copies the log, SAVE writes it to a `.txt` file
+  and CLEAR empties it. The log lives in memory only and survives switching modes.
 
 ### Changed
+
+- The app is now called Sonic Lab: nameplate, window and page titles, desktop product name.
 
 - New front panel: a transceiver with a large OLED. Eight F keys under the display choose the
   module, six soft keys next to it carry the module's settings and actions (legends in the

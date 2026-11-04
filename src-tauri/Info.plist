@@ -4,6 +4,6 @@
 <plist version="1.0">
 <dict>
   <key>NSMicrophoneUsageDescription</key>
-  <string>AudioLab analyses microphone audio locally on this Mac. Audio is never uploaded or stored unless you export it.</string>
+  <string>Sonic Lab analyses microphone audio locally on this Mac. Audio is never uploaded or stored unless you export it.</string>
 </dict>
 </plist>

@@ -12,16 +12,16 @@ macOS, Windows and Linux.
 
 ## Features
 
-| Module                 | What it does                                                                                                                                                                                              |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Morse Decoder**      | Automatic or fixed tone frequency, adaptive threshold and speed (WPM), robust against noise, fading, clicks, sloppy keying and Farnsworth spacing; Morse and plain text output, unknown sequences marked. |
-| **DTMF Decoder**       | All 16 keys, ITU-style checks (frequency tolerance, twist, energy ratio), live keypad and tone levels.                                                                                                    |
-| **Frequency Analyzer** | Dominant frequency with note name and cents, stability, 10 s history.                                                                                                                                     |
-| **Spectrum Analyzer**  | FFT 1024–16384 points, Hann/Blackman-Harris, log/linear axis, averaging, peak hold, spectrogram.                                                                                                          |
-| **Signal Monitor**     | RMS/peak level, clipping warning, dominant frequency, 30 s history.                                                                                                                                       |
-| **Morse Encoder**      | Text → Morse with live preview and click-free audio playback, Farnsworth spacing.                                                                                                                         |
-| **Tone Generator**     | Sine, square, triangle, sawtooth, white/pink noise, sweeps, two-tone and DTMF; level-capped.                                                                                                              |
-| **Audio Recorder**     | In-memory recording (10 min max), playback, WAV export (16-bit or 32-bit float).                                                                                                                          |
+| Module                 | What it does                                                                                                                                                                                                                                       |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Morse Decoder**      | Automatic or fixed tone frequency, adaptive threshold and speed (WPM), robust against noise, fading, clicks, sloppy keying and Farnsworth spacing; Morse and plain text output, unknown sequences marked; log with time and speed to copy or save. |
+| **DTMF Decoder**       | All 16 keys, ITU-style checks (frequency tolerance, twist, energy ratio), live keypad and tone levels.                                                                                                                                             |
+| **Frequency Analyzer** | Dominant frequency with note name and cents, stability, 10 s history.                                                                                                                                                                              |
+| **Spectrum Analyzer**  | FFT 1024–16384 points, Hann/Blackman-Harris, log/linear axis, averaging, peak hold, spectrogram.                                                                                                                                                   |
+| **Signal Monitor**     | RMS/peak level, clipping warning, dominant frequency, 30 s history.                                                                                                                                                                                |
+| **Morse Encoder**      | Text → Morse with live preview and click-free audio playback, Farnsworth spacing.                                                                                                                                                                  |
+| **Tone Generator**     | Sine, square, triangle, sawtooth, white/pink noise, sweeps, two-tone and DTMF; level-capped.                                                                                                                                                       |
+| **Audio Recorder**     | In-memory recording (10 min max), playback, WAV export (16-bit or 32-bit float).                                                                                                                                                                   |
 
 Every input-based module has a **Demo signal** input, so you can try it without a microphone.
 

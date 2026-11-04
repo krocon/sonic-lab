@@ -1,4 +1,4 @@
-<div class="screen">
+<div class="screen" [class.log-view]="view() === 'log'">
   <header class="module-head">
     <h1>Morse Decoder</h1>
   </header>
@@ -26,39 +26,69 @@
     </div>
   </div>
 
-  <section class="box signal" aria-labelledby="signal-title">
-    <h2 id="signal-title" class="box-title">Signal</h2>
-    <span class="box-meta">waveform · level</span>
-    <app-waveform-canvas class="scope" [buffer]="scope" [windowSize]="16384" />
-    <app-level-meter-bar class="meter" [meter]="meter" [active]="session.running()" />
-  </section>
-
-  <section class="box" aria-labelledby="keying-title">
-    <h2 id="keying-title" class="box-title">Key-down</h2>
-    <span class="box-meta">last 6 s</span>
-    <app-keying-timeline-canvas class="viz" [timeline]="morse.timeline" />
-  </section>
-
-  <section class="box decoded" aria-labelledby="decoded-title">
-    <h2 id="decoded-title" class="box-title inverse">Decoded</h2>
-    <p class="visually-hidden" id="morse-label">Morse</p>
-    <div class="tail code">
-      <output aria-labelledby="morse-label"
-        >{{ morse.morse()
-        }}<span class="pending">{{
-          morse.pendingCode() ? ' ' + morse.pendingCode() : ''
-        }}</span></output
+  @if (view() === 'log') {
+    <section class="box log" aria-labelledby="log-title">
+      <h2 id="log-title" class="box-title inverse">Log</h2>
+      <span class="box-meta"
+        >{{ log.entries().length }} {{ log.entries().length === 1 ? 'line' : 'lines' }}</span
       >
-    </div>
-    <p class="visually-hidden" id="text-label">Text</p>
-    <div class="tail text">
-      <output aria-labelledby="text-label" aria-live="polite">
-        @if (morse.text()) {
-          {{ morse.text() }}<span class="cursor" aria-hidden="true"></span>
-        } @else {
-          <span class="placeholder">Decoded text will appear here.</span>
+      <div
+        #logScroll
+        class="log-lines"
+        role="log"
+        tabindex="0"
+        aria-labelledby="log-title"
+        (scroll)="onLogScroll(logScroll)"
+      >
+        @for (e of log.entries(); track $index) {
+          <p class="entry">
+            <time [attr.datetime]="e.time.toISOString()">{{ formatTime(e.time) }}</time
+            >&ngsp; <span class="wpm">{{ e.wpm ?? '–' }} WPM</span>&ngsp;
+            <span class="line">{{ e.text }}</span>
+          </p>
+        } @empty {
+          <p class="placeholder">
+            Everything decoded is logged here, line by line with time and speed. COPY copies the
+            log, SAVE writes it to a text file.
+          </p>
         }
-      </output>
-    </div>
-  </section>
+      </div>
+    </section>
+  } @else {
+    <section class="box signal" aria-labelledby="signal-title">
+      <h2 id="signal-title" class="box-title">Signal</h2>
+      <span class="box-meta">waveform · level</span>
+      <app-waveform-canvas class="scope" [buffer]="scope" [windowSize]="16384" />
+      <app-level-meter-bar class="meter" [meter]="meter" [active]="session.running()" />
+    </section>
+
+    <section class="box" aria-labelledby="keying-title">
+      <h2 id="keying-title" class="box-title">Key-down</h2>
+      <span class="box-meta">last 6 s</span>
+      <app-keying-timeline-canvas class="viz" [timeline]="morse.timeline" />
+    </section>
+
+    <section class="box decoded" aria-labelledby="decoded-title">
+      <h2 id="decoded-title" class="box-title inverse">Decoded</h2>
+      <p class="visually-hidden" id="morse-label">Morse</p>
+      <div class="tail code">
+        <output aria-labelledby="morse-label"
+          >{{ morse.morse()
+          }}<span class="pending">{{
+            morse.pendingCode() ? ' ' + morse.pendingCode() : ''
+          }}</span></output
+        >
+      </div>
+      <p class="visually-hidden" id="text-label">Text</p>
+      <div class="tail text">
+        <output aria-labelledby="text-label" aria-live="polite">
+          @if (morse.text()) {
+            {{ morse.text() }}<span class="cursor" aria-hidden="true"></span>
+          } @else {
+            <span class="placeholder">Decoded text will appear here.</span>
+          }
+        </output>
+      </div>
+    </section>
+  }
 </div>

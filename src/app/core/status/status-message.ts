@@ -39,7 +39,7 @@ const ERROR_TEXT: Record<AudioSourceError['kind'], StatusMessage> = {
   'insecure-context': {
     tone: 'danger',
     text: 'Microphone access needs a secure connection.',
-    hint: 'Open AudioLab via https:// or http://localhost.',
+    hint: 'Open Sonic Lab via https:// or http://localhost.',
   },
   unsupported: {
     tone: 'danger',
