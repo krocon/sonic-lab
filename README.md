@@ -77,8 +77,9 @@ pnpm test:coverage  # with coverage thresholds
 pnpm test:signals   # Morse robustness scenarios (CER limits)
 pnpm lint           # ESLint incl. layer boundaries + worklet type-check
 pnpm e2e            # Playwright (Chromium); pnpm e2e:all for Firefox and WebKit too
-pnpm check          # version sync, scripts, format, lint, tests, web build, Rust checks
+pnpm check          # version sync, scripts, format, lint, tests, web + site build, Rust checks
 pnpm tauri:build    # desktop bundle for the current OS
+pnpm site:build     # promo site + web app → dist/site (site:deploy, site:preview; see site/README.md)
 ```
 
 - Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)

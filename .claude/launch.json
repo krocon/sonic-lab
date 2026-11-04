@@ -31,6 +31,16 @@
         "4330"
       ],
       "port": 4330
+    },
+    {
+      "name": "site-dist",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "site/tools/serve.mjs",
+        "4331",
+        "dist/site"
+      ],
+      "port": 4331
     }
   ]
 }

@@ -66,6 +66,9 @@ importers:
       angular-eslint:
         specifier: 22.6.0
         version: 22.6.0(chokidar@5.0.0)(eslint@10.14.0)(typescript-eslint@8.72.1(eslint@10.14.0)(typescript@6.0.3))(typescript@6.0.3)
+      basic-ftp:
+        specifier: 6.2.3
+        version: 6.2.3
       esbuild:
         specifier: 0.28.2
         version: 0.28.2
@@ -1602,6 +1605,10 @@ packages:
     resolution: {integrity: sha512-GNk8KX52CHqeNKGk8+7tZnQab/2k1t/BgrUHPKNdijzpEhF1saPQZHVKb6m5loSAxB39gyrTYw34Qf9CQ3u1qQ==}
     engines: {node: '>=6.0.0'}
     hasBin: true
+
+  basic-ftp@6.2.3:
+    resolution: {integrity: sha512-T7GYtQ2eKJUN5YORG7A8u2WfB9JMN0a4/wl3MI64qq2qTRfa3FXzoNq0DDojZDkDyStcL+TkfKsz4JHEZx5kGQ==}
+    engines: {node: '>=10.0.0'}
 
   beasties@0.5.4:
     resolution: {integrity: sha512-8/lOOjT+PElYCnaUbmhgd3Uad5R1VTQ4Wg0k4rK8bX04m5WEqHNmnlLy3Q/lJ7dk25XA+72gayzc/skTfKKpcA==}
@@ -4024,6 +4031,8 @@ snapshots:
   balanced-match@4.0.4: {}
 
   baseline-browser-mapping@2.11.35: {}
+
+  basic-ftp@6.2.3: {}
 
   beasties@0.5.4:
     dependencies:

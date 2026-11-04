@@ -30,7 +30,7 @@
     "rust:fmt": "cargo fmt --manifest-path src-tauri/Cargo.toml --check",
     "rust:lint": "cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings",
     "rust:test": "cargo test --manifest-path src-tauri/Cargo.toml",
-    "check": "pnpm version:check && pnpm scripts:test && pnpm format:check && pnpm lint && pnpm test && pnpm build && pnpm rust:fmt && pnpm rust:lint && pnpm rust:test",
+    "check": "pnpm version:check && pnpm scripts:test && pnpm format:check && pnpm lint && pnpm test && pnpm build && pnpm site:build && pnpm rust:fmt && pnpm rust:lint && pnpm rust:test",
     "worklets": "node scripts/build-worklets.mjs",
     "typecheck:worklets": "tsc -p src/worklets/tsconfig.json",
     "test:coverage": "node scripts/build-worklets.mjs && ng test --watch=false --configuration coverage",
@@ -43,7 +43,12 @@
     "release:prepare": "node scripts/version.mjs prepare",
     "release:notes": "node scripts/release-notes.mjs",
     "scripts:test": "node --test \"scripts/*.test.mjs\"",
-    "screenshots": "pnpm build && node scripts/screenshots.mjs"
+    "screenshots": "pnpm build && node scripts/screenshots.mjs",
+    "site:build": "node site/tools/build.mjs",
+    "site:serve": "node site/tools/serve.mjs 4330",
+    "site:preview": "pnpm site:build && node site/tools/serve.mjs 4331 dist/site",
+    "site:media": "node site/tools/capture-media.mjs",
+    "site:deploy": "pnpm site:build && node --env-file-if-exists=.env.deploy site/tools/deploy.mjs"
   },
   "dependencies": {
     "@angular/common": "^22.2.0",
@@ -67,6 +72,7 @@
     "@tauri-apps/cli": "2.12.4",
     "@vitest/coverage-v8": "5.1.0",
     "angular-eslint": "22.6.0",
+    "basic-ftp": "6.2.3",
     "esbuild": "0.28.2",
     "eslint": "^10.14.0",
     "jsdom": "^30.0.0",

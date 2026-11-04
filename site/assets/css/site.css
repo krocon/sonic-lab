@@ -259,6 +259,7 @@ main,
 .boot.open {
   clip-path: inset(50% 0 50% 0);
   transition: clip-path 0.85s var(--ease-io);
+  pointer-events: none; /* the page is usable while the screen opens */
 }
 .boot.gone {
   display: none;

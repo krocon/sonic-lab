@@ -1,6 +1,9 @@
 // Local preview of the promo site under its production path.
 //
-//   node site/tools/serve.mjs [port]      → http://localhost:4330/products/sonic-lab/
+//   node site/tools/serve.mjs [port] [dir]   → http://localhost:4330/products/sonic-lab/
+//
+//   pnpm site:serve     the sources in site/ (port 4330)
+//   pnpm site:preview   the build in dist/site (port 4331)
 //
 // index.html sets <base href="/products/sonic-lab/">, so the site has to be served from that path –
 // a plain static server on the site folder would 404 every asset. Supports Range requests
@@ -8,11 +11,11 @@
 import { createServer } from 'node:http';
 import { createReadStream } from 'node:fs';
 import { stat } from 'node:fs/promises';
-import { extname, join, normalize, sep } from 'node:path';
+import { extname, join, normalize, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const PREFIX = '/products/sonic-lab/';
-const ROOT = join(fileURLToPath(import.meta.url), '../..');
+const ROOT = process.argv[3] ? resolve(process.argv[3]) : join(fileURLToPath(import.meta.url), '../..');
 const PORT = Number(process.argv[2] ?? 4330);
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -37,7 +40,8 @@ createServer(async (req, res) => {
   }
   const rel = normalize(path.slice(PREFIX.length) || 'index.html');
   const file = join(ROOT, rel.endsWith(sep) || rel === '.' ? join(rel, 'index.html') : rel);
-  if (!file.startsWith(ROOT + sep) || rel.split(sep).includes('tools')) {
+  const parts = rel.split(sep);
+  if (!file.startsWith(ROOT + sep) || parts.includes('tools') || parts.some((p) => p.startsWith('.'))) {
     res.writeHead(404).end();
     return;
   }
@@ -70,4 +74,4 @@ createServer(async (req, res) => {
   res.writeHead(200, { ...headers, 'content-length': info.size });
   if (req.method === 'HEAD') return res.end();
   createReadStream(file).pipe(res);
-}).listen(PORT, '127.0.0.1', () => console.log(`Sonic Lab site → http://localhost:${PORT}${PREFIX}`));
+}).listen(PORT, '127.0.0.1', () => console.log(`Sonic Lab site (${ROOT}) → http://localhost:${PORT}${PREFIX}`));

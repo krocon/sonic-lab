@@ -1,7 +1,8 @@
 # Sonic Lab — promo site
 
 A single static page: `index.html`, one stylesheet, one script, self-hosted fonts and media.
-No build step, no framework, no third-party requests (no CDN, no Google Fonts, no analytics).
+No framework and no third-party requests (no CDN, no Google Fonts, no analytics). The sources run
+as they are; the build only produces a lean, checked copy for the upload.
 
 ```
 site/
@@ -12,40 +13,66 @@ site/
 │   ├── fonts/              Archivo + JetBrains Mono (variable WOFF2, SIL OFL 1.1)
 │   └── media/              stills, live captures and posters from the real app
 └── tools/
-    ├── serve.mjs           local preview under the production path
-    └── capture-media.mjs   Playwright script that records the media from the app
+    ├── build.mjs           pnpm site:build
+    ├── deploy.mjs          pnpm site:deploy
+    ├── serve.mjs           pnpm site:serve / site:preview
+    └── capture-media.mjs   pnpm site:media
 ```
+
+## Scripts
+
+| Script              | What it does                                                                                                                                                                                                                                                                                                                                                                      |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm site:build`   | Builds `dist/site`: copy without `tools/` and this README, JS and CSS minified with esbuild, a content hash on both in `index.html` (`?v=…`), the web app in `app/` with base href `/products/sonic-lab/app/`, and a check that every file referenced by `index.html` and the stylesheet exists – the build fails otherwise. `--no-app` skips the app. Also part of `pnpm check`. |
+| `pnpm site:deploy`  | Builds, then uploads `dist/site` by FTPS (see below). `--dry-run` only shows what would happen, `--prune` also deletes remote files that are not part of the build.                                                                                                                                                                                                               |
+| `pnpm site:serve`   | Serves the sources from `site/` at http://localhost:4330/products/sonic-lab/ – edit and reload.                                                                                                                                                                                                                                                                                   |
+| `pnpm site:preview` | Builds, then serves `dist/site` at http://localhost:4331/products/sonic-lab/ (app: …/app/) – exactly what gets uploaded.                                                                                                                                                                                                                                                          |
+| `pnpm site:media`   | Records stills and live display captures from the running app (see below).                                                                                                                                                                                                                                                                                                        |
+
+`node site/tools/build.mjs <dir>` builds into another folder.
 
 ## Deployment
 
-The page lives at **http://krocon.de/products/sonic-lab/** and says so in
-`<base href="/products/sonic-lab/">`; canonical, `og:url` and `og:image` use the full URL. Upload
-everything except `tools/` and this README into that folder. To move the site, change those four
-places in `index.html` – nothing else contains the path. In-page links (`#privacy` …) and the SVG
-ring text are kept on the current document by `site.js`, so `…/index.html` works as well.
+| URL                                       | What                                         |
+| ----------------------------------------- | -------------------------------------------- |
+| https://krocon.de/products/sonic-lab/     | promo page                                   |
+| https://krocon.de/products/sonic-lab/app/ | the web app (needs HTTPS for the microphone) |
 
-## Preview
+Both come from one build: upload the **contents** of `dist/site` into the folder the web server
+publishes as `/products/sonic-lab/` – by hand, or with `pnpm site:deploy`:
 
-Because of the base href the site must be served from `/products/sonic-lab/`:
+1. `cp .env.deploy.example .env.deploy` (repository root, git-ignored – never commit credentials,
+   this repository is public) and fill in host, user and `SITE_FTP_DIR`. Leave the password empty
+   to be asked for it on every deploy.
+2. `pnpm site:deploy --dry-run` – connects, lists what would be uploaded and which remote files are
+   not part of the build.
+3. `pnpm site:deploy` uploads (FTPS with explicit TLS; `index.html` last, so the new page goes live
+   only when its assets are there) and checks that the live page serves this build. Add `--prune`
+   to delete leftovers; it refuses to run in a folder that is not named `sonic-lab`.
 
-```bash
-node site/tools/serve.mjs        # → http://localhost:4330/products/sonic-lab/
-```
+Do not upload `dist/audiolab/browser` (the plain `pnpm build`) there: it is built for `/` and
+looks for its files in the server root.
 
-…or start the `site` configuration in `.claude/launch.json`. Opening `index.html` from disk or a
-static server on the `site` folder itself will not find the assets.
+The page says where it lives in `<base href="/products/sonic-lab/">`; canonical, `og:url` and
+`og:image` use the full URL. To move it, change those four places in `index.html` (and `PREFIX` in
+`tools/serve.mjs`) – the app's base href follows from the page's. In-page links (`#privacy` …) and
+the SVG ring text are kept on the current document by `site.js`, so `…/index.html` works as well.
+
+Because of the base href the site must be served from `/products/sonic-lab/`, locally too: opening
+`index.html` from disk or a static server on the `site` folder itself will not find the assets. The
+`site` configuration in `.claude/launch.json` runs `site/tools/serve.mjs`.
 
 ## What moves
 
-| Section       | Motion                                                                                          |
-| ------------- | ----------------------------------------------------------------------------------------------- |
-| Boot          | LED → scan line → wordmark decodes → the screen opens (once per session)                        |
-| Hero          | Canvas oscilloscope keys `CQ CQ DE SONIC LAB K`, a decoder types it out; pointer retunes, ▶ Listen plays it in sync (Web Audio) |
-| Front panel   | Pinned scroll scene: panel tips up, OLED powers on (real capture), spotlight tour of six controls, dive into the display |
-| Modules       | Pinned: scrolling presses F1–F8, the display repaints, titles decode                            |
-| Morse         | Six live impairment scopes (noise, fading, clicks, hand keying, Farnsworth, reverb) with measured CER |
-| Try it        | Morse encoder with click-free audio scheduled on the audio clock                                |
-| Elsewhere     | Velocity-driven marquee, count-ups, contained privacy rings, tilt cards, blinking finale        |
+| Section     | Motion                                                                                                                          |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Boot        | LED → scan line → wordmark decodes → the screen opens (once per session)                                                        |
+| Hero        | Canvas oscilloscope keys `CQ CQ DE SONIC LAB K`, a decoder types it out; pointer retunes, ▶ Listen plays it in sync (Web Audio) |
+| Front panel | Pinned scroll scene: panel tips up, OLED powers on (real capture), spotlight tour of six controls, dive into the display        |
+| Modules     | Pinned: scrolling presses F1–F8, the display repaints, titles decode                                                            |
+| Morse       | Six live impairment scopes (noise, fading, clicks, hand keying, Farnsworth, reverb) with measured CER                           |
+| Try it      | Morse encoder with click-free audio scheduled on the audio clock                                                                |
+| Elsewhere   | Velocity-driven marquee, count-ups, contained privacy rings, tilt cards, blinking finale                                        |
 
 `prefers-reduced-motion` gets still frames, no pinning and no autoplay. Canvases sleep off screen.
 
@@ -57,7 +84,8 @@ All figures come from the project's own documentation, mainly `docs/AUDIO-PIPELI
 ## Regenerating the media
 
 1. `pnpm start` (web app on :1420).
-2. `node site/tools/capture-media.mjs http://localhost:1420 /tmp/sonic-lab-media`
+2. `pnpm site:media` – or `node site/tools/capture-media.mjs <appUrl> <outDir>`; defaults are
+   `http://localhost:1420` and `/tmp/sonic-lab-media`.
 3. Convert (cwebp, ffmpeg):
 
 ```bash
