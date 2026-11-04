@@ -53,7 +53,9 @@ pnpm morse:sweep     # synthetic QSO text through simulated rooms: CER matrix (â
 each, and prints the mean CER per cell, the number of rooms below 5 % and an overall score. The
 keying is known exactly, so the numbers compare decoder versions directly. Options: `--speeds`,
 `--rooms`, `--reverbs 0.3/0.25,0.6/0.5` (`0/0` = no reverb), `--snr <dB, 500 Hz>`, `--rate`,
-`--sensitivity`, `--config '<json>'`, `--text`, `--json`, `--verbose` (decoded text per case).
+`--frequency <Hz>` (tone; 712 is 12 Hz off the analysis bins), `--sensitivity`,
+`--config '<json>'`, `--text`, `--json`, `--verbose` (decoded text per case). The experimental
+room equalizer is measured with `--config '{"roomEqualizer":true}'` (sweep and corpus).
 
 ## Unit tests share modules â€“ no module mocks
 

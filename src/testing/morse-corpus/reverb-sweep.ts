@@ -39,6 +39,7 @@ interface Options {
   reverbs: { rt60: number; wet: number }[];
   snr: number;
   rate: number;
+  frequency: number;
   sensitivity: Sensitivity;
   config: Partial<MorseDecoderConfig>;
   json: boolean;
@@ -48,11 +49,12 @@ interface Options {
 
 export function runSweepCase(
   c: SweepCase,
-  o: Pick<Options, 'snr' | 'rate' | 'sensitivity' | 'config' | 'text'>,
+  o: Pick<Options, 'snr' | 'rate' | 'frequency' | 'sensitivity' | 'config' | 'text'>,
 ): SweepResult {
   const signal = impairedMorse(o.text, {
     wpm: c.wpm,
     sampleRate: o.rate,
+    frequency: o.frequency,
     snrDb: o.snr,
     seed: c.room,
     reverb: c.rt60 > 0 ? { rt60Seconds: c.rt60, wet: c.wet, seed: c.room } : undefined,
@@ -76,7 +78,7 @@ export async function runSweep(env: { args: string[] }): Promise<number> {
   }
   const pct = (x: number) => `${(100 * x).toFixed(1)}`.padStart(5);
   console.log(
-    `CER % (mean over rooms ${o.rooms.join(',')}; [rooms < 5 %]); SNR ${o.snr} dB (500 Hz), ${o.rate} Hz, sensitivity ${o.sensitivity}`,
+    `CER % (mean over rooms ${o.rooms.join(',')}; [rooms < 5 %]); SNR ${o.snr} dB (500 Hz), ${o.rate} Hz, tone ${o.frequency} Hz, sensitivity ${o.sensitivity}${Object.keys(o.config).length ? `, config ${JSON.stringify(o.config)}` : ''}`,
   );
   console.log(`${'RT60 / wet'.padEnd(14)}${o.speeds.map((s) => `${s} WPM`.padStart(14)).join('')}`);
   let total = 0;
@@ -112,6 +114,7 @@ function parseArgs(args: string[]): Options {
     ],
     snr: 30,
     rate: 16000,
+    frequency: 700,
     sensitivity: 'medium',
     config: {},
     json: false,
@@ -138,6 +141,7 @@ function parseArgs(args: string[]): Options {
         });
     else if (a === '--snr') o.snr = Number(v());
     else if (a === '--rate') o.rate = Number(v());
+    else if (a === '--frequency') o.frequency = Number(v());
     else if (a === '--sensitivity') o.sensitivity = v() as Sensitivity;
     else if (a === '--config') o.config = JSON.parse(v()) as Partial<MorseDecoderConfig>;
     else if (a === '--text') o.text = v();

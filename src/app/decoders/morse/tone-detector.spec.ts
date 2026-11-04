@@ -20,6 +20,29 @@ describe('ToneDetector', () => {
     expect(amp).toBeCloseTo(0.3, 1);
   });
 
+  it('reports the complex amplitude with a phase referenced to the sample clock', () => {
+    const phases = (frequency: number) => {
+      const d = new ToneDetector();
+      d.configure({ frequency: 700 });
+      const out: { amp: number; mag: number; phase: number }[] = [];
+      d.process(render(tone({ frequency, amplitude: 0.3 }), 0.3, 48000), 48000, (h) =>
+        out.push({ amp: h.amplitude, mag: Math.hypot(h.re, h.im), phase: Math.atan2(h.im, h.re) }),
+      );
+      return out.slice(4);
+    };
+    const onBin = phases(700);
+    for (const h of onBin) expect(h.mag).toBeCloseTo(h.amp, 6);
+    // on the bin the phase stays put from hop to hop
+    for (const h of onBin) expect(Math.abs(h.phase - (onBin[0]?.phase ?? 0))).toBeLessThan(0.01);
+    // 10 Hz above it turns by 2π·10 Hz·6 ms per hop
+    const off = phases(710);
+    const step = (off[5]?.phase ?? 0) - (off[4]?.phase ?? 0);
+    const expected = 2 * Math.PI * 10 * 0.006;
+    expect(Math.abs(Math.atan2(Math.sin(step - expected), Math.cos(step - expected)))).toBeLessThan(
+      0.01,
+    );
+  });
+
   it('finds the tone in auto mode', () => {
     const d = new ToneDetector();
     const { freq } = lastHop(d, render(tone({ frequency: 1030, amplitude: 0.3 }), 1, 44100), 44100);

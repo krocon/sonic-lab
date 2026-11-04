@@ -160,19 +160,12 @@ modes, each fixed separately:
 
 Known limits:
 
-- **Rooms that cancel the direct sound.** In about half of the simulated rooms with ≥ 25 %
-  reverberant energy, the reverberant field at the tone frequency is partly opposite in phase to
-  the direct sound: the steady tone is as loud as – or quieter than – the tail, and at a key-up
-  the level stays flat or even rises. Whole characters merge into one mark (`morse:sweep`
+- **Rooms that cancel the direct sound** (level detector). In about half of the simulated rooms
+  with ≥ 25 % reverberant energy, the reverberant field at the tone frequency is partly opposite
+  in phase to the direct sound: the steady tone is as loud as – or quieter than – the tail, and at
+  a key-up the level stays flat or even rises. Whole characters merge into one mark (`morse:sweep`
   breakdown: every element gap missed, character gaps always found). The key-up is visible only
-  in the _phase_ of the tone. A complex-domain look (Goertzel phase) confirmed it: a step of the
-  direct-sound size at every edge, also where the magnitude is flat; a hop-rate linear model of
-  the room (complex impulse response × keying) explains the signal to 24–34 dB, and with that
-  response known, a decision-delayed sequence estimator (2 hops) finds the keying without error.
-  Learning the response blindly is the open part – alternating estimation from the magnitude
-  detector's decisions drifted into rapidly toggling solutions; it needs run-length constraints.
-  It also assumes a phase-continuous tone: true for radio CW and the W1AW files, not for the
-  digit recording `1234567890` in `morse-training/`, whose phase jumps from element to element.
+  in the _phase_ of the tone – see the room equalizer below.
 - 30–40 WPM with more than ≈ 10 % reverberant energy: 30–40 ms gaps vanish inside the tail and
   the 0.4-unit smoothing; a wrong (too slow) unit estimate then widens the smoothing further.
 - The SNR gate compares the signal level with the _mean_ noise envelope (`minSnr` 2.5, ×1.2 until
@@ -183,6 +176,65 @@ Known limits:
 What did not help (kept out): a provisional key-up that is undone when the level returns to the
 mark level (helps 30/40 WPM, but couples with the unit estimate into merging at slow speeds), and
 a rise-based key-down outside the tail (spurious marks in noise).
+
+### Room equalizer (experimental, `roomEqualizer: true`)
+
+`room-equalizer.ts`, off by default (`MorseDecoderConfig.roomEqualizer`, no UI yet). For Morse from
+a loudspeaker in a room whose reverberant field cancels the direct sound, it detects the keying
+from the _complex_ tone amplitude: `ToneDetector` reports the tracked bin's Goertzel result with
+its phase referenced to the sample clock, and the equalizer models it per hop as
+
+```text
+Y(t) = Σₑ cₑ · (S(t − startₑ) − S(t − endₑ))
+```
+
+– S the room's complex step response at the hop rate (direct sound and build-up, 48 taps ≈ 0.3 s),
+cₑ each element's complex amplitude (its own phase: generators that restart the phase per element
+work too). Every hop is decided two hops late: "no change" against "an element starts/ends at one
+of the last three hops", the tails of all earlier elements included; a new element must be about
+as strong as the previous ones (0.7–2×), transitions cost a little.
+
+Learning S blindly: the level detector's character onsets (a mark after ≥ 2 prior units of gap)
+are aligned on the complex step of the direct sound and averaged phase-normalised – S for the
+first unit. A first decode shows which first elements were dahs, which extends S to three units;
+the speed comes from the decoded elements; two least-squares refinements of all 48 taps use only
+characters whose decoded timing is plausible (marks ≈ 1/3 units, gaps ≈ 1 unit). The frequency
+offset from the bin must be removed to a fraction of a hertz – a dah's tail is predicted hundreds
+of ms ahead –, but a phase tracker is biased by the room's own build-up by up to 4 Hz; the
+learning chain is therefore run for offsets of ±5 Hz (0.5 Hz steps), the three most plausible
+decodes are compared by model fit, then a ±0.4 Hz fine search. Online, S and the offset are
+refined every 2 s; a model error above −5 dB starts learning again.
+
+The decoder hands over to the equalizer in a character gap once it has been refined at least once
+and the room visibly shapes the tone (mean change of S after the direct sound ≥ 15 %; ≈ 5 %
+without a room, also in strong noise), and hands back below 10 %. The first ≈ 6–10 s of a
+transmission (six character onsets, ≥ 4 s) still come from the level detector.
+
+Measured (`morse:sweep`, `morse:corpus`, CER):
+
+| Case                                                  | level detector | with equalizer |
+| ----------------------------------------------------- | -------------- | -------------- |
+| `morse:sweep` score, tone 700 Hz                      | 34.8 %         | 10.9 %         |
+| `morse:sweep` score, tone 712 Hz (12 Hz off the bins) | 35.8 %         | 23.1 %         |
+| `morse:sweep` score, SNR 10 dB                        | 39.8 %         | 22.4 %         |
+| W1AW corpus + RT60 0.6 s / 50 % (room 1)              | 37.5 %         | 3.6 %          |
+| W1AW corpus + RT60 0.3 s / 50 %                       | 3.1 %          | 3.4 %          |
+| W1AW corpus + RT60 0.3 s / 25 %                       | 2.9 %          | 3.0 %          |
+| W1AW corpus + RT60 0.6 s / 25 %                       | 3.3 %          | 2.9 %          |
+| W1AW corpus clean                                     | 2.9 %          | 2.8 %          |
+| W1AW corpus, white noise −3 dB (8 kHz)                | 3.9 %          | 3.9 %          |
+
+At 700 Hz, 12 WPM decodes in every room up to RT60 0.6 s / 25 % and 0.3 s / 50 %, 18 WPM in every
+room at 0.3 s / 25 %; most remaining errors are the first seconds before the handover. Weak
+spots: 12 WPM at RT60 0.6 s with the tone off the analysis bins (68 % instead of 35–48 %), 40 WPM
+at 50 % reverberant energy, and noise plus heavy reverberation, where it hands over less often.
+
+Cost: ≈ 11 ms per second of 48 kHz audio (level detector alone ≈ 4 ms); a learning attempt blocks
+for ≈ 0.2 s once (the capture buffer holds 1.4 s).
+
+Before it is switched on by default or offered in the UI: real loudspeaker recordings, the first
+seconds (re-decoding them after the handover would recover them for files, not live), and the
+learning cost on slow machines.
 
 ## DTMF decoding (implemented)
 
