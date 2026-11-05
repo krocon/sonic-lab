@@ -38,7 +38,7 @@
       "runtimeArgs": [
         "site/tools/serve.mjs",
         "4331",
-        "dist/site"
+        "dist/deploy/sonic-lab"
       ],
       "port": 4331
     }

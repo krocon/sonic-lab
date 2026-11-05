@@ -1,4 +1,4 @@
-// Uploads the built promo site (dist/site) by FTP.
+// Uploads the built promo site (dist/deploy/sonic-lab) by FTP.
 //
 //   pnpm site:deploy              build, upload, list remote files that are not part of the site
 //   pnpm site:deploy --prune      … and delete those files (e.g. an old app build in the folder)
@@ -20,7 +20,7 @@ import { join, posix, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(fileURLToPath(import.meta.url), '../../..');
-const LOCAL = resolve(ROOT, process.env.SITE_DIST ?? 'dist/site');
+const LOCAL = resolve(ROOT, process.env.SITE_DIST ?? 'dist/deploy/sonic-lab');
 const args = new Set(process.argv.slice(2));
 const DRY = args.has('--dry-run');
 const PRUNE = args.has('--prune');

@@ -3,7 +3,7 @@
 //   node site/tools/serve.mjs [port] [dir]   → http://localhost:4330/products/sonic-lab/
 //
 //   pnpm site:serve     the sources in site/ (port 4330)
-//   pnpm site:preview   the build in dist/site (port 4331)
+//   pnpm site:preview   the build in dist/deploy/sonic-lab (port 4331)
 //
 // index.html sets <base href="/products/sonic-lab/">, so the site has to be served from that path –
 // a plain static server on the site folder would 404 every asset. Supports Range requests

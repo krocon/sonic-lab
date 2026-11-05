@@ -1,6 +1,6 @@
 // Builds the promo site into a folder that can be uploaded as is.
 //
-//   node site/tools/build.mjs [outDir] [--no-app]   (pnpm site:build, default dist/site)
+//   node site/tools/build.mjs [outDir] [--no-app]   (pnpm site:build, default dist/deploy/sonic-lab)
 //
 // - copies site/ without tools/, README.md and dotfiles
 // - minifies assets/js/site.js and assets/css/site.css with esbuild (already used for the worklets)
@@ -19,7 +19,7 @@ import { fileURLToPath } from 'node:url';
 const SITE = resolve(fileURLToPath(import.meta.url), '../..');
 const ROOT = resolve(SITE, '..');
 const cli = process.argv.slice(2);
-const OUT = resolve(ROOT, cli.find((a) => !a.startsWith('--')) ?? 'dist/site');
+const OUT = resolve(ROOT, cli.find((a) => !a.startsWith('--')) ?? 'dist/deploy/sonic-lab');
 const WITH_APP = !cli.includes('--no-app');
 const SKIP = new Set(['tools', 'README.md']); // top level of site/
 const MINIFY = [

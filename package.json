@@ -47,7 +47,7 @@
     "screenshots": "pnpm build && node scripts/screenshots.mjs",
     "site:build": "node site/tools/build.mjs",
     "site:serve": "node site/tools/serve.mjs 4330",
-    "site:preview": "pnpm site:build && node site/tools/serve.mjs 4331 dist/site",
+    "site:preview": "pnpm site:build && node site/tools/serve.mjs 4331 dist/deploy/sonic-lab",
     "site:media": "node site/tools/capture-media.mjs",
     "site:deploy": "pnpm site:build && node --env-file-if-exists=.env.deploy site/tools/deploy.mjs"
   },

@@ -21,13 +21,13 @@ site/
 
 ## Scripts
 
-| Script              | What it does                                                                                                                                                                                                                                                                                                                                                                      |
-| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm site:build`   | Builds `dist/site`: copy without `tools/` and this README, JS and CSS minified with esbuild, a content hash on both in `index.html` (`?v=…`), the web app in `app/` with base href `/products/sonic-lab/app/`, and a check that every file referenced by `index.html` and the stylesheet exists – the build fails otherwise. `--no-app` skips the app. Also part of `pnpm check`. |
-| `pnpm site:deploy`  | Builds, then uploads `dist/site` by FTPS (see below). `--dry-run` only shows what would happen, `--prune` also deletes remote files that are not part of the build.                                                                                                                                                                                                               |
-| `pnpm site:serve`   | Serves the sources from `site/` at http://localhost:4330/products/sonic-lab/ – edit and reload.                                                                                                                                                                                                                                                                                   |
-| `pnpm site:preview` | Builds, then serves `dist/site` at http://localhost:4331/products/sonic-lab/ (app: …/app/) – exactly what gets uploaded.                                                                                                                                                                                                                                                          |
-| `pnpm site:media`   | Records stills and live display captures from the running app (see below).                                                                                                                                                                                                                                                                                                        |
+| Script              | What it does                                                                                                                                                                                                                                                                                                                                                                                  |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm site:build`   | Builds `dist/deploy/sonic-lab`: copy without `tools/` and this README, JS and CSS minified with esbuild, a content hash on both in `index.html` (`?v=…`), the web app in `app/` with base href `/products/sonic-lab/app/`, and a check that every file referenced by `index.html` and the stylesheet exists – the build fails otherwise. `--no-app` skips the app. Also part of `pnpm check`. |
+| `pnpm site:deploy`  | Builds, then uploads `dist/deploy/sonic-lab` by FTPS (see below). `--dry-run` only shows what would happen, `--prune` also deletes remote files that are not part of the build.                                                                                                                                                                                                               |
+| `pnpm site:serve`   | Serves the sources from `site/` at http://localhost:4330/products/sonic-lab/ – edit and reload.                                                                                                                                                                                                                                                                                               |
+| `pnpm site:preview` | Builds, then serves `dist/deploy/sonic-lab` at http://localhost:4331/products/sonic-lab/ (app: …/app/) – exactly what gets uploaded.                                                                                                                                                                                                                                                          |
+| `pnpm site:media`   | Records stills and live display captures from the running app (see below).                                                                                                                                                                                                                                                                                                                    |
 
 `node site/tools/build.mjs <dir>` builds into another folder.
 
@@ -38,8 +38,15 @@ site/
 | https://krocon.de/products/sonic-lab/     | promo page                                   |
 | https://krocon.de/products/sonic-lab/app/ | the web app (needs HTTPS for the microphone) |
 
-Both come from one build: upload the **contents** of `dist/site` into the folder the web server
-publishes as `/products/sonic-lab/` – by hand, or with `pnpm site:deploy`:
+Both come from one build, `pnpm site:build`, which mirrors the server paths:
+
+```
+dist/deploy/sonic-lab/       → /products/sonic-lab/       promo page
+dist/deploy/sonic-lab/app/   → /products/sonic-lab/app/   web app
+```
+
+Upload the folder `dist/deploy/sonic-lab` into the folder the web server publishes as `/products/`
+(or its **contents** into `/products/sonic-lab/`) – by hand, or with `pnpm site:deploy`:
 
 1. `cp .env.deploy.example .env.deploy` (repository root, git-ignored – never commit credentials,
    this repository is public) and fill in host, user and `SITE_FTP_DIR`. Leave the password empty
