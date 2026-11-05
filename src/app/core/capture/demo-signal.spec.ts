@@ -3,7 +3,8 @@ import { MorseDecoder, eventsToText } from '../../decoders/morse/morse-decoder';
 import { scheduleMorse } from '../../decoders/morse/morse-timing';
 import { DEMO_TEXT, demoSignal } from './demo-signal';
 
-describe('demo signal', () => {
+// these tests decode seconds of audio: 3–4 s under coverage on CI, up to 8 s on a busy runner
+describe('demo signal', { timeout: 60_000 }, () => {
   it('decodes with word gaps in every repetition, not only the first', () => {
     // same loop length as demoSignal(): the pause between repetitions is ~22 units
     const loopSeconds = scheduleMorse(DEMO_TEXT, { wpm: 18, leadIn: 0.4 }).duration + 0.6;
@@ -14,7 +15,7 @@ describe('demo signal', () => {
   });
 });
 
-describe('analysis and DTMF demo signals', () => {
+describe('analysis and DTMF demo signals', { timeout: 60_000 }, () => {
   it('DTMF demo decodes to all 16 keys and loops seamlessly across blocks', async () => {
     const { demoDtmfSignal, DTMF_DEMO_KEYS } = await import('./demo-signal');
     const { DtmfDecoder } = await import('../../decoders/dtmf/dtmf-decoder');
