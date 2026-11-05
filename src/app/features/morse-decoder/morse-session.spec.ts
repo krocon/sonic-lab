@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { FakeAudioSource } from '../../../testing/fake-audio-source';
+import { impairedMorse } from '../../../testing/signals/impaired-morse';
 import { morseSignal } from '../../../testing/signals/morse-signal';
 import { AUDIO_SOURCE, CaptureSession } from '../../core/capture/capture-session';
 import { MorseLog } from './morse-log';
@@ -35,6 +36,30 @@ describe('MorseSession', () => {
     expect(session.wpm()).toBeLessThanOrEqual(23);
     expect(session.frequency()).toBeCloseTo(700, -2);
   });
+
+  // learning the room takes a few seconds of CPU under coverage instrumentation
+  it(
+    'passes the room mode to the decoder and reports when it detects the keying',
+    { timeout: 60_000 },
+    async () => {
+      session.updateSettings({ roomMode: true });
+      expect(session['decoder'].configuration.roomEqualizer).toBe(true);
+      await TestBed.inject(CaptureSession).start();
+      const text = 'CQ CQ DE DL1ABC DL1ABC K = GM OM TNX FER CALL UR RST 579 579 = NAME MARC';
+      const { samples } = impairedMorse(text, {
+        wpm: 18,
+        sampleRate: 48000,
+        snrDb: 30,
+        seed: 3,
+        reverb: { rt60Seconds: 0.3, wet: 0.5, seed: 3 },
+      });
+      for (let i = 0; i < samples.length && !session.roomInUse(); i += 1024)
+        source.emit(samples.slice(i, i + 1024), i / 48000);
+      expect(session.roomInUse()).toBe(true);
+      session.reset();
+      expect(session.roomInUse()).toBe(false);
+    },
+  );
 
   it('resets output and learned timing', async () => {
     await play('AB');

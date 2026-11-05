@@ -78,11 +78,13 @@ All notable changes to this project are documented here. The format follows
   and CLEAR empties it. The log lives in memory only and survives switching modes.
 - `pnpm morse:sweep`: synthetic Morse through simulated rooms (RT60, reverberant share, six
   impulse responses) at 12–40 WPM, CER matrix and score for comparing decoder versions.
-- Morse decoder, experimental and off by default (`roomEqualizer` in the decoder config, no UI
-  yet): a room equalizer for Morse from a loudspeaker in a reverberant room. It learns the room's
-  complex response from the signal and detects the keying from the tone's phase as well as its
-  level, so rooms whose reverberation cancels the direct sound – where whole characters merged
-  into one mark – decode again. The tone detector now also reports the complex amplitude.
+- Morse decoder room mode, experimental and off by default (soft key ROOM in the live view,
+  persisted): a room equalizer for Morse from a loudspeaker in a reverberant room. It learns the
+  room's complex response from the signal and detects the keying from the tone's phase as well
+  as its level, so rooms whose reverberation cancels the direct sound – where whole characters
+  merged into one mark – decode again. The display shows "Room mode", lit as "Room active" once
+  the room is learned (after ≈ 5–10 s of Morse). The tone detector now also reports the complex
+  amplitude.
 
 ### Changed
 
@@ -113,6 +115,8 @@ All notable changes to this project are documented here. The format follows
 - Dark only: the light (aluminium) finish and the theme toggle are gone; the UI ignores the
   system theme.
 - No overview page: the app opens in the Morse decoder; unknown paths lead there too.
+- Morse decoder: the start speed is set with the SPEED knob; its soft key in the live view now
+  switches the room mode.
 
 ### Fixed
 

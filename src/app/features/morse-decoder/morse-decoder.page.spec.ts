@@ -43,7 +43,7 @@ describe('MorseDecoderPage', () => {
       'Tone frequency',
       'Fixed tone',
       'Sensitivity',
-      'Start speed',
+      'Room mode',
       'Reset',
       'View',
     ]);
@@ -192,14 +192,50 @@ describe('MorseDecoderPage', () => {
     });
   });
 
-  it('takes the start speed from the keypad', async () => {
+  it('sets the start speed with the SPEED knob', async () => {
     TestBed.createComponent(MorseDecoderPage);
     const hw = frontPanel();
-    hw.press('Start speed');
-    hw.panel.digit('3');
-    hw.panel.digit('5');
-    hw.panel.enter();
-    expect(hw.text('Start speed')).toBe('35 WPM');
+    const speed = hw.knob(1)!;
+    hw.panel.step(speed, 5);
+    expect(speed.format(speed.value())).toBe('25 WPM');
+    expect(JSON.parse(localStorage.getItem('audiolab.morse') ?? '{}').data).toMatchObject({
+      initialWpm: 25,
+    });
+  });
+
+  it('switches the room mode, shows its state and remembers it', async () => {
+    const fixture = TestBed.createComponent(MorseDecoderPage);
+    await fixture.whenStable();
+    const el: HTMLElement = fixture.nativeElement;
+    const hw = frontPanel();
+    const morse = fixture.componentInstance['morse'] as MorseSession;
+    const chips = () => [...el.querySelectorAll('.end .chip')].map((c) => c.textContent?.trim());
+    expect(hw.text('Room mode')).toBe('OFF');
+    expect(chips()).not.toContain('Room mode');
+
+    hw.press('Room mode');
+    await fixture.whenStable();
+    expect(hw.text('Room mode')).toBe('ON');
+    expect(hw.message()?.text).toContain('Room mode (experimental)');
+    expect(morse['decoder'].configuration.roomEqualizer).toBe(true);
+    expect(chips()).toContain('Room mode');
+    expect(JSON.parse(localStorage.getItem('audiolab.morse') ?? '{}').data).toMatchObject({
+      roomMode: true,
+    });
+
+    // lit once the room is learned and the equalizer detects the keying
+    morse.roomInUse.set(true);
+    await fixture.whenStable();
+    expect(chips()).toContain('Room active');
+    expect(el.querySelector('.end .chip.ok:last-child')?.textContent?.trim()).toBe('Room active');
+
+    hw.press('Room mode');
+    await fixture.whenStable();
+    expect(hw.text('Room mode')).toBe('OFF');
+    expect(hw.message()?.text).toBe('Room mode off.');
+    expect(morse['decoder'].configuration.roomEqualizer).toBe(false);
+    expect(morse.roomInUse()).toBe(false);
+    expect(chips().some((c) => c?.startsWith('Room'))).toBe(false);
   });
 
   it('starts/stops with Space and resets with Ctrl+K', async () => {

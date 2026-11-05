@@ -12,6 +12,11 @@ export interface MorseSettings {
   readonly sensitivity: Sensitivity;
   /** Expected speed before anything was heard. */
   readonly initialWpm: number;
+  /**
+   * Experimental room mode: learn the room's echo and detect the keying with it – for Morse from
+   * a loudspeaker in a reverberant room (`roomEqualizer` of the decoder).
+   */
+  readonly roomMode: boolean;
 }
 
 export const DEFAULT_MORSE_SETTINGS: MorseSettings = {
@@ -19,6 +24,7 @@ export const DEFAULT_MORSE_SETTINGS: MorseSettings = {
   frequency: 700,
   sensitivity: 'medium',
   initialWpm: 20,
+  roomMode: false,
 };
 
 export const FREQUENCY_RANGE = { min: 300, max: 1500, step: 10 } as const;
@@ -37,6 +43,7 @@ export function toDecoderConfig(s: MorseSettings): Partial<MorseDecoderConfig> {
   return {
     frequency: s.frequencyMode === 'auto' ? null : s.frequency,
     initialWpm: s.initialWpm,
+    roomEqualizer: s.roomMode,
     ...SENSITIVITY_PRESETS[s.sensitivity],
   };
 }
@@ -53,6 +60,7 @@ export const morseSettingsStore = () =>
             frequency: read.number(raw, 'frequency', 700, FREQUENCY_RANGE.min, FREQUENCY_RANGE.max),
             sensitivity: read.oneOf(raw, 'sensitivity', SENSITIVITIES, 'medium'),
             initialWpm: read.number(raw, 'initialWpm', 20, 5, 60),
+            roomMode: read.boolean(raw, 'roomMode', false),
           }
         : null,
   });

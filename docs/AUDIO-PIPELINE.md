@@ -179,7 +179,9 @@ a rise-based key-down outside the tail (spurious marks in noise).
 
 ### Room equalizer (experimental, `roomEqualizer: true`)
 
-`room-equalizer.ts`, off by default (`MorseDecoderConfig.roomEqualizer`, no UI yet). For Morse from
+`room-equalizer.ts`, off by default (`MorseDecoderConfig.roomEqualizer`; in the app the soft key
+ROOM in the Morse decoder's live view, setting `roomMode`, persisted). The display shows a chip
+"Room mode" while it is on and "Room active" (lit) while the equalizer detects the keying. For Morse from
 a loudspeaker in a room whose reverberant field cancels the direct sound, it detects the keying
 from the _complex_ tone amplitude: `ToneDetector` reports the tracked bin's Goertzel result with
 its phase referenced to the sample clock, and the equalizer models it per hop as
@@ -239,12 +241,14 @@ often), and a few cells where the level detector alone was already error-free an
 equalizer's first seconds or a wrong early model cost some characters (12 WPM at 735 Hz,
 RT60 0.3 s / 50 %: 0 → 5 %).
 
-Cost: ≈ 11 ms per second of 48 kHz audio (level detector alone ≈ 4 ms); a learning attempt blocks
-for ≈ 0.2 s once (the capture buffer holds 1.4 s).
+Cost: ≈ 11 ms per second of 48 kHz audio (level detector alone ≈ 4 ms). It runs on the main
+thread with the rest of the decoder: a learning attempt blocks for ≈ 0.15–0.3 s once, each online
+refit (every 2 s) for ≈ 20 ms, up to ≈ 65 ms (desktop, Node 24, 48 kHz). No audio is lost – the
+capture worklet's buffer pool holds 1.4 s –, but the display stalls for that long.
 
-Before it is switched on by default or offered in the UI: real loudspeaker recordings, the first
-seconds (re-decoding them after the handover would recover them for files, not live), and the
-learning cost on slow machines.
+Before it is switched on by default: real loudspeaker recordings, the first seconds (re-decoding
+them after the handover would recover them for files, not live), and the learning cost on slow
+machines (spread the offset search over several hops, or move the decoder into a worker).
 
 ## DTMF decoding (implemented)
 

@@ -82,6 +82,30 @@ describe('room equalizer (Morse decoder, roomEqualizer: true)', { timeout: 60_00
     expect(characterErrorRate(text, decoded)).toBeLessThan(0.05);
   });
 
+  it('keeps a learned room when other settings change, starts afresh when switched', () => {
+    const s = impairedMorse(TEXT, {
+      wpm: 18,
+      sampleRate: 16000,
+      snrDb: 30,
+      seed: 3,
+      reverb: { rt60Seconds: 0.3, wet: 0.5, seed: 3 },
+    });
+    const decoder = new MorseDecoder({ roomEqualizer: true });
+    let i = 0;
+    for (; i < s.samples.length && !decoder.roomInUse; i += 1024)
+      decoder.process({
+        samples: s.samples.subarray(i, i + 1024),
+        sampleRate: 16000,
+        timestamp: 0,
+      });
+    expect(decoder.roomInUse).toBe(true);
+    expect(i / 16000).toBeLessThan(25);
+    decoder.configure({ roomEqualizer: true, initialWpm: 25, onRatio: 0.45 });
+    expect(decoder.roomInUse).toBe(true);
+    decoder.configure({ roomEqualizer: false });
+    expect(decoder.roomInUse).toBe(false);
+  });
+
   it('keeps clean signals decoded exactly', () => {
     for (const wpm of [15, 30]) {
       const s = impairedMorse(TEXT, { wpm, sampleRate: 16000, snrDb: 20, seed: 1 });

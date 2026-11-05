@@ -123,6 +123,9 @@ export class MorseDecoder implements SignalDecoder<MorseDecoderConfig, MorseEven
   }
 
   configure(config: Partial<MorseDecoderConfig>): void {
+    // switching the room mode starts it afresh; other settings keep a learned room
+    const roomChanged =
+      config.roomEqualizer !== undefined && config.roomEqualizer !== this.config.roomEqualizer;
     const toneChanged =
       config.frequency !== undefined ||
       config.minFrequency !== undefined ||
@@ -130,7 +133,7 @@ export class MorseDecoder implements SignalDecoder<MorseDecoderConfig, MorseEven
       config.hopMs !== undefined;
     this.config = { ...this.config, ...config };
     if (toneChanged) this.tone.configure(this.config);
-    if (config.roomEqualizer !== undefined) this.resetRoom();
+    if (roomChanged) this.resetRoom();
     this.keying.configure(this.config);
     this.timing.configure(this.config);
   }
@@ -138,6 +141,11 @@ export class MorseDecoder implements SignalDecoder<MorseDecoderConfig, MorseEven
   /** Provisional code of the character being keyed. */
   get pendingCode(): string {
     return this.timing.pendingCode;
+  }
+
+  /** The room equalizer detects the keying (room mode on, room learned, echo present). */
+  get roomInUse(): boolean {
+    return this.roomActive;
   }
 
   get wpm(): number | null {

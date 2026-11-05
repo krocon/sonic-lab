@@ -34,6 +34,8 @@ export class MorseSession {
   readonly unknownCount = signal(0);
   /** Tone level above the noise floor while keyed, dB (null until a tone was heard). */
   readonly snrDb = signal<number | null>(null);
+  /** Room mode has learned the room and detects the keying (see `MorseDecoder.roomInUse`). */
+  readonly roomInUse = signal(false);
   readonly hasOutput = computed(() => this.text().length > 0 || this.morse().length > 0);
   readonly timeline = new KeyingTimeline();
 
@@ -53,6 +55,7 @@ export class MorseSession {
     this.settings.set(next);
     this.store.save(next);
     this.decoder.configure(toDecoderConfig(next));
+    this.roomInUse.set(this.decoder.roomInUse);
   }
 
   /** Clears the output and the decoder's learned timing; the log keeps it, in a line of its own. */
@@ -67,6 +70,7 @@ export class MorseSession {
     this.frequency.set(null);
     this.unknownCount.set(0);
     this.snrDb.set(null);
+    this.roomInUse.set(false);
   }
 
   /** Exposed for tests: feed decoder events directly. */
@@ -107,5 +111,6 @@ export class MorseSession {
     if (text) this.text.update((t) => (t + text).slice(-MAX_TEXT));
     if (morse) this.morse.update((m) => (m + morse).slice(-MAX_TEXT));
     this.pendingCode.set(this.decoder.pendingCode);
+    this.roomInUse.set(this.decoder.roomInUse);
   }
 }

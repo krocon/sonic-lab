@@ -23,6 +23,11 @@
         {{ morse.settings().frequencyMode === 'auto' ? 'Auto tone' : 'Fixed tone' }}
       </span>
       <span class="chip">Sens {{ morse.settings().sensitivity }}</span>
+      @if (morse.settings().roomMode) {
+        <span class="chip" [class.ok]="morse.roomInUse()">
+          {{ morse.roomInUse() ? 'Room active' : 'Room mode' }}
+        </span>
+      }
     </div>
   </div>
 

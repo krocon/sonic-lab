@@ -39,6 +39,11 @@ const SENSITIVITIES: readonly PanelOption<Sensitivity>[] = [
   { value: 'high', label: 'HIGH' },
 ];
 
+const ROOM: readonly PanelOption<boolean>[] = [
+  { value: false, label: 'OFF' },
+  { value: true, label: 'ON' },
+];
+
 type View = 'live' | 'log';
 const VIEWS: readonly PanelOption<View>[] = [
   { value: 'live', label: 'LIVE' },
@@ -130,6 +135,25 @@ export class MorseDecoderPage {
       value: () => settings().sensitivity,
       set: (sensitivity) => update({ sensitivity }),
     });
+    const room = panelChoice({
+      label: 'ROOM',
+      name: 'Room mode',
+      options: ROOM,
+      value: () => settings().roomMode,
+      set: (roomMode) => {
+        update({ roomMode });
+        if (roomMode)
+          this.flash(
+            {
+              tone: 'info',
+              text: 'Room mode (experimental): learns the room from the first 5–10 s of Morse.',
+              hint: 'For a loudspeaker in a room with echo – off for radio audio by cable.',
+            },
+            8000,
+          );
+        else this.flash({ tone: 'neutral', text: 'Room mode off.' });
+      },
+    });
     const view = panelChoice({
       label: 'VIEW',
       name: 'View',
@@ -138,11 +162,12 @@ export class MorseDecoderPage {
       set: (v) => this.showView(v),
     });
     const noLog = () => this.log.entries().length === 0;
+    // the start speed stays on the SPEED knob
     const liveKeys = [
       mode,
       tone,
       sensitivity,
-      speed,
+      room,
       panelAction({
         label: 'RESET',
         name: 'Reset',

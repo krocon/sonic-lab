@@ -67,10 +67,13 @@ test.describe('Morse decoder', () => {
     const panel = frontPanel(page);
     await panel.softKey('Tone frequency').click();
     await panel.softKey('Sensitivity').click();
+    await panel.softKey('Room mode').click();
     await expect(panel.softKey('Tone frequency')).toHaveAccessibleName('Tone frequency: FIXED');
     await page.reload();
     await expect(panel.softKey('Tone frequency')).toHaveAccessibleName('Tone frequency: FIXED');
     await expect(panel.softKey('Sensitivity')).toHaveAccessibleName('Sensitivity: HIGH');
+    await expect(panel.softKey('Room mode')).toHaveAccessibleName('Room mode: ON');
+    await expect(page.locator('.end .chip').last()).toHaveText('Room mode');
     await expect(page.getByRole('slider', { name: 'Fixed tone', exact: true })).toBeVisible();
   });
 
