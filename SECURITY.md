@@ -14,6 +14,6 @@ impact. You will get an answer within two weeks.
 
 ## Scope notes
 
-AudioLab processes audio locally. Relevant areas include: the desktop shell's commands and
+Sonic Lab processes audio locally. Relevant areas include: the desktop shell's commands and
 capabilities (`src-tauri/`), the web permission policy, file export, the Content Security Policy
 and anything that could make audio leave the device or open the microphone without a user action.

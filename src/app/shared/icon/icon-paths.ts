@@ -1,5 +1,5 @@
 /**
- * Stroke icons on a 24×24 grid (drawn for AudioLab, no icon library).
+ * Stroke icons on a 24×24 grid (drawn for Sonic Lab, no icon library).
  * Each entry is one or more SVG path `d` strings.
  */
 export const ICON_PATHS = {

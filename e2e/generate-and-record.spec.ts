@@ -42,7 +42,7 @@ test('records the microphone and exports a WAV download', async ({ page }) => {
     page.waitForEvent('download'),
     panel.softKey('Export…').click(),
   ]);
-  expect(download.suggestedFilename()).toMatch(/^audiolab-.*\.wav$/);
+  expect(download.suggestedFilename()).toMatch(/^sonic-lab-.*\.wav$/);
   const path = await download.path();
   const fs = await import('node:fs');
   const bytes = fs.readFileSync(path);

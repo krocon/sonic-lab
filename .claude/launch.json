@@ -1,0 +1,46 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "start"
+      ],
+      "port": 1420
+    },
+    {
+      "name": "mockups",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4321",
+        "--bind",
+        "127.0.0.1",
+        "--directory",
+        "prompts/mockups"
+      ],
+      "port": 4321
+    },
+    {
+      "name": "site",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "site/tools/serve.mjs",
+        "4330"
+      ],
+      "port": 4330
+    },
+    {
+      "name": "site-dist",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "site/tools/serve.mjs",
+        "4331",
+        "dist/deploy/sonic-lab"
+      ],
+      "port": 4331
+    }
+  ]
+}

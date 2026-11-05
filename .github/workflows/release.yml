@@ -56,7 +56,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --draft --verify-tag \
-            --title "AudioLab ${{ steps.version.outputs.version }}" --notes-file notes.md
+            --title "Sonic Lab ${{ steps.version.outputs.version }}" --notes-file notes.md
           echo "id=$(gh release view "$TAG" --json databaseId -q .databaseId)" >> "$GITHUB_OUTPUT"
 
   desktop:
@@ -147,7 +147,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          name="audiolab-web-${{ needs.prepare.outputs.version }}.zip"
+          name="sonic-lab-web-${{ needs.prepare.outputs.version }}.zip"
           (cd dist/audiolab/browser && zip -qr "$GITHUB_WORKSPACE/$name" .)
           gh release upload "$TAG" "$name" --clobber
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0

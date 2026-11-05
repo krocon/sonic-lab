@@ -35,7 +35,8 @@ await new Promise((r) => server.listen(0, '127.0.0.1', r));
 const base = `http://127.0.0.1:${server.address().port}`;
 
 const shots = [
-  { name: 'morse-decoder', path: '/#/morse-decoder', demo: true, wait: 9000 },
+  // the whole demo transmission "CQ CQ DE SONIC LAB K" is on the display after ≈ 13 s
+  { name: 'morse-decoder', path: '/#/morse-decoder', demo: true, wait: 14000 },
   { name: 'spectrum-analyzer', path: '/#/spectrum-analyzer', demo: true, wait: 5000 },
   { name: 'dtmf-decoder', path: '/#/dtmf-decoder', demo: true, wait: 4700 },
   { name: 'signal-monitor', path: '/#/signal-monitor', demo: true, wait: 3000 },

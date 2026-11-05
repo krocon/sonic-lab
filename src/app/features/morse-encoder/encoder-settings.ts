@@ -11,7 +11,7 @@ export interface EncoderSettings {
 }
 
 export const DEFAULT_ENCODER_SETTINGS: EncoderSettings = {
-  text: 'CQ CQ DE AUDIOLAB K',
+  text: 'CQ CQ DE SONIC LAB K',
   wpm: 20,
   farnsworthWpm: 20,
   frequency: 700,

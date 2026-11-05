@@ -1,8 +1,8 @@
-# AudioLab
+# Sonic Lab
 
 **Local, privacy-first audio signal analyzer for the web and the desktop.**
 
-AudioLab captures audio from your microphone, visualises it in real time and decodes signals –
+Sonic Lab captures audio from your microphone, visualises it in real time and decodes signals –
 Morse code and telephone keypad tones (DTMF) – and comes with a spectrum analyzer, a tone
 generator and a recorder. Everything runs on your device: no server, no cloud, no telemetry. The
 same Angular application ships as a web app and as a [Tauri 2](https://tauri.app) desktop app for
@@ -12,16 +12,16 @@ macOS, Windows and Linux.
 
 ## Features
 
-| Module                 | What it does                                                                                                                                                                                              |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Morse Decoder**      | Automatic or fixed tone frequency, adaptive threshold and speed (WPM), robust against noise, fading, clicks, sloppy keying and Farnsworth spacing; Morse and plain text output, unknown sequences marked. |
-| **DTMF Decoder**       | All 16 keys, ITU-style checks (frequency tolerance, twist, energy ratio), live keypad and tone levels.                                                                                                    |
-| **Frequency Analyzer** | Dominant frequency with note name and cents, stability, 10 s history.                                                                                                                                     |
-| **Spectrum Analyzer**  | FFT 1024–16384 points, Hann/Blackman-Harris, log/linear axis, averaging, peak hold, spectrogram.                                                                                                          |
-| **Signal Monitor**     | RMS/peak level, clipping warning, dominant frequency, 30 s history.                                                                                                                                       |
-| **Morse Encoder**      | Text → Morse with live preview and click-free audio playback, Farnsworth spacing.                                                                                                                         |
-| **Tone Generator**     | Sine, square, triangle, sawtooth, white/pink noise, sweeps, two-tone and DTMF; level-capped.                                                                                                              |
-| **Audio Recorder**     | In-memory recording (10 min max), playback, WAV export (16-bit or 32-bit float).                                                                                                                          |
+| Module                 | What it does                                                                                                                                                                                                                                       |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Morse Decoder**      | Automatic or fixed tone frequency, adaptive threshold and speed (WPM), robust against noise, fading, clicks, sloppy keying and Farnsworth spacing; Morse and plain text output, unknown sequences marked; log with time and speed to copy or save. |
+| **DTMF Decoder**       | All 16 keys, ITU-style checks (frequency tolerance, twist, energy ratio), live keypad and tone levels.                                                                                                                                             |
+| **Frequency Analyzer** | Dominant frequency with note name and cents, stability, 10 s history.                                                                                                                                                                              |
+| **Spectrum Analyzer**  | FFT 1024–16384 points, Hann/Blackman-Harris, log/linear axis, averaging, peak hold, spectrogram.                                                                                                                                                   |
+| **Signal Monitor**     | RMS/peak level, clipping warning, dominant frequency, 30 s history.                                                                                                                                                                                |
+| **Morse Encoder**      | Text → Morse with live preview and click-free audio playback, Farnsworth spacing.                                                                                                                                                                  |
+| **Tone Generator**     | Sine, square, triangle, sawtooth, white/pink noise, sweeps, two-tone and DTMF; level-capped.                                                                                                                                                       |
+| **Audio Recorder**     | In-memory recording (10 min max), playback, WAV export (16-bit or 32-bit float).                                                                                                                                                                   |
 
 Every input-based module has a **Demo signal** input, so you can try it without a microphone.
 
@@ -54,7 +54,7 @@ Details: [docs/PRIVACY.md](docs/PRIVACY.md).
 
 **Web:** serve the build over HTTPS (or use `http://localhost` during development) – browsers only
 allow microphone access in a secure context. Release builds are attached to GitHub releases as
-`audiolab-web-<version>.zip` and can be deployed to GitHub Pages.
+`sonic-lab-web-<version>.zip` and can be deployed to GitHub Pages.
 
 **Desktop:** download the installer for your OS from the
 [releases page](https://github.com/krocon/sonic-lab/releases). Builds are currently
@@ -77,8 +77,9 @@ pnpm test:coverage  # with coverage thresholds
 pnpm test:signals   # Morse robustness scenarios (CER limits)
 pnpm lint           # ESLint incl. layer boundaries + worklet type-check
 pnpm e2e            # Playwright (Chromium); pnpm e2e:all for Firefox and WebKit too
-pnpm check          # version sync, scripts, format, lint, tests, web build, Rust checks
+pnpm check          # version sync, scripts, format, lint, tests, web + site build, Rust checks
 pnpm tauri:build    # desktop bundle for the current OS
+pnpm site:build     # promo site + web app → dist/deploy/sonic-lab (site:deploy, site:preview; see site/README.md)
 ```
 
 - Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
@@ -90,7 +91,7 @@ The development history is documented as work orders in [prompts/](prompts/READM
 
 ## Browser support
 
-Current desktop versions of Chromium-based browsers, Firefox and Safari. AudioLab needs
+Current desktop versions of Chromium-based browsers, Firefox and Safari. Sonic Lab needs
 `getUserMedia`, the Web Audio API and `AudioWorklet`; unsupported or insecure environments get a
 clear message instead of a broken page. Automated tests run in Chromium locally and in Chromium,
 Firefox and WebKit in CI.

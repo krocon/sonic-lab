@@ -19,6 +19,11 @@
 //   --out <dir>              write <name>.got.txt / .ref.txt / .events.jsonl there
 //   --json                   machine-readable result
 //   --verbose                print the decoded text of every recording
+//
+//   node scripts/morse-corpus.mjs sweep [options]    synthetic text through simulated rooms: CER matrix
+//
+// sweep options: --speeds 12,18,25,30,40  --rooms 1,2,3,4,5,6  --reverbs 0.3/0.25,0.6/0.5 (RT60 s /
+// reverberant share)  --snr <dB, 500 Hz>  --rate <Hz>  --sensitivity  --config  --text  --json  --verbose
 import { build } from 'esbuild';
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, statSync } from 'node:fs';
@@ -35,8 +40,9 @@ const [command = 'run', ...rest] = process.argv.slice(2);
 
 if (command === 'convert') convert();
 else if (command === 'run') await run(rest);
+else if (command === 'sweep') await sweep(rest);
 else {
-  console.error(`unknown command "${command}" – use convert or run`);
+  console.error(`unknown command "${command}" – use convert, run or sweep`);
   process.exit(2);
 }
 
@@ -89,9 +95,21 @@ function convert() {
 
 async function run(args) {
   if (!existsSync(WAV_DIR)) convert();
-  const outfile = join(tmpdir(), `morse-corpus-${process.pid}.mjs`);
+  const { runCorpus } = await bundle('src/testing/morse-corpus/run-corpus.ts');
+  const code = await runCorpus({ corpus: CORPUS, wavDir: WAV_DIR, args });
+  process.exit(code);
+}
+
+async function sweep(args) {
+  const { runSweep } = await bundle('src/testing/morse-corpus/reverb-sweep.ts');
+  process.exit(await runSweep({ args }));
+}
+
+/** Bundles a TypeScript entry point for Node and imports it. */
+async function bundle(entry) {
+  const outfile = join(tmpdir(), `morse-${parse(entry).name}-${process.pid}.mjs`);
   await build({
-    entryPoints: ['src/testing/morse-corpus/run-corpus.ts'],
+    entryPoints: [entry],
     outfile,
     bundle: true,
     platform: 'node',
@@ -99,7 +117,5 @@ async function run(args) {
     target: 'node22',
     logLevel: 'warning',
   });
-  const { runCorpus } = await import(pathToFileURL(outfile).href);
-  const code = await runCorpus({ corpus: CORPUS, wavDir: WAV_DIR, args });
-  process.exit(code);
+  return import(pathToFileURL(outfile).href);
 }

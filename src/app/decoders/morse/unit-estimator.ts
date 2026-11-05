@@ -56,6 +56,19 @@ function isSplit(c: Clusters | null): boolean {
 }
 
 /**
+ * Typical element gap: the median of the spaces shorter than two mark-derived units (character
+ * and word gaps are ≥ 3). A median, not the low 2-means cluster: one stray short space (a
+ * reverberant tail swelling after a key-up) among a dozen element gaps would be a cluster of its
+ * own and pull the unit far down. 0 if there is none.
+ */
+function elementGap(spaces: readonly number[], unit: number): number {
+  const gaps = spaces.filter((g) => g < 2 * unit).sort((a, b) => a - b);
+  if (gaps.length === 0) return 0;
+  const mid = gaps.length >> 1;
+  return gaps.length % 2 ? (gaps[mid] ?? 0) : ((gaps[mid - 1] ?? 0) + (gaps[mid] ?? 0)) / 2;
+}
+
+/**
  * @param marks recent mark durations (s)
  * @param spaces recent space durations (s), word gaps included
  * @param prior unit to fall back on (s)
@@ -70,9 +83,9 @@ export function estimateUnit(
   if (!m) return { unit: prior, confident: false };
 
   if (isSplit(m) && m) {
-    const gap = s && s.lowCount > 0 ? s.low : 0;
     const fromMarks =
       (m.low * m.lowCount + (m.high / 3) * m.highCount) / (m.lowCount + m.highCount);
+    const gap = elementGap(spaces, fromMarks);
     // Threshold hysteresis lengthens marks and shortens gaps by the same amount δ, so
     // dit + gap = 2 units and dah + gap = 4 units hold exactly – use those sums when the element
     // gap is plausible, weighted by how many dits and dahs were seen.

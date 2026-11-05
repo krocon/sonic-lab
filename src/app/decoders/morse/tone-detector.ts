@@ -37,6 +37,13 @@ const KEYED_CV = 0.75;
 export interface ToneHop {
   /** Amplitude of the tracked tone (sine amplitude, 0..1). */
   amplitude: number;
+  /**
+   * Complex amplitude of the tracked bin, phase referenced to the sample clock: a steady tone
+   * exactly on the bin frequency keeps its phase from hop to hop, an offset of Δf turns it by
+   * 2π·Δf per second. Its magnitude can be below `amplitude` (that takes the strongest neighbour).
+   */
+  re: number;
+  im: number;
   /** Centre frequency of the tracked bin, Hz. */
   frequency: number;
   /** Time of the hop end, seconds (sample count based). */
@@ -50,6 +57,11 @@ export class ToneDetector {
   private windowLength = 0;
   private freqs = new Float64Array(0);
   private coeffs = new Float64Array(0);
+  private cosW = new Float64Array(0);
+  private sinW = new Float64Array(0);
+  /** Goertzel state of the finished window per bin (for the complex result). */
+  private last1 = new Float64Array(0);
+  private last2 = new Float64Array(0);
   /** Two accumulator sets, interleaved: [set0 bins…, set1 bins…]. */
   private s1 = new Float64Array(0);
   private s2 = new Float64Array(0);
@@ -63,7 +75,7 @@ export class ToneDetector {
   private score = new Float64Array(0);
   private samples = 0;
   private tracked = 0;
-  private readonly out: ToneHop = { amplitude: 0, frequency: 0, time: 0 };
+  private readonly out: ToneHop = { amplitude: 0, re: 0, im: 0, frequency: 0, time: 0 };
 
   configure(config: Partial<ToneDetectorConfig>): void {
     this.config = { ...this.config, ...config };
@@ -126,6 +138,8 @@ export class ToneDetector {
       const power = a1 * a1 + a2 * a2 - (coeffs[b] ?? 0) * a1 * a2;
       const amp = (2 * Math.sqrt(Math.max(0, power))) / norm;
       amps[b] = amp;
+      this.last1[b] = a1;
+      this.last2[b] = a2;
       if (amp > bestAmp) {
         bestAmp = amp;
         best = b;
@@ -146,9 +160,29 @@ export class ToneDetector {
       trackedAmp = Math.max(trackedAmp, amps[b] ?? 0);
     }
     this.out.amplitude = trackedAmp;
+    // the phase always from the tracked bin: switching to a neighbour would make it jump
+    this.complexAmplitude(this.tracked, norm);
     this.out.frequency = this.freqs[this.tracked] ?? 0;
     this.out.time = this.samples / this.sampleRate;
     onHop(this.out);
+  }
+
+  /**
+   * Complex result of bin `b` for the window that just ended: y = s1 − e^(−iω)·s2 is the DFT
+   * relative to the window's last sample; e^(−iω·n) with n = that sample's index refers it to the
+   * sample clock.
+   */
+  private complexAmplitude(b: number, norm: number): void {
+    const a1 = this.last1[b] ?? 0;
+    const a2 = this.last2[b] ?? 0;
+    const yRe = a1 - (this.cosW[b] ?? 0) * a2;
+    const yIm = (this.sinW[b] ?? 0) * a2;
+    const cycles = ((this.freqs[b] ?? 0) * (this.samples - 1)) / this.sampleRate;
+    const phase = -2 * Math.PI * (cycles - Math.floor(cycles));
+    const c = Math.cos(phase);
+    const s = Math.sin(phase);
+    this.out.re = (2 * (yRe * c - yIm * s)) / norm;
+    this.out.im = (2 * (yRe * s + yIm * c)) / norm;
   }
 
   /**
@@ -201,7 +235,11 @@ export class ToneDetector {
     const nyquist = sampleRate / 2;
     this.freqs = Float64Array.from(freqs.filter((f) => f > 0 && f < nyquist));
     this.coeffs = this.freqs.map((f) => 2 * Math.cos((2 * Math.PI * f) / sampleRate));
+    this.cosW = this.freqs.map((f) => Math.cos((2 * Math.PI * f) / sampleRate));
+    this.sinW = this.freqs.map((f) => Math.sin((2 * Math.PI * f) / sampleRate));
     const bins = this.freqs.length;
+    this.last1 = new Float64Array(bins);
+    this.last2 = new Float64Array(bins);
     this.s1 = new Float64Array(2 * bins);
     this.s2 = new Float64Array(2 * bins);
     // the second set starts half a window later; its first result covers only one hop of data

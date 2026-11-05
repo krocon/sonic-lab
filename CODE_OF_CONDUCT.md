@@ -1,6 +1,6 @@
 # Code of Conduct
 
-AudioLab follows the spirit of the [Contributor Covenant, version 2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct/).
+Sonic Lab follows the spirit of the [Contributor Covenant, version 2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct/).
 
 In short: be respectful and constructive, assume good intent, welcome people of every background
 and level of experience, and keep discussions about the work. Harassment, insults, personal or

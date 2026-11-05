@@ -72,8 +72,27 @@ All notable changes to this project are documented here. The format follows
 
 - Documentation: README with real screenshots (`pnpm screenshots`), updated architecture and
   roadmap, code of conduct, security policy, issue and pull-request templates.
+- Morse decoder log: soft key VIEW switches between the live display and a log of everything
+  decoded, one line per transmission with time and speed (a pause of 6 s, a capture restart or
+  RESET starts a new line). In the log view COPY copies the log, SAVE writes it to a `.txt` file
+  and CLEAR empties it. The log lives in memory only and survives switching modes.
+- `pnpm morse:sweep`: synthetic Morse through simulated rooms (RT60, reverberant share, six
+  impulse responses) at 12–40 WPM, CER matrix and score for comparing decoder versions.
+- Morse decoder room mode, experimental and off by default (soft key ROOM in the live view,
+  persisted): a room equalizer for Morse from a loudspeaker in a reverberant room. It learns the
+  room's complex response from the signal and detects the keying from the tone's phase as well
+  as its level, so rooms whose reverberation cancels the direct sound – where whole characters
+  merged into one mark – decode again. The display shows "Room mode", lit as "Room active" once
+  the room is learned (after ≈ 5–10 s of Morse). The tone detector now also reports the complex
+  amplitude.
 
 ### Changed
+
+- The app is now called Sonic Lab: nameplate, window and page titles, desktop product name, the
+  demo transmission and the encoder's default text (`CQ CQ DE SONIC LAB K`), release titles, the
+  web build archive (`sonic-lab-web-<version>.zip`), exported files (`sonic-lab-<time>.wav`,
+  `sonic-lab-morse-log-<time>.txt`) and the documentation. Package names, bundle identifier and
+  settings keys keep `audiolab`, so saved settings and window state survive.
 
 - New front panel: a transceiver with a large OLED. Eight F keys under the display choose the
   module, six soft keys next to it carry the module's settings and actions (legends in the
@@ -96,9 +115,17 @@ All notable changes to this project are documented here. The format follows
 - Dark only: the light (aluminium) finish and the theme toggle are gone; the UI ignores the
   system theme.
 - No overview page: the app opens in the Morse decoder; unknown paths lead there too.
+- Morse decoder: the start speed is set with the SPEED knob; its soft key in the live view now
+  switches the room mode.
 
 ### Fixed
 
+- Morse decoding through a loudspeaker in a reverberant room: elements whose gap stays above the
+  off-threshold started late (dahs read as dits) or not at all – a fast 4 dB rise now starts
+  them; tail swells right after a key-up no longer start pseudo-marks once the speed is known; one
+  stray short gap no longer drags the speed estimate up (a 30 WPM recording was read at 44–50 WPM).
+  Simulated-room score 44 → 35 % CER, W1AW recordings in a RT60 0.3 s room 5.1 → 3.1 %; clean
+  and noisy recordings unchanged.
 - Insufficient colour contrast of secondary text and the light accent colour (WCAG AA).
 - Keyboard focus was lost while the microphone permission was requested (button got disabled).
 - The selected input device was not restored in WebKit when the device list loaded late.

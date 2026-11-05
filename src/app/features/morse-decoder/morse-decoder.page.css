@@ -53,3 +53,53 @@
   letter-spacing: normal;
   color: var(--oled-dim);
 }
+
+/* LOG view: readouts over one box with every decoded line */
+.screen.log-view {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.log {
+  padding: 2cqh 0.6cqw 0.8cqh 1.4cqw;
+}
+
+.log-lines {
+  height: 100%;
+  overflow-y: auto;
+  padding-right: 0.8cqw;
+  scrollbar-color: var(--oled-faint) transparent;
+  scrollbar-width: thin;
+}
+
+.log-lines:focus-visible {
+  outline: 1px solid var(--oled-accent);
+  outline-offset: 2px;
+}
+
+.entry {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  gap: 1.6cqw;
+  align-items: baseline;
+  margin: 0;
+  padding: 0.5cqh 0;
+  font: 400 clamp(13px, 3.6cqh, 26px) / 1.25 var(--font-mono);
+  letter-spacing: 0.04em;
+}
+
+.entry time,
+.entry .wpm {
+  font-size: 0.6em;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: var(--oled-dim);
+}
+
+.entry .line {
+  overflow-wrap: anywhere;
+}
+
+.entry:last-child .line {
+  color: var(--oled-accent);
+}

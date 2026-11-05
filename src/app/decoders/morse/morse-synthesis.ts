@@ -15,7 +15,7 @@ export interface MorseToneOptions extends MorseTimingOptions {
 
 /**
  * One synthesis path for the encoder's offline rendering, the demo input and the tests, so test
- * signals look exactly like what AudioLab itself sends.
+ * signals look exactly like what Sonic Lab itself sends.
  */
 export function morseTone(
   text: string,

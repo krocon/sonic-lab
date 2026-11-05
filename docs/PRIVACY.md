@@ -1,12 +1,12 @@
 # Privacy
 
-AudioLab is designed so that audio never leaves your device.
+Sonic Lab is designed so that audio never leaves your device.
 
 ## Principles
 
 - **Local processing only.** All capture, analysis and decoding run inside the browser or the
   desktop WebView. There is no backend server.
-- **No telemetry.** AudioLab sends no analytics, crash reports or usage data. The Angular CLI
+- **No telemetry.** Sonic Lab sends no analytics, crash reports or usage data. The Angular CLI
   analytics are disabled in the project configuration.
 - **Microphone on user action only.** Access is requested only after you press **Start**. The
   stream is stopped when you press **Stop**, leave the view, close or hide the page
@@ -22,7 +22,8 @@ AudioLab is designed so that audio never leaves your device.
   leaving the page discards them. A WAV file is written only when you press _Export…_ and pick a
   location – in the browser via the file picker or a download, on the desktop via the native save
   dialog opened by the Rust command `export_file`, which writes exactly to the chosen path. The
-  webview itself has no file-system or dialog permission.
+  webview itself has no file-system or dialog permission. The Morse decoder's log is likewise
+  held in memory only (until the app is closed) and written to a text file only on _SAVE_.
 - **Local preferences.** The only persisted data are UI preferences in the browser's
   `localStorage`: the chosen input device id (`audiolab.capture`) and module settings
   (`audiolab.morse`, `audiolab.encoder` incl. the text to encode, `audiolab.spectrum`,

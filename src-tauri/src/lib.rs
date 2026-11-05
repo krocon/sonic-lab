@@ -1,4 +1,4 @@
-//! AudioLab – Tauri desktop shell.
+//! Sonic Lab – Tauri desktop shell.
 //!
 //! The Angular frontend does all audio capture and signal processing inside the WebView.
 //! This crate hosts the window and exposes a deliberately small surface:
@@ -38,7 +38,7 @@ pub fn run() {
             Ok(())
         })
         .build(tauri::generate_context!())
-        .expect("error while building AudioLab")
+        .expect("error while building Sonic Lab")
         .run(|app, event| {
             if let RunEvent::WindowEvent {
                 label,

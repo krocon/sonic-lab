@@ -16,8 +16,8 @@ body:
     id: platform
     attributes:
       label: Platform
-      description: Browser and version, or desktop OS and AudioLab version
-      placeholder: Chrome 140 on macOS 26 / AudioLab 0.1.0 on Windows 11
+      description: Browser and version, or desktop OS and Sonic Lab version
+      placeholder: Chrome 140 on macOS 26 / Sonic Lab 0.1.0 on Windows 11
     validations:
       required: true
   - type: input

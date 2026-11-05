@@ -53,7 +53,6 @@ Thumbs.db
 
 # Local tool folders
 /.angular/
-/.claude/
 /.agents/
 /.gemini/
 /public/worklets/
@@ -61,3 +60,6 @@ Thumbs.db
 # Morse test corpus: generated WAVs and decoder output
 /morse-training/wav/
 /morse-training/out/
+
+# Promo site deployment credentials (template: .env.deploy.example)
+.env.deploy
